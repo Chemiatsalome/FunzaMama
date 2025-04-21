@@ -4,6 +4,8 @@ from flask_migrate import Migrate
 from models import db  # Import db from models/__init__.py
 from models.models import User, Badge, GameStage, UserResponse, QuizQuestion, UserScenarioProgress # Import models
 from flask_cors import CORS
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 
@@ -41,7 +43,5 @@ app.register_blueprint(profile_bp)
 
 
 
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-    load_dotenv()  # if using a local .env file
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
