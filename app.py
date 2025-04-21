@@ -42,4 +42,6 @@ app.register_blueprint(profile_bp)
 
 
 if __name__ == '__main__':
+    from dotenv import load_dotenv
+    load_dotenv()  # if using a local .env file
     app.run(debug=True)
