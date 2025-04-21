@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 
+
+load_dotenv()
+
+
 CORS(app, supports_credentials=True)
 
 app.config.from_object('config.Config')
@@ -42,7 +46,7 @@ app.register_blueprint(profile_bp)
 import os
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))  # fallback port for local dev
     app.run(host="0.0.0.0", port=port)
 
 

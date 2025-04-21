@@ -28,3 +28,6 @@ funzaenv/
 # Operating System
 .DS_Store
 Thumbs.db
+
+# .gitignore
+.env
