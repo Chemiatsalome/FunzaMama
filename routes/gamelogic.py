@@ -3,8 +3,7 @@ from chatbot.modelintergration import get_chatbot_response_preconception , get_c
 from models import db
 from models.models import User, QuizQuestion, UserResponse, Badge
 
-quiz_bp = Blueprint("quiz", __name__, url_prefix="/quiz")
-
+quiz_bp = Blueprint("quiz", __name__)
 
 from flask import session
 

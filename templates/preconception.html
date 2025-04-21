@@ -100,7 +100,7 @@
   
     async function fetchScenario() {
         try {
-            let response = await fetch("/quiz/get_quiz_preconception");
+            let response = await fetch("/get_quiz_preconception");
             scenarios = await response.json();
             if (scenarios && scenarios.length > 0) {
                 loadScenario();
@@ -368,7 +368,7 @@ async function sendMessage(userInput) {
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
-        let response = await fetch("/", {
+        let response = await fetch("/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ "message": userInput })

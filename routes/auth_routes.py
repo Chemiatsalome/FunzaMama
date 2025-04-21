@@ -35,11 +35,10 @@ def signup():
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
-
-        print(f"Received: {fname}, {lname},{lname}, {email}, {password}, {confirm_password}")  # Debugging output
+        avatar_path = request.form.get('avatar')  # Get the selected avatar path
 
         # Validate inputs
-        if not (fname and lname and lname and email and password and confirm_password):
+        if not (fname and lname and Uname and email and password and confirm_password):
             flash('All fields are required.', 'danger')
             return redirect(url_for('signup.signup'))
         
@@ -53,7 +52,7 @@ def signup():
             flash(password_error, 'danger')
             return redirect(url_for('signup.signup'))
         
-        #checks if username exists
+        # Check if username exists
         existing_user = User.query.filter_by(username=Uname).first()
         if existing_user:
             flash('Username already registered. Please login.', 'warning')
@@ -64,14 +63,13 @@ def signup():
         if existing_user:
             flash('Email already registered. Please login.', 'warning')
             return redirect(url_for('signup.signup'))
-        
-
 
         # Hash the password before storing it
         hashed_password = generate_password_hash(password)
 
-        # Create new user
-        new_user = User(first_name=fname, second_name=lname, username=Uname, email=email, password_hash=hashed_password)
+        # Create new user and assign the selected avatar
+        new_user = User(first_name=fname, second_name=lname, username=Uname, email=email, 
+                        password_hash=hashed_password, avatar=avatar_path)
         db.session.add(new_user)
         db.session.commit()
 
@@ -83,6 +81,7 @@ def signup():
         return redirect(url_for('gamestages.game'))  # Redirect to dashboard after signup
 
     return render_template('signup.html')
+
 
 #Login Functionality 
 @Login_bp.route('/login' , methods=['GET', 'POST'])

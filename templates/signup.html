@@ -6,70 +6,192 @@
     <title>Signup - Funza Mama</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
     <style>
-        body {
-            background: linear-gradient(135deg, #D17D98, #F4CCE9);
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .signup-container {
-            background: #FFF3F3;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 {
-            color: #7D1C4A;
-        }
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #7D1C4A;
-            border-radius: 5px;
-        }
-        button {
-            background: #7D1C4A;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #56021F;
-        }
-        .login-link {
-            margin-top: 15px;
-            color: #7D1C4A;
-        }
-        .alert {
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        }
+        /* General Body Styling */
+/* General Body Styling */
+body {
+    background: linear-gradient(135deg, #D17D98, #F4CCE9);
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+    padding: 20px; /* Adding space around the body */
+    box-sizing: border-box;
+}
 
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
+/* Container Styling */
+.signup-container {
+    background: #FFF3F3;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 380px; /* Slightly smaller width */
+    max-height: 500px; /* Limit the height */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+    text-align: center;
+    margin-top: 30px; /* Add space at the top */
+    margin-bottom: 30px; /* Add space at the bottom */
+    box-sizing: border-box; /* Ensure padding is included in the container size */
+}
 
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
+/* Avatar Dropdown Styling */
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 90%;
+    margin-top: 20px; /* Add more space above the avatar section */
+}
 
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+
+/* Heading Styling */
+h2 {
+    color: #7D1C4A;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Input Styling */
+input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #7D1C4A;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Button Styling */
+button {
+    background: #7D1C4A;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px; 
+}
+
+button:hover {
+    background: #56021F;
+}
+
+/* Password Message Styling */
+.password-message {
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Alert Styling */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Avatar Dropdown Styling */
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 90%;
+    margin-top: 15px;
+}
+
+.selected-avatar {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #7D1C4A;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    justify-content: space-between;
+}
+
+.selected-avatar img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.selected-avatar span {
+    font-size: 16px;
+    color: #7D1C4A;
+}
+
+.avatar-options {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #7D1C4A;
+    border-radius: 5px;
+    z-index: 1;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-option {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.avatar-option:hover {
+    background-color: #f0f0f0;
+}
+
+.avatar-option img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.custom-dropdown.open .avatar-options {
+    display: block;
+}
+
+/* Links Styling */
+.login-link {
+    margin-top: 15px;
+    color: #7D1C4A;
+    font-size: 14px;
+}
+
+.login-link a {
+    text-decoration: none;
+    color: #7D1C4A;
+}
+
+.login-link a:hover {
+    color: #56021F;
+}
+
 
     </style>
 </head>
@@ -95,8 +217,31 @@
             <input type="password" id="password" name="password" placeholder="Password" required>
             <p class="password-message" id="password-message"></p>
             <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+        
+            <!-- Avatar Selection Dropdown -->
+            <label for="avatar">Choose an Avatar:</label>
+            <div class="custom-dropdown">
+                <div class="selected-avatar">
+                    <img src="images/man1/avatar-happy.png" alt="avatar" id="avatar-img">
+                    <span>Select Avatar</span>
+                </div>
+                <div class="avatar-options">
+                    <div class="avatar-option" data-value="images/man1/avatar-happy.png">
+                        <img src="{{ url_for('static', filename='images/man1/avatar-happy.png') }}"alt="Happy Man ">
+                    </div>
+                    <div class="avatar-option" data-value="images/man2/avatar-happy.png'">
+                        <img src="{{ url_for('static', filename='images/man2/avatar-happy.png') }}" alt="Happy Man ">
+                    </div>
+                    <div class="avatar-option" data-value="images/woman1/avatar-sad.png">
+                        <img src="{{ url_for('static', filename='images/woman1/avatar-happy.png') }}" alt="Happy Lady">
+                    </div>
+                </div>
+                <input type="hidden" name="avatar" id="avatar-input" value="images/man1/avatar-happy.png">
+            </div>
+        <br>
             <button type="submit">Signup</button>
         </form>
+        
         <p class="login-link">Already have an account? <a href="{{ url_for('login.login') }}">Login</a></p>
         <p class="login-link">Or Go back home? <a href="{{ url_for('home.home') }}">Home</a></p>
     </div>
@@ -137,6 +282,39 @@
                 });
             }
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const dropdown = document.querySelector('.custom-dropdown');
+    const selectedAvatar = document.querySelector('.selected-avatar');
+    const avatarOptions = document.querySelector('.avatar-options');
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImg = document.getElementById('avatar-img');
+
+    // Toggle dropdown visibility
+    selectedAvatar.addEventListener('click', function () {
+        dropdown.classList.toggle('open');
+    });
+
+    // Change avatar when an option is selected
+    const options = document.querySelectorAll('.avatar-option');
+    options.forEach(option => {
+        option.addEventListener('click', function () {
+            const value = this.getAttribute('data-value');
+            avatarInput.value = value;
+            avatarImg.src = value;
+            avatarImg.alt = this.querySelector('img').alt;
+            dropdown.classList.remove('open');
+        });
+    });
+
+    // Close the dropdown if clicked outside
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+});
+
     </script>
 </body>
 </html>

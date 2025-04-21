@@ -11,7 +11,7 @@ gamestages_bp = Blueprint("gamestages", __name__)
 profile_bp = Blueprint("profile", __name__)
 
 
-@home_bp.route('/', methods=['GET', 'POST'])
+@home_bp.route('/chat', methods=['GET', 'POST'])
 def home():
     username = "Guest"  # Default username
     user = None  # Initialize user to None
