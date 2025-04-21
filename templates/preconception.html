@@ -100,7 +100,7 @@
   
     async function fetchScenario() {
         try {
-            let response = await fetch("/get_quiz_preconception");
+            let response = await fetch("/quiz/get_quiz_preconception");
             scenarios = await response.json();
             if (scenarios && scenarios.length > 0) {
                 loadScenario();

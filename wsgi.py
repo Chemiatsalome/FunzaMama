@@ -1,4 +1,6 @@
-from app import app
+# wsgi.py
+from app import app  #
+
 
 
 
