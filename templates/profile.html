@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Profile</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #D17D98, #F4CCE9);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #56021F;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* Static Sidebar styles */
+       /* Static Sidebar styles */
+.sidebar {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #7D1C4A;
+    padding-top: 60px;
+    transition: width 0.3s ease;
+}
+
+.sidebar .closebtn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+}
+
+.sidebar a {
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #a03060;
+}
+
+/* Collapsed Sidebar */
+.sidebar.collapsed {
+    width: 60px;
+}
+
+/* Hide sidebar links when collapsed */
+.sidebar.collapsed .sidebar-link {
+    display: none;
+}
+
+
+        /* Page Content */
+        .main-content {
+            margin-left: 250px;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+            padding: 20px;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 60px;
+        }
+
+        /* Card styling */
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: none;
+        }
+
+        .card-header {
+            font-weight: bold;
+        }
+
+        .btn-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #155724;
+            color: white;
+        }
+
+        .bg-primary {
+            background-color: #F4CCE9 !important;
+            color: #56021F !important;
+        }
+
+        .bg-info {
+            background-color: #D17D98 !important;
+            color: white !important;
+        }
+
+        .bg-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+        }
+
+        .bg-danger {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #D17D98;
+        }
+
+        .form-control:focus {
+            border-color: #7D1C4A;
+            box-shadow: 0 0 0 0.2rem rgba(125, 28, 74, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Static Sidebar -->
+<!-- <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleSidebar()">&#9776;</a>
+    
+   Hidden Links when Sidebar is Collapsed -->
+    <!-- <a href="{{ url_for('home.home') }}" class="sidebar-link"></a><img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"></a>
+    <a href="{{ url_for('home.home') }}" class="sidebar-link">Welcome to Funza Mama </a>
+    <a href="javascript:history.back()" class="sidebar-link">Back</a>
+    <a href="{{ url_for('login.logout') }}" class="sidebar-link">Logout</a> -->
+<!-- </div>  -->
+
+<!-- Sidebar Content -->
+<div id="mySidebar" class="sidebar">
+
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleSidebar()">&#9776;</a>
+    <!-- Logo and Home Link -->
+    <a href="{{ url_for('home.home') }}" class="sidebar-link">
+        <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+    </a>
+
+    <!-- Welcome Message -->
+    <a href="{{ url_for('home.home') }}" class="sidebar-link">Welcome to Funza Mama</a>
+
+    <!-- Back Link (Optional) -->
+    <a href="javascript:history.back()" class="sidebar-link">Back</a>
+
+    <!-- Logout Link -->
+    <a href="{{ url_for('login.logout') }}" class="sidebar-link">Logout</a>
+</div>
+
+
+
+<!-- Page Content -->
+<div class="main-content">
+    <!-- <button class="btn btn-light" onclick="toggleSidebar()">Toggle Sidebar</button> -->
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Welcome, {{username}}</h2>
+
+        
+
+        <!-- Edit Profile Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary">Edit Profile</div>
+            <div class="card-body">
+                <!-- Change Username Form -->
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Change Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Save Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Learning Suggestion (Static) -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger">
+                Most Failed Stage: {{ stats.most_failed_stage.name }}
+            </div>
+            <div class="card-body d-flex align-items-center">
+                <!-- Avatar -->
+                <img src="{{ url_for('static', filename=user.avatar) }}" alt="Avatar" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+
+                <!-- Static Facts -->
+                <div>
+                    <p><strong>Early Detection & Prevention:</strong> Regular prenatal check-ups allow healthcare providers to identify potential complications early on, enabling timely interventions and prevention of conditions that may affect mother or baby.</p>
+                    <p><strong>Education and Awareness:</strong> Educating pregnant women and their families about potential complications and the importance of timely interventions significantly reduces risks associated with pregnancy.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Statistics Section -->
+        <div class="row">
+            <!-- Game Summary -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-info">Game Statistics</div>
+                    <div class="card-body">
+                        <p><strong>Total Questions Attempted:</strong> {{ stats.total_attempted }}</p>
+                        <p><strong>Total Correct:</strong> {{ stats.total_correct }}</p>
+                        <p><strong>Total Failed:</strong> {{ stats.total_failed }}</p>
+                        <p><strong>Leading Stage:</strong> {{ stats.leading_stage }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage Performance -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">Stage Performance</div>
+                    <div class="card-body">
+                        {% for stage in stats.stages %}
+                            <p><strong>{{ stage.name }}</strong>: {{ stage.correct }} correct / {{ stage.failed }} failed</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Toggle Script -->
+<!-- Sidebar Toggle Script -->
+<script>
+
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById("mySidebar");
+        const mainContent = document.querySelector('.main-content');
+        
+        // Toggle the collapsed state on sidebar and content
+        sidebar.classList.toggle("collapsed");
+        mainContent.classList.toggle("collapsed");
+        
+        // Toggle visibility of links inside the sidebar based on collapsed state
+        const links = sidebar.querySelectorAll('.sidebar-link');
+        links.forEach(link => {
+            link.style.display = sidebar.classList.contains("collapsed") ? "none" : "block";
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

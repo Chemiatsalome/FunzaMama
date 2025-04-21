@@ -1,0 +1,801 @@
+/* 🌸 General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #D17D98, #F4CCE9); /* Soft mauve to pastel pink */
+    color: #56021F; /* Dark maroon for better readability */
+}
+
+/* 🌸 Custom Navbar */
+.custom-nav {
+    background: linear-gradient(to right, #7D1C4A, #D17D98); /* Feminine gradient */
+    padding: 15px;
+    border-bottom: 2px solid #F4CCE9;
+}
+
+/* Navbar Brand */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #F4CCE9 !important;
+}
+
+
+.nav-button {
+    width: 100px; /* adjust width as needed */
+    text-align: center;
+}
+
+/* 🌸 Buttons */
+.nav-item .btn {
+    font-size: 1rem;
+    padding: 10px 18px;
+    border-radius: 25px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* About Button */
+.nav-item .btn-outline-light {
+    border: 2px solid #F4CCE9;
+    color: #F4CCE9;
+}
+
+.nav-item .btn-outline-light:hover {
+    background: #F4CCE9;
+    color: #56021F;
+}
+
+/* Logout Button */
+.nav-item .btn-warning {
+    background-color: #7D1C4A;
+    color: white;
+    border-radius: 20px;
+}
+
+.nav-item .btn-warning:hover {
+    background-color: #56021F;
+}
+
+/* 🌸 White Background for Progress Section */
+.progress-section {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 80%; /* Adjust width if needed */
+    margin: auto;
+    margin-top: 20px;
+}
+
+
+/* 🌸 Progress Bar */
+.progress-container {
+    width: 60%;
+    margin: auto;
+    text-align: center;
+}
+
+.progress {
+    height: 20px;
+    border-radius: 10px;
+    background-color: #F4CCE9;
+}
+
+@keyframes progressAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 🌸 Animated Pink Progress Bar */
+.progress-bar {
+    background: linear-gradient(to right, #390f24, #D17D98) !important;
+    background-size: 200% 100%;
+    animation: progressAnimation 2s linear infinite;
+}
+
+
+/* 🌸 Claim Message Styling */
+.claim-message-container {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    background: rgba(209, 125, 152, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#claim-message {
+    color: #56021F;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    animation: pulse 1.5s infinite alternate;
+}
+
+/* Subtle pulse animation */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.05); opacity: 0.9; }
+}
+
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+/* 🌸 Badges */
+.badge-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    z-index: 1;
+    position: relative;
+}
+
+/* Earned Badge */
+.badge-earned {
+    background: #56021F;
+    padding: 12px;
+    border-radius: 50%;
+    font-size: 3rem;
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
+}
+
+/* Locked Badge */
+.badge-locked {
+    background: #56021F;
+    padding: 12px;
+    border-radius: 50%;
+    font-size: 3rem;
+    transition: transform 0.3s ease-in-out;
+    cursor: not-allowed;
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+/* Hover Effect */
+.badge-earned:hover {
+    transform: scale(1.4);
+    text-shadow: 0px 0px 12px rgba(21, 2, 16, 0.9);
+}
+
+.badge-locked:hover {
+    transform: scale(1.1);
+}
+
+/* Popup for Claiming Badge */
+.badge-earned::after {
+    content: "Click to claim!";
+    position: absolute;
+    bottom: 100%; /* Show above the badge */
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    font-size: 0.9rem;
+    background: rgba(209, 125, 152, 0.9);
+    color: black;
+    padding: 6px 12px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    white-space: nowrap;
+    z-index: 20; /* Ensure it's above everything */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Show popup on hover */
+.badge-earned:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* Container Background */
+.container-welcome {
+    background-color: white !important;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Encouragement Message */
+#encouragement-message {
+    color: #56021F !important;
+    font-weight: bold;
+    background: rgba(209, 125, 152, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    text-shadow: none;
+}
+
+/* 🌸 Game Stages */
+.stages-wrapper {
+    background: white;  /* White background */
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stage-card {
+    background: #F4CCE9; /* Soft pink */
+    border-radius: 10px;
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+    text-align: center;
+    padding: 15px;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Effect */
+.stage-card:hover {
+    transform: scale(1.05);
+    background-color: #D17D98;
+    color: black;
+}
+
+.card-body a {
+    display: inline-block;  /* Makes it behave like a button */
+    background-color: #D17D98;  /* Pink shade */
+    color: white;  /* White text for contrast */
+    border: none;  /* Remove the default border */
+    padding: 8px 16px;  /* Add some spacing */
+    border-radius: 5px;  /* Rounded edges */
+    font-weight: bold;  /* Make the text stand out */
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+    text-decoration: none;  /* Remove underline */
+}
+
+/* Hover Effect */
+.card-body a:hover {
+    background-color: #7D1C4A;  /* Darker pink/maroon */
+    transform: scale(1.05);
+    color: white;
+}
+
+
+/* Completion Styling */
+.completion {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Stars */
+.stars {
+    display: block;
+    font-size: 1.2rem;
+    color: gold;
+}
+
+
+/* Percentage */
+.percentage {
+    display: block;
+    color: #7D1C4A;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+
+/* 🌟 Video Container */
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(244, 204, 233, 0.8);
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 🌟 Video Styling */
+.about-video {
+    width: 100% !important;
+    height: 350px !important;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+}
+
+/* 🌸 Welcome Section */
+.welcome-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 800px;
+}
+
+/* 🌸 Circular Avatar Display (like welcome image on profile) */
+.welcome-image {
+    width: 150px; 
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #D17D98;
+}
+
+/* 🌸 Avatar Selection Container */
+.avatar-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* 🌸 Scrollable Avatar Row */
+.avatar-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* 🌸 Avatar Image Style */
+.avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+/* 🌸 Hover Effect */
+.avatar:hover {
+    transform: scale(1.2);
+    box-shadow: 0px 0px 10px #F4CCE9;
+}
+
+/* 🌸 Reset Button Styling (to remove default button look) */
+.avatar-scroll form button {
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* 🌸 Optional: focus outline cleanup for accessibility */
+.avatar-scroll form button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #D17D98;
+}
+
+
+/* 🌸 Footer */
+.footer {
+    background-color: #7D1C4A;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+.play-btn {
+   
+    background: #7D1C4A;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s;
+    text-decoration: none;
+  }
+/* 💬 Ask Funza (Bottom Left) */
+
+
+  /* "Ask Funza" Button - Bottom Left */
+  .ask-funza-btn {
+    margin-left: 10px;
+    background: #7D1C4A;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s;
+  }
+.ask-funza-btn:hover {
+    background: #56021F;
+    transform: scale(1.05);
+}
+
+/* Chatbot Popup */
+.chatbot-popup {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    width: 320px;
+    max-width: 90%;
+    background: white;
+    border: 2px solid #7D1C4A;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+/* Chatbot Header */
+.chatbot-header {
+    background: #7D1C4A;
+    color: white;
+    padding: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-header .close-chat {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Chatbot Body - Messages */
+.chatbot-body {
+    padding: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* User Message */
+.user-message {
+    background: #7D1C4A;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    align-self: flex-end;
+    max-width: 80%;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+/* Bot Message */
+.bot-message {
+    background: #f1f1f1;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 10px;
+    align-self: flex-start;
+    max-width: 80%;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+/* Chatbot Footer (Input & Send Button) */
+.chatbot-footer {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: #fff;
+}
+
+#user_input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chatbot-footer button {
+    background: #7D1C4A;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.chatbot-footer button:hover {
+    background: #56021F;
+}
+
+/* Smooth Scroll for Messages */
+.chatbot-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chatbot-body::-webkit-scrollbar-thumb {
+    background: #7D1C4A;
+    border-radius: 10px;
+}
+
+.chatbot-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* The main game slider container */
+.game-slider {
+    display: flex;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Game scenarios */
+.game-container {
+    position: absolute;
+    width: 50%;
+    max-width: 600px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+/* Active scenario (centered and larger) */
+.game-container.active {
+    transform: scale(1.1) translateX(0);
+    opacity: 1;
+    z-index: 2;
+}
+
+/* Move previous scenarios to the left */
+.game-container.left {
+    transform: scale(0.8) translateX(-150%);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+/* Move upcoming scenarios to the right */
+.game-container.right {
+    transform: scale(0.8) translateX(150%);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+/* Navigation Buttons */
+.prev-btn, .next-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff9aa2;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.try-again-btn {
+    
+    background: #ff9aa2;
+    background: #ff9aa2;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    
+}
+
+.try-again-btn {bottom: 10px;}
+.prev-btn { left: 10px; }
+.next-btn { right: 10px; }
+
+.prev-btn:hover, .next-btn:hover {
+    background: #ff6670;
+}
+
+/* Ensure the progress bar is positioned on the right */
+.game-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+}
+
+/* Score Box Styling */
+.score-box {
+    position: absolute;
+    margin-top: 60px;
+    top: 10px;
+    right: 20px;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🏆 Progress Bar */
+.game-progress .progress {
+    height: 12px;
+    display: flex;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* 📖 Scenario Box */
+.scenario-box {
+    background: #ffebf0;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: black;
+}
+
+/* 🦙 Llama Guide (With Animation) */
+.llama-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.llama-img {
+    width: 80px;
+    height: 80px;
+    animation: bounce 1s infinite alternate;
+}
+
+.speech-bubble {
+    background: #D17D98;
+    padding: 10px 15px;
+    border-radius: 15px;
+    color: white;
+    margin-left: 15px;
+}
+
+/* 🕹️ Choice Buttons */
+.game-choices {
+    margin-top: 20px;
+}
+
+.choice-btn {
+    background: #ff9aa2;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.choice-btn:hover {
+    transform: scale(1.1);
+}
+
+.choice-btn.correct {
+    background: #4CAF50;
+    color: white;
+}
+
+.choice-btn.incorrect {
+    background: #E57373;
+    color: white;
+}
+
+/* 🔥 Feedback Message */
+.feedback-message {
+    display: none;
+    background: #E1F5C4;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: black;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* 🎭 Animations */
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+/* 🌸 Responsive Tweaks */
+@media (max-width: 992px) {
+    .navbar-nav {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .badge-container {
+        flex-wrap: wrap;
+    }
+}
+
+/* 🎯 RESPONSIVENESS FOR SMALLER SCREENS */
+@media screen and (max-width: 768px) {
+    .game-container {
+        width: 80%; /* Make it wider on smaller screens */
+        max-width: 90%; /* Allow it to stretch more */
+        height: 100vh; /* Slightly reduce height to fit small screens */
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+
+    .game-slider {
+        padding: 5px; /* Reduce padding for smaller screens */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .game-container {
+        width: 90%; /* Make it even wider on very small screens */
+        height: 70vh; /* Reduce height slightly */
+        padding: 10px; /* Reduce padding for compact design */
+    }
+
+    .game-slider {
+        flex-direction: column; /* Stack elements vertically on very small screens */
+        align-items: center;
+        justify-content: flex-start; /* Align content properly */
+    }
+}
+
+
+
+/* 🎨 Primary Color Palette:
+Color Name	Hex Code	Usage
+Soft Mauve	#D17D98	Background gradient, hover, and highlights
+Pastel Pink	#F4CCE9	Background gradient, buttons, progress, and cards
+Dark Maroon	#56021F	Text, badges, hover states
+Deep Plum	#7D1C4A	Navbar, hover buttons, percentage text
+🌟 Accent & Utility Colors:
+Color Name	Hex Code	Usage
+Gold	gold	Stars display
+White	white	Card backgrounds, avatar borders
+Light Green	#d4edda	Alert-success background
+Dark Green	#155724	Alert-success text
+Soft Red	#f8d7da	Alert-danger background
+Dark Red	#721c24	Alert-danger text
+Light Yellow	#fff3cd	Alert-warning background
+Dark Yellow	#856404	Alert-warning text */

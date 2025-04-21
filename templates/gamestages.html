@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunzaMama - Maternal Health Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">   
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+
+.alert {
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  color: white;
+}
+.alert-success { background-color: #4CAF50; }
+.alert-danger  { background-color: #f44336; }
+.alert-warning { background-color: #ff9800; }
+.alert-info    { background-color: #2196F3; }
+</style>
+</head>
+<body>
+
+    <!-- 🌟 Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark custom-nav">
+        <div class="container-fluid">
+            <a href="{{ url_for('home.home') }}" class="sidebar-link">
+                <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+            </a>
+            <a class="navbar-brand" href="{{ url_for('home.home') }}" >Welcome, {{username}}</a>
+    
+            <!-- Hamburger menu for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <!-- Navbar Items -->
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="{{ url_for('home.home') }}" class="btn btn-outline-light me-2" style="width: 100px;">Home</a> 
+                    </li>
+                    {% if user_logged_in %}
+                    <!-- Display Logout Button if User is Logged In -->
+                    <li class="nav-item">
+                        <a href="{{ url_for('login.logout') }}" class="btn btn-outline-light me-2" style="width: 100px;">Logout</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('profile.view_profile') }}" class="btn btn-outline-light me-2" style="width: 100px;">Profile</a>
+                    </li>
+                    {% else %}
+                    <!-- Display Login Button if User is NOT Logged In -->
+                    <li class="nav-item">
+                        <a href="{{ url_for('login.login') }}" class="btn btn-outline-light me-2" style="width: 100px;">Login</a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+ 
+            <!-- 🌟 Progress Bar & Badges -->
+            <div class="progress-section">
+                <div class="container text-center mt-3">
+                    {% if user_logged_in %}
+                        <p>Your overall progress: {{ overall_progress }}%</p>
+                        <div class="progress-container">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                    role="progressbar"
+                                    data-progress="{{ overall_progress }}">
+                                    {{ overall_progress }}%
+                                </div>
+                           
+
+                            </div>
+                       
+                    {% else %}
+                        <div class="alert alert-info mt-3">
+                            <strong>Want to track your progress?</strong> <a href="{{ url_for('login.login') }}">Login here</a> to save your progress and earn badges!
+                        </div>
+                    {% endif %}
+                
+            
+            
+    
+            <!-- Encouragement Message -->
+            <div class="claim-message-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <h4 id="claim-message">🎉 Have you completed a stage? Go ahead and claim your badge! 🎖️</h4>
+            </div>
+
+            <div class="badge-container mt-2">
+                {% if user_logged_in and badge_claimable is defined and badge_data is defined and earned_stages is defined %}
+                {% set stage_mapping = {
+                    'preconception': 'Preconception Care',
+                    'antenatal': 'Antenatal Care',
+                    'birth_and_delivery': 'Birth & Delivery',
+                    'postnatal': 'Postnatal Care'
+                } %}
+            
+                {% for stage_key, stage_display in stage_mapping.items() %}
+                    {% set badge_class = '' %}
+                    {% if stage_key in earned_stages %}
+                        {% set badge_class = 'badge-earned' %}
+                    {% elif badge_claimable[stage_key] %}
+                        {% set badge_class = 'badge-claimable' %}
+                    {% else %}
+                        {% set badge_class = 'badge-locked' %}
+                    {% endif %}
+            
+                    <span class="badge {{ badge_class }}"
+                          data-badge-name="{{ stage_display }}"
+                          data-stage-key="{{ stage_key }}"
+                          data-score="{{ badge_data[stage_key].score if stage_key in badge_data else 0 }}"
+                          data-progress="{{ badge_data[stage_key].progress if stage_key in badge_data else 0 }}"
+                          data-attempts="{{ badge_data[stage_key].attempts if stage_key in badge_data else 0 }}"
+                          onclick="showBadgeDetails(this)">
+                      🏅 {{ stage_display }}
+                    </span>
+                {% endfor %}
+            {% else %}
+                <p>Please <a href="{{ url_for('login.login') }}">log in</a> to view and claim your badges.</p>
+            {% endif %}
+            
+        </div>
+            
+            <!-- Modal for Badge Details -->
+            <div class="modal" id="badgeModal" tabindex="-1" role="dialog" aria-labelledby="badgeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="badgeModalLabel">Badge Details</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <!-- Hidden Input for user_ID -->
+                        <input type="hidden" id="userID" value="{{ user.user_ID }}">
+
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                    <!-- Badge Information will be populated here -->
+                    <div class="modal-body">
+                        <p><strong>Badge:</strong> <span id="badge-name"></span></p>
+                        <p><strong>Score:</strong> <span id="badge-score"></span></p>
+                        <p><strong>Progress:</strong> <span id="badge-progress"></span></p>
+                        <p><strong>Attempts:</strong> <span id="badge-attempts"></span></p>
+                    </div>
+                    
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="claimBadgeBtn">Claim Badge</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+  
+            
+                     
+        </div>
+    </div>
+</div>
+   
+
+<!-- 🌟 Game Stages Section (Wrapped in White Background) -->
+<div class="container mt-4">
+    <div class="stages-wrapper">
+        <div class="row text-center">
+           <!-- Preconception Stage -->
+        <div class="col-md-3">
+            <div class="card stage-card">
+                <div class="card-body">
+                    <h5 class="card-title">Preconception Care</h5>
+                    <a href="{{ url_for('preconception.preconception') }}">play</a> 
+                    <p class="card-text">Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness.</p>
+                    <div class="completion">
+                        {% set preconception_progress = badge_data['preconception'].progress if 'preconception' in badge_data else 0 %}
+                        <span class="percentage">{{ preconception_progress | round(0) }}% Completed</span>
+                        <span class="stars">
+                            {% set preconception_stars = (preconception_progress / 20) | round(0) %}
+                            {% for i in range(5) %}
+                                {% if i < preconception_stars %}
+                                    ⭐
+                                {% else %}
+                                    ☆
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <!-- Antenatal Stage -->
+    <div class="col-md-3">
+        <div class="card stage-card">
+            <div class="card-body">
+                <h5 class="card-title">Antenatal Care</h5>
+                <a href="{{ url_for('prenatal.prenatal') }}">play</a> 
+                <p class="card-text">Track your baby's growth with regular checkups, fetal monitoring, and birth preparation.</p>
+                <div class="completion">
+                    {% set antenatal_progress = badge_data['antenatal'].progress if 'antenatal' in badge_data else 0 %}
+                    <span class="percentage">{{ antenatal_progress | round(0) }}% Completed</span>
+                    <span class="stars">
+                        {% set antenatal_stars = (antenatal_progress / 20) | round(0) %}
+                        {% for i in range(5) %}
+                            {% if i < antenatal_stars %}
+                                ⭐
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Birth Stage -->
+    <div class="col-md-3">
+        <div class="card stage-card">
+            <div class="card-body">
+                <h5 class="card-title">Birth & Delivery</h5>
+                <a href="{{ url_for('birth.birth') }}">play</a> 
+                <p class="card-text">Understanding labor signs, delivery options, and pain management.</p>
+                <div class="completion">
+                    {% set birth_progress = badge_data['birth_and_delivery'].progress if 'birth_and_delivery' in badge_data else 0 %}
+                    <span class="percentage">{{ birth_progress | round(0) }}% Completed</span>
+                    <span class="stars">
+                        {% set birth_stars = (birth_progress / 20) | round(0) %}
+                        {% for i in range(5) %}
+                            {% if i < birth_stars %}
+                                ⭐
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <!-- Postnatal Stage -->
+            <div class="col-md-3">
+                <div class="card stage-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Postnatal Care</h5>
+                        <a href="{{ url_for('postnatal.postnatal') }}">play</a> 
+                        <p class="card-text">Support recovery with newborn care, breastfeeding guidance, and maternal well-being.</p>
+                        <div class="completion">
+                            {% set postnatal_progress = badge_data['postnatal'].progress if 'postnatal' in badge_data else 0 %}
+                            <span class="percentage">{{ postnatal_progress | round(0) }}% Completed</span>
+                            <span class="stars">
+                                {% set postnatal_stars = (postnatal_progress / 20) | round(0) %}
+                                {% for i in range(5) %}
+                                    {% if i < postnatal_stars %}
+                                        ⭐
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <!-- 🌟 Avatar Selection -->
+    <div class="avatar-container text-center mt-4">
+        <h3>Choose Your Avatar</h3>
+        <div class="avatar-scroll">
+            <form method="POST" action="/select-avatar">
+              <input type="hidden" name="avatar_path" value="images/man1/avatar-happy.png">
+              <button type="submit"><img src="{{ url_for('static', filename='images/man1/avatar-happy.png') }}" class="avatar"></button>
+            </form>
+            <form method="POST" action="/select-avatar">
+              <input type="hidden" name="avatar_path" value="images/man2/avatar-happy.png">
+              <button type="submit"><img src="{{ url_for('static', filename='images/man2/avatar-happy.png') }}" class="avatar"></button>
+            </form>
+            <form method="POST" action="/select-avatar">
+              <input type="hidden" name="avatar_path" value="images/woman1/avatar-happy.png">
+              <button type="submit"><img src="{{ url_for('static', filename='images/woman1/avatar-happy.png') }}" class="avatar"></button>
+            </form>
+          </div>
+          
+    </div>
+
+    <!-- 🌟 Footer -->
+    <footer class="footer text-center mt-5">
+        <p>© 2025 FunzaMama. All rights reserved.</p>
+    </footer>    
+   
+    <!-- Your Modal HTML here -->
+<!-- Your badge-container HTML here -->
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+   $(document).ready(function () {
+    let currentStageKey = null;
+
+    function getBadgeScore(stageKey) {
+        return $(`span[data-stage-key="${stageKey}"]`).data('score');
+    }
+
+    function getBadgeProgress(stageKey) {
+        return $(`span[data-stage-key="${stageKey}"]`).data('progress');
+    }
+
+    function getBadgeAttempts(stageKey) {
+        return $(`span[data-stage-key="${stageKey}"]`).data('attempts');
+    }
+
+    // ✅ This is the correct version of showBadgeDetails
+    window.showBadgeDetails = function (stageKey) {
+        currentStageKey = stageKey;
+
+        let badgeEl = $(`span[data-stage-key="${stageKey}"]`);
+
+        let badgeName = badgeEl.data('badge-name') || 'N/A';
+        let badgeScore = badgeEl.data('score') || 0;
+        let badgeProgress = badgeEl.data('progress') || 0;
+        let badgeAttempts = badgeEl.data('attempts') || 0;
+
+        $('#badge-name').text(badgeName);
+        $('#badge-score').text(badgeScore);
+        $('#badge-progress').text(badgeProgress + '%');
+        $('#badge-attempts').text(badgeAttempts);
+
+        $('#badgeModal').modal('show');
+    };
+
+    $('#claimBadgeBtn').click(function () {
+        const badgeName = $(`span[data-stage-key="${currentStageKey}"]`).data('badge-name');
+        const userId = $('#userID').val();
+
+        fetch('/claim_badge/' + currentStageKey, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                badge_name: badgeName,
+                user_ID: userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $(`span[data-stage-key="${currentStageKey}"]`)
+                    .removeClass('badge-claimable')
+                    .addClass('badge-earned');
+                $('#badgeModal').modal('hide');
+                alert(`🎉 You've earned the "${badgeName}" badge! Keep up the great work! 🌟`);
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error claiming badge:', error);
+        });
+    });
+});
+
+const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+      const progress = progressBar.getAttribute('data-progress');
+      progressBar.style.width = progress + '%';
+    }
+    
+</script>
+
+
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
