@@ -368,7 +368,7 @@ async function sendMessage(userInput) {
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
-        let response = await fetch("/chat", {
+        let response = await fetch(window.location.origin + "/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ "message": userInput })
