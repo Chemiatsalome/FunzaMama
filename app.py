@@ -40,11 +40,12 @@ app.register_blueprint(quiz_bp)
 app.register_blueprint(profile_bp)
 
 
-# import os
+import os
 
 # if __name__ == "__main__":
 #     port = int(os.environ.get("PORT", 5000))  # Get the port from environment variables, default to 5000
 #     app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
+    app.run(host="0.0.0.0", port=port, debug=True)
