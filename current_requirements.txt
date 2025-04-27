@@ -21,7 +21,7 @@ fsspec==2025.3.2
 greenlet==3.2.0
 gunicorn
 huggingface-hub==0.30.2
-huggingface_hub[hf_xet]
+hf_xet
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
