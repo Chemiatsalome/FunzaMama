@@ -38,6 +38,21 @@ def home():
     # For GET request
     return render_template('index.html', user=user, username = username)
 
+@home_bp.route('/', methods=['GET'])
+def index():
+    username = "Guest"  # Default username
+    user = None  # Initialize user to None
+
+    # Check if user is logged in
+    if 'user_ID' in session:
+        user_id = session['user_ID']
+        user = User.query.get(user_id)
+        if user:
+            username = user.username
+
+    return render_template('index.html', user=user, username=username)
+
+
 
 @gamestages_bp.route('/gamestages')
 def game():
