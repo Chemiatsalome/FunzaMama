@@ -46,9 +46,17 @@ with open(GROUNDED_OUTPUTS_PATH, "r", encoding="utf-8") as f:
 
 # Function to retrieve relevant data using FAISS
 def get_relevant_data_faiss(user_message):
+    # Convert user message to embedding
     user_embedding = embedding_model.encode([user_message], normalize_embeddings=True)
+    
+    # Perform FAISS search
     D, I = faiss_index.search(np.array(user_embedding, dtype=np.float32), 1)
-    return grounded_outputs[I[0][0]] if D[0][0] < 0.7 else None
+    
+    # Ensure that the index is within bounds of grounded_outputs
+    if I[0][0] < len(grounded_outputs) and D[0][0] < 0.7:
+        return grounded_outputs[I[0][0]]
+    else:
+        return None
 
 # Initialize a chat history list
 chat_history = []
@@ -67,13 +75,16 @@ def get_chatbot_response(user_message, language, user_role):
     if grounded_info:
         system_prompt += f"\nUse this verified data:\n{grounded_info}"
     
+    # Append user message to chat history
     chat_history.append({"role": "user", "content": user_message})
     
+    # Trim chat history to keep it under token limit (1500 tokens)
     total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
     while total_tokens > 1500:
         chat_history.pop(0)
         total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
     
+    # Generate response using Together AI model
     response = together_client.chat.completions.create(
         model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
         messages=[{"role": "system", "content": system_prompt}] + chat_history,
@@ -93,16 +104,14 @@ def get_chatbot_response(user_message, language, user_role):
 # Function to evaluate FAISS retrieval accuracy
 def evaluate_faiss_accuracy(test_queries, ground_truths):
     retrieved_results = [get_relevant_data_faiss(query) for query in test_queries]
+    
+    # Prepare true and predicted labels (1 for relevant, 0 for not)
     y_true = [1 if truth else 0 for truth in ground_truths]
     y_pred = [1 if res else 0 for res in retrieved_results]
 
-    print("Retrieved Results:", retrieved_results)
-    print("y_true:", y_true)
-    print("y_pred:", y_pred)
-
+    # Calculate evaluation metrics
     precision = precision_score(y_true, y_pred)
     recall = recall_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
 
     return {"Precision": precision, "Recall": recall, "F1-Score": f1}
-
