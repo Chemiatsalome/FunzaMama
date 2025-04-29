@@ -12,6 +12,9 @@ app = Flask(__name__)
 
 CORS(app, supports_credentials=True)
 
+load_dotenv()
+
+
 app.config.from_object('config.Config')
 
 db.init_app(app)

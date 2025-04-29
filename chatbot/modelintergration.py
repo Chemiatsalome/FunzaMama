@@ -142,7 +142,7 @@ def get_chatbot_response_preconception(user_id):
 
         # Step 2: Parse the response
         response_text = response.choices[0].message.content.strip()
-        print("Raw AI Response:", response_text)  # For debugging
+        # print("Raw AI Response:", response_text)  # For debugging
 
         # Try to parse the response as JSON
         if response_text.startswith("[") and response_text.endswith("]"):
@@ -179,7 +179,7 @@ def get_chatbot_response_prenatal(user_id):
 
         # Step 2: Parse the response
         response_text = response.choices[0].message.content.strip()
-        print("Raw AI Response:", response_text)  # For debugging
+        # print("Raw AI Response:", response_text)  # For debugging
 
         # Try to parse the response as JSON
         if response_text.startswith("[") and response_text.endswith("]"):
@@ -215,7 +215,7 @@ def get_chatbot_response_birth(user_id):
 
         # Step 2: Parse the response
         response_text = response.choices[0].message.content.strip()
-        print("Raw AI Response:", response_text)  # For debugging
+        # print("Raw AI Response:", response_text)  # For debugging
 
         # Try to parse the response as JSON
         if response_text.startswith("[") and response_text.endswith("]"):
@@ -251,7 +251,7 @@ def get_chatbot_response_postnatal(user_id):
 
         # Step 2: Parse the response
         response_text = response.choices[0].message.content.strip()
-        print("Raw AI Response:", response_text)  # For debugging
+        # print("Raw AI Response:", response_text)  # For debugging
 
         # Try to parse the response as JSON
         if response_text.startswith("[") and response_text.endswith("]"):
