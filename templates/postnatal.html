@@ -3,112 +3,683 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maternal Health Quiz</title>
+    <title>Postnatal Learning - Funza Mama</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
-    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'warm-pink': '#F8BBD9',
+                        'soft-purple': '#E8C5E8',
+                        'deep-rose': '#D63384',
+                        'warm-mauve': '#C77DFF',
+                        'soft-cream': '#FFF8F0',
+                        'warm-gray': '#F5F5F5',
+                        'deep-plum': '#6B46C1',
+                        'warm-brown': '#8B4513'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .quiz-card {
+            background: linear-gradient(135deg, #F8BBD9 0%, #E8C5E8 50%, #FFF8F0 100%);
+        }
+        
+        .option-button {
+            transition: all 0.3s ease;
+        }
+        
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .option-button.correct {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            animation: correctPulse 0.6s ease-in-out;
+        }
+        
+        .option-button.incorrect {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            animation: incorrectShake 0.6s ease-in-out;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .progress-bar-animated {
+            background: linear-gradient(90deg, #D63384, #C77DFF, #D63384);
+            background-size: 200% 100%;
+            animation: progressShimmer 2s linear infinite;
+        }
+        
+        @keyframes progressShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .avatar-bounce {
+            animation: avatarBounce 0.6s ease-in-out;
+        }
+        
+        @keyframes avatarBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Avatar animations */
+        .avatar-container {
+            animation: avatarBreathe 3s ease-in-out infinite;
+        }
 
+        .avatar-eyes .animate-blink {
+            animation: avatarBlink 4s ease-in-out infinite;
+        }
+
+        .avatar-smile {
+            animation: avatarSmile 2s ease-in-out infinite;
+        }
+
+        @keyframes avatarBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes avatarBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        @keyframes avatarSmile {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.1); }
+        }
+        
+        .chatbot-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #D63384, #C77DFF);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .chatbot-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Sound Control */
+        .sound-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sound-toggle {
+                right: 15px;
+                top: 75px;
+                padding: 8px;
+            }
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sound-toggle.muted {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+        
+        .user-message, .bot-message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #D63384, #C77DFF);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+    </style>
 </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark custom-nav">
-    <div class="container-fluid">
-        <a href="{{ url_for('home.home') }}" class="sidebar-link">
-            <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-        </a>
-      <a class="navbar-brand" href="{{ url_for('home.home') }}">Welcome, {{username}}</a>
-      <ul class="navbar-nav">
-        
-        <li class="nav-item">
-            <a href="{{ url_for('gamestages.game') }}" class="btn btn-outline-light me-2" style="width: 100px;">Back</a> 
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('login.logout') }}" class="btn btn-outline-light me-2" style="width: 100px;">Logout</a> 
-        </li>
-        
-    </ul>
+<body class="min-h-screen quiz-card font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
+                    <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <span class="text-deep-plum font-medium">Welcome, {{username}}</span>
+                    <a href="{{ url_for('gamestages.game') }}" class="bg-warm-gray text-deep-plum px-4 py-2 rounded-full hover:bg-deep-plum hover:text-white transition-all font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-4 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-deep-plum hover:text-deep-rose focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+                <div class="flex flex-col space-y-4 pt-4">
+                    <div class="px-4 py-2 text-deep-plum font-medium">Welcome, {{username}}</div>
+                    <a href="{{ url_for('gamestages.game') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Stages
+                    </a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
     </div>
   </nav>
 
-  <div class="progress mt-4">
-    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-  </div>
-  
-
-    <div id="quizCard" class="card shadow">
+    <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
                         {% for category, message in messages %}
-                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded-lg mb-4 fade-in">
+                        <div class="flex items-center justify-between">
+                            <span>{{ message }}</span>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-{{ 'green' if category == 'success' else 'red' }}-500 hover:text-{{ 'green' if category == 'success' else 'red' }}-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                           </div>
                         {% endfor %}
+            </div>
                     {% endif %}
                 {% endwith %}
-        <div class="avatar-container">
-        {% if user and user.avatar  %}
-            <img id="avatar" src="{{ url_for('static', filename=user.avatar) }}" alt="Avatar" class="avatar-img">
-            {% else %}
-        
-            <img id="avatar" src="{{ url_for('static', filename='images/man1/avatar.png') }}" alt="Avatar" class="avatar-img">
-            <h3>Please log in to access personal avatar options</h3>
-            <a href="{{ url_for('login.login') }}" >Log In</a> 
-            {% endif %}
-        </div>
-      <h5 id="scenario" class="card-title">Funza AI Loading Scenarios...</h5>
-      <div id="options" class="options"></div>
-      <p id="feedback" class="mt-3 feedback-text"></p>
-      <p id="reasoning" class="mt-2"></p>
-      <button id="askFunza" class="btn btn-ask mt-2 d-none" onclick="toggleChat()">Ask Funza</button>
 
-      <!-- Chatbot Popup -->
+    <!-- Main Quiz Container -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Progress Section -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-deep-plum font-poppins">Postnatal Learning</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="text-center">
+                        <div id="correct-count" class="text-2xl font-bold text-deep-rose">0</div>
+                        <div class="text-sm text-warm-brown">Correct</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="progress-count" class="text-2xl font-bold text-warm-mauve">0</div>
+                        <div class="text-sm text-warm-brown">Progress</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-warm-gray rounded-full h-4 mb-4">
+                <div id="progressBar" class="h-4 rounded-full progress-bar-animated transition-all duration-1000 ease-out" 
+                     style="width: 0%;"></div>
+            </div>
+            <p class="text-center text-warm-brown font-medium">Learning Progress</p>
+        </div>
+
+        <!-- Quiz Card -->
+        <div id="quizCard" class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg fade-in">
+            <!-- Avatar Section -->
+            <div class="flex justify-center mb-8">
+                <div class="relative">
+                    <div id="avatar" class="w-24 h-24 rounded-full border-4 border-deep-rose shadow-lg">
+                        <!-- Avatar will be rendered here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Section -->
+            <div class="text-center mb-8">
+                <h3 id="scenario" class="text-2xl font-bold text-deep-plum mb-6 leading-relaxed">
+                    <i class="fas fa-baby text-warm-mauve mr-3"></i>
+                    Funza AI Loading Scenarios...
+                </h3>
+                
+                <!-- Options Container -->
+                <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"></div>
+                
+                <!-- Feedback Section -->
+                <div id="feedback" class="text-lg font-semibold mb-4"></div>
+                <div id="reasoning" class="text-warm-brown bg-warm-gray/50 rounded-lg p-4 mb-6"></div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="askFunza" class="bg-gradient-to-r from-warm-mauve to-deep-rose text-white px-6 py-3 rounded-full hover:from-deep-rose hover:to-warm-mauve transition-all font-semibold d-none" onclick="toggleChat()">
+                        <i class="fas fa-robot mr-2"></i>Ask Funza
+                    </button>
+                    <button id="nextBtn" class="bg-gradient-to-r from-deep-plum to-warm-mauve text-white px-8 py-3 rounded-full hover:from-warm-mauve hover:to-deep-plum transition-all font-semibold d-none" onclick="nextQuestion()">
+                        <i class="fas fa-arrow-right mr-2"></i>Next Question
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completion Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+            <button id="retryBtn" class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-3 rounded-full hover:from-orange-500 hover:to-yellow-500 transition-all font-semibold d-none" onclick="retryQuiz()">
+                <i class="fas fa-redo mr-2"></i>Try Again
+            </button>
+            <button id="completeBtn" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-full hover:from-emerald-500 hover:to-green-500 transition-all font-semibold d-none" onclick="completeQuiz()">
+                <i class="fas fa-check mr-2"></i>Complete
+            </button>
+        </div>
+        </div>
+
+    <!-- Sound Toggle Button -->
+    <button id="soundToggle" onclick="toggleSound()" class="sound-toggle" title="Toggle Sound">
+        <i class="fas fa-volume-up text-xl"></i>
+    </button>
+
+    <!-- Floating Chatbot Button -->
+    <button onclick="toggleChat()" class="fixed bottom-6 right-6 bg-gradient-to-r from-deep-rose to-warm-mauve text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-40">
+        <i class="fas fa-robot text-xl"></i>
+    </button>
+
        <!-- Chatbot Popup -->
        <div class="chatbot-popup" id="chatbot">
         <div class="chatbot-header">
-            <span>FunzaMama Chat</span>
-            <button class="close-chat" onclick="toggleChat()">×</button>
+            <span class="font-semibold"><i class="fas fa-robot mr-2"></i>FunzaMama Chat</span>
+            <button class="close-chat text-white hover:text-gray-200 text-xl" onclick="toggleChat()">×</button>
         </div>
         <div class="chatbot-body" id="chatbot-body">
-            <p>Hi there! How can I help you today?</p>
+            <div class="bot-message">
+                <i class="fas fa-robot text-warm-mauve mr-2"></i>
+                Hi there! I'm here to help you with your postnatal care questions. How can I assist you today?
+            </div>
         </div>
         <div class="chatbot-footer">
-            <input type="text" id="user_input" placeholder="Type your message...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
-      <button id="nextBtn" class="btn btn-secondary d-none" onclick="nextQuestion()">Next</button>
-
-    </div>
-    <div class="mt-3">
-      <button id="retryBtn" class="btn btn-warning d-none" onclick="retryQuiz()">Try Again</button>
-      <button id="completeBtn" class="btn btn-success d-none" onclick="completeQuiz()">Complete</button>
+            <input type="text" id="user_input" placeholder="Type your message..." 
+                   class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-deep-rose">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-deep-rose to-warm-mauve text-white px-4 py-2 rounded-full hover:from-warm-mauve hover:to-deep-rose transition-all">
+                <i class="fas fa-paper-plane"></i>
+            </button>
     </div>
   </div>
-
 
   <script>
     let currentIndex = 0;
     let correctAnswers = 0;
     let attempts = 0;
-    let scenarios = null;  // To hold fetched quiz questions
-    const baseAvatarPath = "{{ url_for('static', filename=user.avatar) }}";
-  
+        let scenarios = null;
+        const baseAvatarPath = "{{ user.avatar if user and user.avatar else '' }}";
+        
+        // Sound System
+        let soundEnabled = true;
+        let audioContext = null;
+        
+        // Enhanced Question Management
+        let questionHistory = new Set();
+        let currentStage = "postnatal";
+        
+        // Load question history from localStorage
+        function loadQuestionHistory() {
+            const stored = localStorage.getItem(`funza_mama_questions_${currentStage}_${getUserId()}`);
+            if (stored) {
+                try {
+                    const history = JSON.parse(stored);
+                    questionHistory = new Set(history);
+                } catch (e) {
+                    console.log("No valid question history found");
+                }
+            }
+        }
+        
+        // Save question history to localStorage
+        function saveQuestionHistory() {
+            const historyArray = Array.from(questionHistory);
+            localStorage.setItem(`funza_mama_questions_${currentStage}_${getUserId()}`, JSON.stringify(historyArray));
+        }
+        
+        // Get user ID (guest or logged in)
+        function getUserId() {
+            return "{{ user.id if user else 'guest_user' }}";
+        }
+        
+        // Track a question as seen
+        function trackQuestion(questionText) {
+            const normalizedText = questionText.trim().toLowerCase();
+            questionHistory.add(normalizedText);
+            saveQuestionHistory();
+        }
+        
+        // Check if question has been seen
+        function isQuestionSeen(questionText) {
+            const normalizedText = questionText.trim().toLowerCase();
+            return questionHistory.has(normalizedText);
+        }
+        
+        // Clear stage history
+        function clearStageHistory() {
+            questionHistory.clear();
+            localStorage.removeItem(`funza_mama_questions_${currentStage}_${getUserId()}`);
+        }
+        
+        
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // Play sound function
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            
+            initAudio();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        // Sound effects
+        function playCorrectSound() {
+            playSound(523.25, 0.3); // C5
+            setTimeout(() => playSound(659.25, 0.3), 100); // E5
+            setTimeout(() => playSound(783.99, 0.5), 200); // G5
+        }
+        
+        function playWrongSound() {
+            playSound(220, 0.4, 'sawtooth'); // A3
+            setTimeout(() => playSound(196, 0.6, 'sawtooth'), 200); // G3
+        }
+        
+        function playCompletionSound() {
+            playSound(523.25, 0.2); // C5
+            setTimeout(() => playSound(659.25, 0.2), 150); // E5
+            setTimeout(() => playSound(783.99, 0.2), 300); // G5
+            setTimeout(() => playSound(1046.50, 0.5), 450); // C6
+        }
+        
+        function playClickSound() {
+            playSound(800, 0.1, 'square');
+        }
+        
+        function playClapSound() {
+            playSound(523.25, 0.1); // C5
+            setTimeout(() => playSound(659.25, 0.1), 50); // E5
+            setTimeout(() => playSound(783.99, 0.1), 100); // G5
+            setTimeout(() => playSound(1046.50, 0.2), 150); // C6
+        }
+        
+        function playSadSound() {
+            playSound(220, 0.6, 'sawtooth'); // A3
+            setTimeout(() => playSound(196, 0.8, 'sawtooth'), 300); // G3
+        }
+        
+        // Vibration
+        function vibrate(pattern = [100]) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+        
+        // Sound toggle
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggle = document.getElementById('soundToggle');
+            const icon = toggle.querySelector('i');
+            
+            if (soundEnabled) {
+                toggle.classList.remove('muted');
+                icon.className = 'fas fa-volume-up text-xl';
+                playClickSound();
+            } else {
+                toggle.classList.add('muted');
+                icon.className = 'fas fa-volume-mute text-xl';
+            }
+        }
+        
+        // Avatar mapping for CSS-based avatars
+        const avatarMap = {
+            'images/avatars/diverse-1.png': {
+                name: 'Aisha',
+                colors: 'from-amber-200 to-orange-300',
+                faceColors: 'from-amber-100 to-orange-200',
+                eyeColor: 'bg-brown-800',
+                smileColor: 'border-brown-800',
+                glasses: false
+            },
+            'images/avatars/diverse-2.png': {
+                name: 'Marcus',
+                colors: 'from-blue-200 to-indigo-300',
+                faceColors: 'from-blue-100 to-indigo-200',
+                eyeColor: 'bg-blue-900',
+                smileColor: 'border-blue-900',
+                glasses: false
+            },
+            'images/avatars/diverse-3.png': {
+                name: 'Priya',
+                colors: 'from-green-200 to-emerald-300',
+                faceColors: 'from-green-100 to-emerald-200',
+                eyeColor: 'bg-green-900',
+                smileColor: 'border-green-900',
+                glasses: false
+            },
+            'images/avatars/professional-1.png': {
+                name: 'Dr. Sarah',
+                colors: 'from-purple-200 to-violet-300',
+                faceColors: 'from-purple-100 to-violet-200',
+                eyeColor: 'bg-purple-900',
+                smileColor: 'border-purple-900',
+                glasses: true
+            },
+            'images/avatars/casual-1.png': {
+                name: 'Emma',
+                colors: 'from-pink-200 to-rose-300',
+                faceColors: 'from-pink-100 to-rose-200',
+                eyeColor: 'bg-pink-900',
+                smileColor: 'border-pink-900',
+                glasses: false
+            },
+            'images/avatars/diverse-4.png': {
+                name: 'Zara',
+                colors: 'from-teal-200 to-cyan-300',
+                faceColors: 'from-teal-100 to-cyan-200',
+                eyeColor: 'bg-teal-900',
+                smileColor: 'border-teal-900',
+                glasses: false
+            },
+            'images/avatars/diverse-5.png': {
+                name: 'Ahmed',
+                colors: 'from-red-200 to-pink-300',
+                faceColors: 'from-red-100 to-pink-200',
+                eyeColor: 'bg-red-900',
+                smileColor: 'border-red-900',
+                glasses: false
+            }
+        };
 
+        function updateProgressDisplay() {
+            document.getElementById('correct-count').textContent = correctAnswers;
+            document.getElementById('progress-count').textContent = currentIndex;
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar && scenarios) {
+                const progress = (currentIndex / scenarios.length) * 100;
+                progressBar.style.width = progress + '%';
+            }
+        }
+  
+    function showLoadingAnimation() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-animation';
+        loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingDiv.innerHTML = `
+            <div class="bg-white rounded-lg p-8 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-deep-rose mx-auto mb-4"></div>
+                <p class="text-deep-plum font-medium">Preparing your next scenario...</p>
+                <p class="text-sm text-warm-brown mt-2">This will only take a moment</p>
+            </div>
+        `;
+        document.body.appendChild(loadingDiv);
+    }
+    
+    function hideLoadingAnimation() {
+        const loadingDiv = document.getElementById('loading-animation');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+    }
   
     async function fetchScenario() {
+        // Show loading animation
+        showLoadingAnimation();
+        
         try {
-            let response = await fetch("/get_quiz_postnatal");
-            scenarios = await response.json();
+            // Load question history first
+            loadQuestionHistory();
+            
+            let response = await fetch("/get_quiz_postnatal?t=" + Date.now());
+            const data = await response.json();
+            
+            console.log("Postnatal API Response:", data);
+            
+            if (data.success && data.questions && data.questions.length > 0) {
+                // Filter out already seen questions
+                const unseenQuestions = data.questions.filter(q => !isQuestionSeen(q.question));
+                
+                if (unseenQuestions.length > 0) {
+                    scenarios = unseenQuestions;
+                } else {
+                    // If all questions have been seen, get fresh ones
+                    console.log('All questions seen, fetching fresh questions...');
+                    try {
+                        const freshResponse = await fetch(`/get_fresh_questions/${currentStage}`);
+                        const freshData = await freshResponse.json();
+                        if (freshData.success && freshData.questions) {
+                            scenarios = freshData.questions;
+                        } else {
+                            scenarios = data.questions; // Fallback to original
+                        }
+                    } catch (freshError) {
+                        console.log('Fresh questions failed, using original:', freshError);
+                        scenarios = data.questions; // Fallback to original
+                    }
+                }
+                
+                console.log("First question options:", scenarios[0]?.options);
             if (scenarios && scenarios.length > 0) {
                 loadScenario();
+                hideLoadingAnimation();
             } else {
-                document.getElementById("scenario").textContent = "No questions available.";
+                hideLoadingAnimation();
+                    document.getElementById("scenario").innerHTML = `
+                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                        No questions available at the moment.
+                    `;
+                }
+            } else {
+                hideLoadingAnimation();
+                document.getElementById("scenario").innerHTML = `
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                    No questions available at the moment.
+                `;
             }
         } catch (error) {
             console.error("Error fetching quiz:", error);
-            document.getElementById("scenario").textContent = "Failed to load questions.";
+            hideLoadingAnimation();
+            document.getElementById("scenario").innerHTML = `
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                Failed to load questions. Please try again.
+            `;
         }
     }
 
@@ -129,15 +700,22 @@
         }
 
         let scenario = scenarios[currentIndex];
-        scenarioElement.textContent = scenario.question;
+        
+        // Track this question as seen
+        trackQuestion(scenario.question);
+        
+            scenarioElement.innerHTML = `
+                <i class="fas fa-baby text-warm-mauve mr-3"></i>
+                ${scenario.question}
+            `;
         optionsElement.innerHTML = "";
         feedbackElement.textContent = "";
         reasoningElement.textContent = "";
 
-        scenario.options.forEach(option => {
+            scenario.options.forEach((option, index) => {
             let button = document.createElement("button");
             button.textContent = option;
-            button.className = "btn btn-primary";
+                button.className = "option-button bg-white text-deep-plum px-6 py-4 rounded-xl shadow-lg hover:shadow-xl border-2 border-transparent hover:border-deep-rose font-medium text-left";
             button.onclick = () => checkAnswer(option);
             optionsElement.appendChild(button);
         });
@@ -158,34 +736,56 @@
     window.lastSelectedOption = selected;
     window.lastQuestionText = scenario.question;
     window.lastIsCorrect = (selected === scenario.answer);
+    window.lastAnswer = scenario.answer;
+    window.lastOptions = scenario.options;
+    window.lastCorrectReason = scenario.correctReason;
+    window.lastIncorrectReason = scenario.incorrectReason;
+            
     let feedback = document.getElementById("feedback");
     let reasoning = document.getElementById("reasoning");
     let avatar = document.getElementById("avatar");
     let nextButton = document.getElementById("nextBtn");  
     let askFunzaButton = document.getElementById("askFunza");
+            let options = document.querySelectorAll(".option-button");
+
+            // Disable all options
+            options.forEach(btn => {
+                btn.disabled = true;
+                btn.onclick = null;
+            });
+
+            // Highlight correct/incorrect answers
+            options.forEach(btn => {
+                if (btn.textContent === scenario.answer) {
+                    btn.classList.add("correct");
+                } else if (btn.textContent === selected && selected !== scenario.answer) {
+                    btn.classList.add("incorrect");
+                }
+            });
 
     let newAvatarPath = baseAvatarPath;
 
-    if (!feedback || !reasoning || !avatar || !nextButton || !askFunzaButton) {
-        console.error("Error: Missing elements in checkAnswer function.");
-        return;
-    }
-
     if (selected === scenario.answer) {
-        feedback.textContent = "✅ Correct!";
-        feedback.className = "text-success";
+                // Play correct sound and vibrate
+                playCorrectSound();
+                vibrate([100, 50, 100]);
+                
+                feedback.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-2"></i>Correct! Great job!';
+                feedback.className = "text-green-600 text-lg font-semibold mb-4";
         reasoning.textContent = scenario.correctReason;
         newAvatarPath = baseAvatarPath.replace(/happy|sad|grumpy|proud/, "proud");
         correctAnswers++;
-
-        askFunzaButton.classList.add("d-none"); // Hide "Ask Funza" if correct
+                updateProgressDisplay();
+                askFunzaButton.classList.add("d-none");
     } else {
+                // Play wrong sound and vibrate
+                playWrongSound();
+                vibrate([200, 100, 200]);
+                
         attempts++;
-        feedback.textContent = "❌ Wrong answer. Try again.";
-        feedback.className = "text-danger";
+                feedback.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i>Not quite right. Let\'s learn together!';
+                feedback.className = "text-red-600 text-lg font-semibold mb-4";
         reasoning.textContent = scenario.incorrectReason;
-
-        // Save the question that was answered incorrectly
         window.lastFailedQuestion = scenario.question;
 
         if (attempts === 1) {
@@ -194,28 +794,25 @@
             newAvatarPath = baseAvatarPath.replace(/happy|sad|grumpy|proud/, "grumpy");
         }
 
-        askFunzaButton.classList.remove("d-none"); // Show "Ask Funza" when user fails
+                askFunzaButton.classList.remove("d-none");
     }
 
-    avatar.src = newAvatarPath;
-    nextButton.classList.remove("d-none");  // Show "Next" button
+            if (avatar && newAvatarPath) {
+                renderAvatar(avatar, newAvatarPath);
+                avatar.classList.add("avatar-bounce");
+                setTimeout(() => avatar.classList.remove("avatar-bounce"), 600);
 }
 
- 
+            nextButton.classList.remove("d-none");
+        }
 
-// Function to move to the next question manually
 function nextQuestion() {
     let nextButton = document.getElementById("nextBtn");
     if (nextButton) nextButton.classList.add("d-none");
 
     const selectedOption = window.lastSelectedOption || "No answer";
     const stage = "postnatal";
-    const is_correct = !!window.lastIsCorrect; // force to real boolean
-
-    console.log("Selected:", selectedOption);
-    console.log("Is Correct (bool):", is_correct);
-    console.log("window.lastIsCorrect (raw):", window.lastIsCorrect, typeof window.lastIsCorrect);
-
+            const is_correct = !!window.lastIsCorrect;
 
     fetch("/submit_response", {
     method: "POST",
@@ -233,46 +830,22 @@ function nextQuestion() {
         is_correct: is_correct
     })
 })
-
     .then(response => response.json())
     .then(data => {
         console.log("Attempt saved:", data);
         currentIndex++;
         attempts = 0;
+        updateProgressDisplay();
         loadScenario();
     })
     .catch(error => {
         console.error("Error saving response:", error);
         currentIndex++;
         attempts = 0;
+        updateProgressDisplay();
         loadScenario();
     });
 }
-
-
-
-
-function submitAnswer(selectedOption) {
-    window.lastSelectedOption = selectedOption; // For tracking
-    
-    fetch("/submit_response", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-        selected_option: window.lastSelectedOption || "No answer",
-        stage: "postanatal",
-        question: window.lastQuestionText || "",
-        is_correct: window.lastIsCorrect || false
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Show feedback etc...
-    });
-}
-
 
     function displayCompletionMessage() {
         let quizCard = document.getElementById("quizCard");
@@ -284,18 +857,40 @@ function submitAnswer(selectedOption) {
             return;
         }
 
-        let scoreMessage = `Your Score: <strong>${correctAnswers} / ${scenarios.length}</strong>`;
+            let scorePercentage = Math.round((correctAnswers / scenarios.length) * 100);
+            let scoreMessage = `Your Score: <strong>${correctAnswers} / ${scenarios.length}</strong> (${scorePercentage}%)`;
 
         if (correctAnswers === scenarios.length) {
-            quizCard.innerHTML = `<h3>Hurray! 🎉 You got everything correct!</h3><p>${scoreMessage}</p>`;
+                quizCard.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🎉</div>
+                        <h3 class="text-3xl font-bold text-green-600 mb-4">Perfect Score!</h3>
+                        <p class="text-xl text-deep-plum mb-6">${scoreMessage}</p>
+                        <p class="text-warm-brown text-lg">You've mastered postnatal care! Ready for the next challenge?</p>
+                    </div>
+                `;
+            } else if (scorePercentage >= 70) {
+                quizCard.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🌟</div>
+                        <h3 class="text-3xl font-bold text-blue-600 mb-4">Great Job!</h3>
+                        <p class="text-xl text-deep-plum mb-6">${scoreMessage}</p>
+                        <p class="text-warm-brown text-lg">You're doing well! Keep learning to improve your score.</p>
+                    </div>
+                `;
         } else {
-            quizCard.innerHTML = `<h3>Quiz Completed!</h3><p>${scoreMessage}</p><p>Don't worry, you can try again to improve your score!</p>`;
-        }
+                quizCard.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">💪</div>
+                        <h3 class="text-3xl font-bold text-orange-600 mb-4">Keep Learning!</h3>
+                        <p class="text-xl text-deep-plum mb-6">${scoreMessage}</p>
+                        <p class="text-warm-brown text-lg">Don't worry, practice makes perfect! Try again to improve your score.</p>
+                    </div>
+                `;
+            }
 
-        // Show retry and complete buttons
         retryBtn.classList.remove("d-none");
         completeBtn.classList.remove("d-none");
-
         updateProgressBar();
     }
 
@@ -307,36 +902,71 @@ function submitAnswer(selectedOption) {
     }
 
     function completeQuiz() {
-        alert("You can still attempt this stage to get different questions!");
-        window.location.href = "{{ url_for('gamestages.game') }}"; // Ensure this is dynamically passed from the template
+        // Show completion modal with better UX
+        showCompletionModal();
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        let retryBtn = document.getElementById("retryBtn");
-        let completeBtn = document.getElementById("completeBtn");
+    function showCompletionModal() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-trophy text-white text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-deep-plum mb-4 font-poppins">Stage Completed!</h3>
+                <p class="text-warm-brown mb-6 leading-relaxed">
+                    Great job completing the Postnatal stage! You can continue to other stages or retry this one for different questions.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="goToGameStages()" 
+                           class="flex-1 bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-6 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold">
+                        <i class="fas fa-arrow-right mr-2"></i>
+                        Continue Learning
+                    </button>
+                    <button onclick="retryCurrentStage()" 
+                           class="flex-1 bg-white text-deep-plum py-3 px-6 rounded-xl hover:bg-warm-gray transition-colors font-semibold border-2 border-deep-plum">
+                        <i class="fas fa-redo mr-2"></i>
+                        Try Again
+                    </button>
+                </div>
+                <button onclick="closeCompletionModal()" class="mt-4 text-gray-500 hover:text-gray-700 text-sm">
+                    <i class="fas fa-times mr-1"></i>
+                    Close
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+    }
 
-        if (retryBtn) {
-            retryBtn.addEventListener("click", retryQuiz);
+    function closeCompletionModal() {
+        const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = 'auto';
         }
+    }
 
-        if (completeBtn) {
-            completeBtn.addEventListener("click", completeQuiz);
-        }
+    function goToGameStages() {
+        closeCompletionModal();
+        window.location.href = "{{ url_for('gamestages.game') }}";
+    }
 
-        fetchScenario(); // Fetch questions on page load
-    });
+    function retryCurrentStage() {
+        closeCompletionModal();
+        retryQuiz();
+    }
 
-//Chatbot Logic
-
+        // Chatbot Logic
 function toggleChat() {
     const chatBox = document.getElementById("chatbot");
     
-    if (chatBox.style.display === "block") {
+    if (chatBox.style.display === "flex") {
         chatBox.style.display = "none";
     } else {
-        chatBox.style.display = "block";
+        chatBox.style.display = "flex";
         
-        // If there was a failed question, send it to Funza
         if (window.lastFailedQuestion) {
             sendMessage(window.lastFailedQuestion);
         }
@@ -347,65 +977,252 @@ async function sendMessage(userInput) {
     let userInputField = document.getElementById("user_input");
     let chatBody = document.getElementById("chatbot-body");
 
-    // If no message was passed in (e.g. from button), use input field
     if (!userInput) {
         userInput = userInputField.value.trim();
     }
 
-    if (!userInput) return; // Ignore empty messages
+    if (!userInput) return;
 
-    // Create user message element
     let userMessage = document.createElement("div");
     userMessage.classList.add("user-message");
     userMessage.textContent = userInput;
     chatBody.appendChild(userMessage);
 
-    // Clear input field & disable button
     userInputField.value = "";
     userInputField.disabled = true;
 
-    // Auto-scroll
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
+        // Get current question context
+        const currentQuestion = window.lastQuestionText || "";
+        const currentOptions = window.lastOptions || [];
+        const currentAnswer = window.lastAnswer || "";
+        
         let response = await fetch("/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "message": userInput })
+            body: JSON.stringify({ 
+                "message": userInput,
+                "current_question": currentQuestion,
+                "current_options": currentOptions,
+                "current_answer": currentAnswer,
+                "use_hybrid": true,  // Enable hybrid AI service
+                "stage": "postnatal"  // Specify stage for better context
+            })
         });
 
         let data = await response.json();
 
-        // Create bot message element
         let botMessage = document.createElement("div");
         botMessage.classList.add("bot-message");
-        botMessage.innerHTML = data.response;
+        botMessage.innerHTML = `<i class="fas fa-robot text-warm-mauve mr-2"></i>${data.response}`;
         chatBody.appendChild(botMessage);
 
     } catch (error) {
         console.error("Error:", error);
-        let errorMessage = document.createElement("div");
-        errorMessage.classList.add("bot-message");
-        errorMessage.style.color = "red";
-        errorMessage.textContent = "Error: Unable to connect. Try again later.";
-        chatBody.appendChild(errorMessage);
+        // Use fallback chatbot instead of showing error
+        const fallbackResponse = getFallbackChatbotResponse(userInput, currentQuestion, currentOptions, currentAnswer);
+        
+        let botMessage = document.createElement("div");
+        botMessage.classList.add("bot-message");
+        botMessage.innerHTML = `<i class="fas fa-robot text-warm-mauve mr-2"></i>${fallbackResponse}`;
+        chatBody.appendChild(botMessage);
     }
 
-    // Re-enable input field
     userInputField.disabled = false;
     userInputField.focus();
-
-    // Scroll to bottom
     chatBody.scrollTop = chatBody.scrollHeight;
 
-    // Clear the stored failed question after it's sent
     if (window.lastFailedQuestion === userInput) {
         window.lastFailedQuestion = null;
     }
 }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  
+// Fallback Chatbot System
+function getFallbackChatbotResponse(userInput, currentQuestion, currentOptions, currentAnswer) {
+    const input = userInput.toLowerCase();
+    const question = currentQuestion.toLowerCase();
+    
+    // Postnatal-specific responses
+    const postnatalResponses = {
+        // Recovery and healing
+        recovery: [
+            "Postpartum recovery takes time. Listen to your body and don't rush back to normal activities. It can take 6-8 weeks to fully recover.",
+            "Rest when your baby rests. Sleep deprivation is real, so take naps whenever possible and ask for help from family and friends.",
+            "Watch for signs of infection: fever, severe pain, or unusual discharge. Contact your healthcare provider immediately if concerned."
+        ],
+        // Breastfeeding support
+        breastfeeding: [
+            "Breastfeeding can be challenging at first. Seek help from lactation consultants, nurses, or breastfeeding support groups.",
+            "Feed on demand in the early weeks. Your baby will establish their own feeding schedule as they grow.",
+            "Stay hydrated and eat nutritious foods while breastfeeding. You need extra calories to support milk production."
+        ],
+        // Newborn care
+        newborn: [
+            "Newborns sleep a lot but in short stretches. Expect 14-17 hours of sleep per day, broken into 2-4 hour periods.",
+            "Babies cry to communicate. Check for hunger, wet diaper, tiredness, or need for comfort. Sometimes they just need to be held.",
+            "Newborns have immature immune systems. Limit visitors and ensure everyone washes hands before touching your baby."
+        ],
+        // Mental health
+        mental: [
+            "Postpartum mood changes are common. Baby blues typically last 1-2 weeks, but if symptoms persist, seek professional help.",
+            "Postpartum depression is real and treatable. Don't suffer in silence - reach out to your healthcare provider or support groups.",
+            "Take care of your mental health. Accept help, take breaks, and don't feel guilty about needing time for yourself."
+        ],
+        // Family adjustment
+        family: [
+            "Adjusting to life with a newborn takes time for everyone. Be patient with yourself, your partner, and older children.",
+            "Communication with your partner is crucial. Share responsibilities and feelings openly.",
+            "Don't compare your journey to others. Every family and baby is different - trust your instincts."
+        ]
+    };
+    
+    // Check for specific topics
+    if (input.includes('recover') || input.includes('heal') || input.includes('pain') || input.includes('rest')) {
+        return getRandomResponse(postnatalResponses.recovery);
+    }
+    
+    if (input.includes('breast') || input.includes('feed') || input.includes('milk') || input.includes('lactation')) {
+        return getRandomResponse(postnatalResponses.breastfeeding);
+    }
+    
+    if (input.includes('baby') || input.includes('newborn') || input.includes('sleep') || input.includes('cry')) {
+        return getRandomResponse(postnatalResponses.newborn);
+    }
+    
+    if (input.includes('depress') || input.includes('mood') || input.includes('mental') || input.includes('stress') || input.includes('anxiety')) {
+        return getRandomResponse(postnatalResponses.mental);
+    }
+    
+    if (input.includes('family') || input.includes('partner') || input.includes('help') || input.includes('support')) {
+        return getRandomResponse(postnatalResponses.family);
+    }
+    
+    // If there's a current question context, provide specific help
+    if (currentQuestion && currentOptions && currentOptions.length > 0) {
+        return `Based on your current question about "${currentQuestion}", here are some key postnatal considerations:
+
+• **Recovery**: Take time to heal - your body went through major changes
+• **Newborn Care**: Learn your baby's cues for hunger, sleep, and comfort
+• **Breastfeeding**: Seek support if you're having challenges
+• **Mental Health**: Watch for signs of postpartum depression and seek help if needed
+• **Support**: Don't hesitate to ask for help from family, friends, and healthcare providers
+
+Remember, every mother's postnatal journey is unique. Trust your instincts and don't be afraid to ask questions.`;
+    }
+    
+    // General postnatal advice
+    const generalResponses = [
+        "The postnatal period is a time of adjustment for you and your baby. Be patient with yourself as you learn and grow together.",
+        "Postnatal care is just as important as prenatal care. Focus on your recovery, your baby's health, and building your new family dynamic.",
+        "Don't be afraid to ask for help during the postnatal period. Family, friends, and healthcare providers are there to support you.",
+        "Every day with your newborn is a learning experience. Trust your instincts and don't compare your journey to others.",
+        "The postnatal period is temporary but crucial. Take care of yourself so you can take care of your baby."
+    ];
+    
+    return getRandomResponse(generalResponses);
+}
+
+function getRandomResponse(responses) {
+    return responses[Math.floor(Math.random() * responses.length)];
+}
+
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle hamburger icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            let retryBtn = document.getElementById("retryBtn");
+            let completeBtn = document.getElementById("completeBtn");
+
+            if (retryBtn) {
+                retryBtn.addEventListener("click", retryQuiz);
+            }
+
+            if (completeBtn) {
+                completeBtn.addEventListener("click", completeQuiz);
+            }
+
+            fetchScenario();
+        });
+
+        // Allow Enter key in chat input
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInput = document.getElementById('user_input');
+            if (userInput) {
+                userInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+            
+            // Initialize avatar on page load
+            renderInitialAvatar();
+        });
+        
+        // Function to render avatar based on avatar path
+        function renderAvatar(avatarElement, avatarPath) {
+            if (!avatarElement || !avatarPath) return;
+            
+            if (avatarMap[avatarPath]) {
+                const avatarData = avatarMap[avatarPath];
+                
+                // Create the avatar HTML
+                const avatarHTML = `
+                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
+                        <div class="avatar-face w-20 h-20 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                            <div class="avatar-eyes flex space-x-1">
+                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                            </div>
+                            <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
+                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-2 w-12 h-4 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                avatarElement.innerHTML = avatarHTML;
+            } else {
+                // Fallback for old image-based avatars or no avatar
+                if (avatarPath && avatarPath.includes('images/')) {
+                    avatarElement.innerHTML = `<img src="/static/${avatarPath}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                } else {
+                    avatarElement.innerHTML = `
+                        <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-500 text-3xl"></i>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Function to render initial avatar
+        function renderInitialAvatar() {
+            const avatarElement = document.getElementById('avatar');
+            if (avatarElement) {
+                const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
+                renderAvatar(avatarElement, userAvatar);
+            }
+        }
+    </script>
 </body>
 </html>

@@ -130,13 +130,13 @@ def get_chatbot_response_preconception(user_id):
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             messages=[
                 {"role": "system", "content": maternal_health_prompt_preconception_stage},
-                {"role": "user", "content": "Generate a new quiz question on maternal health."}
+                {"role": "user", "content": "Generate 10 quiz questions on maternal health."}
             ],
-            max_tokens=4000,
-            temperature=0.11,
-            top_p=1,
-            top_k=50,
-            repetition_penalty=1,
+            max_tokens=2000,
+            temperature=0.3,
+            top_p=0.9,
+            top_k=40,
+            repetition_penalty=1.1,
             stop=["\n\n"],
         )
 
@@ -167,13 +167,13 @@ def get_chatbot_response_prenatal(user_id):
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             messages=[
                 {"role": "system", "content": maternal_health_prompt_prenatal_stage},
-                {"role": "user", "content": "Generate a new quiz question on maternal health."}
+                {"role": "user", "content": "Generate 10 quiz questions on maternal health."}
             ],
-            max_tokens=4000,
-            temperature=0.11,
-            top_p=1,
-            top_k=50,
-            repetition_penalty=1,
+            max_tokens=2000,
+            temperature=0.3,
+            top_p=0.9,
+            top_k=40,
+            repetition_penalty=1.1,
             stop=["\n\n"],
         )
 
@@ -203,13 +203,13 @@ def get_chatbot_response_birth(user_id):
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             messages=[
                 {"role": "system", "content": maternal_health_prompt_birth_stage},
-                {"role": "user", "content": "Generate a new quiz question on maternal health."}
+                {"role": "user", "content": "Generate 10 quiz questions on maternal health."}
             ],
-            max_tokens=4000,
-            temperature=0.11,
-            top_p=1,
-            top_k=50,
-            repetition_penalty=1,
+            max_tokens=2000,
+            temperature=0.3,
+            top_p=0.9,
+            top_k=40,
+            repetition_penalty=1.1,
             stop=["\n\n"],
         )
 
@@ -239,13 +239,13 @@ def get_chatbot_response_postnatal(user_id):
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             messages=[
                 {"role": "system", "content": maternal_health_prompt_postnatal_stage},
-                {"role": "user", "content": "Generate a new quiz question on maternal health."}
+                {"role": "user", "content": "Generate 10 quiz questions on maternal health."}
             ],
-            max_tokens=4000,
-            temperature=0.11,
-            top_p=1,
-            top_k=50,
-            repetition_penalty=1,
+            max_tokens=2000,
+            temperature=0.3,
+            top_p=0.9,
+            top_k=40,
+            repetition_penalty=1.1,
             stop=["\n\n"],
         )
 

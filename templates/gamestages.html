@@ -3,403 +3,1632 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FunzaMama - Maternal Health Game</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Funza Mama — Learning Journey</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">   
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'warm-pink': '#F8BBD9',
+                        'soft-purple': '#E8C5E8',
+                        'deep-rose': '#D17D98',
+                        'warm-mauve': '#B19CD9',
+                        'soft-cream': '#FFF8F0',
+                        'warm-gray': '#F5F5F5',
+                        'deep-plum': '#7D1C4A',
+                        'warm-brown': '#8B4513',
+                    }
+                }
+            }
+        }
+    </script>
 <style>
-
-.alert {
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #F8BBD9 0%, #E8C5E8 50%, #FFF8F0 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .stage-card {
+            transition: all 0.3s ease;
+        }
+        .stage-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        .badge-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(209, 125, 152, 0.5); }
+            to { box-shadow: 0 0 20px rgba(209, 125, 152, 0.8); }
+        }
+        
+        /* Achievement Cards Styling */
+        .badge-card {
+            width: 100% !important;
+            min-width: 0;
+            max-width: 100%;
+            min-height: 128px;
+            max-height: 128px;
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            flex-grow: 0;
+        }
+        
+        .badge-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .badge-card:active {
+            transform: translateY(0);
+        }
+        
+        /* Progress bar animation */
+        .badge-card .progress-bar {
+            transition: width 0.8s ease-in-out;
+        }
+        
+        /* Icon shadow for depth */
+        .badge-card .icon {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        /* Grid item constraints */
+        .grid > .badge-card {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+        .progress-ring {
+            transition: stroke-dasharray 0.5s ease-in-out;
+        }
+        
+        /* Sound Control */
+        .sound-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sound-toggle {
+                right: 15px;
+                top: 75px;
+                padding: 8px;
+            }
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sound-toggle.muted {
+            background: rgba(239, 68, 68, 0.9);
   color: white;
 }
-.alert-success { background-color: #4CAF50; }
-.alert-danger  { background-color: #f44336; }
-.alert-warning { background-color: #ff9800; }
-.alert-info    { background-color: #2196F3; }
+
+        /* Avatar Animations */
+        .avatar-container {
+            animation: avatarBreathe 3s ease-in-out infinite;
+        }
+
+        .avatar-eyes .animate-blink {
+            animation: avatarBlink 4s ease-in-out infinite;
+        }
+
+        .avatar-smile {
+            animation: avatarSmile 2s ease-in-out infinite;
+        }
+
+        @keyframes avatarBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes avatarBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        @keyframes avatarSmile {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.1); }
+        }
+
+        /* Avatar Filter Buttons */
+        .avatar-filter-btn.active {
+            background: linear-gradient(135deg, #D63384, #C77DFF);
+  color: white;
+}
+
+        .avatar-item {
+            transition: all 0.3s ease;
+        }
+
+        .avatar-item.hidden {
+            display: none;
+        }
+
+        /* Micro-feedback animations */
+        .micro-bounce {
+            animation: microBounce 0.6s ease-in-out;
+        }
+
+        .micro-shake {
+            animation: microShake 0.5s ease-in-out;
+        }
+
+        .micro-pulse {
+            animation: microPulse 0.8s ease-in-out;
+        }
+
+        @keyframes microBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes microShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes microPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particleFloat 2s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
 </style>
+    
+    <!-- Global JavaScript variables will be set in body -->
 </head>
-<body>
+<body class="font-inter gradient-bg min-h-screen">
+    <!-- Global JavaScript variables -->
+    <script>
+        window.earnedStages = [];
+        window.badgeData = {};
+        
+        // Sound System
+        let soundEnabled = true;
+        let audioContext = null;
+        
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // Play sound function
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            
+            initAudio();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        // Sound effects
+        function playCorrectSound() {
+            playSound(523.25, 0.3); // C5
+            setTimeout(() => playSound(659.25, 0.3), 100); // E5
+            setTimeout(() => playSound(783.99, 0.5), 200); // G5
+        }
+        
+        function playWrongSound() {
+            playSound(220, 0.4, 'sawtooth'); // A3
+            setTimeout(() => playSound(196, 0.6, 'sawtooth'), 200); // G3
+        }
+        
+        function playCompletionSound() {
+            playSound(523.25, 0.2); // C5
+            setTimeout(() => playSound(659.25, 0.2), 150); // E5
+            setTimeout(() => playSound(783.99, 0.2), 300); // G5
+            setTimeout(() => playSound(1046.50, 0.5), 450); // C6
+        }
+        
+        function playClickSound() {
+            playSound(800, 0.1, 'square');
+        }
+        
+        function playClapSound() {
+            playSound(523.25, 0.1); // C5
+            setTimeout(() => playSound(659.25, 0.1), 50); // E5
+            setTimeout(() => playSound(783.99, 0.1), 100); // G5
+            setTimeout(() => playSound(1046.50, 0.2), 150); // C6
+        }
+        
+        function playSadSound() {
+            playSound(220, 0.6, 'sawtooth'); // A3
+            setTimeout(() => playSound(196, 0.8, 'sawtooth'), 300); // G3
+        }
+        
+        // Vibration
+        function vibrate(pattern = [100]) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+        
+        // Sound toggle
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggle = document.getElementById('soundToggle');
+            const icon = toggle.querySelector('i');
+            
+            if (soundEnabled) {
+                toggle.classList.remove('muted');
+                icon.className = 'fas fa-volume-up text-xl';
+                playClickSound();
+            } else {
+                toggle.classList.add('muted');
+                icon.className = 'fas fa-volume-mute text-xl';
+            }
+        }
 
-    <!-- 🌟 Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark custom-nav">
-        <div class="container-fluid">
-            <a href="{{ url_for('home.home') }}" class="sidebar-link">
-                <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-            </a>
-            <a class="navbar-brand" href="{{ url_for('home.home') }}" >Welcome, {{username}}</a>
-    
-            <!-- Hamburger menu for mobile -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-    
-            <!-- Navbar Items -->
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a href="{{ url_for('home.home') }}" class="btn btn-outline-light me-2" style="width: 100px;">Home</a> 
-                    </li>
+        // Avatar mapping for CSS-based avatars
+        window.avatarMap = {
+            'images/avatars/diverse-1.png': {
+                name: 'Aisha',
+                colors: 'from-amber-200 to-orange-300',
+                faceColors: 'from-amber-100 to-orange-200',
+                eyeColor: 'bg-brown-800',
+                smileColor: 'border-brown-800',
+                glasses: false
+            },
+            'images/avatars/diverse-2.png': {
+                name: 'Marcus',
+                colors: 'from-blue-200 to-indigo-300',
+                faceColors: 'from-blue-100 to-indigo-200',
+                eyeColor: 'bg-blue-900',
+                smileColor: 'border-blue-900',
+                glasses: false
+            },
+            'images/avatars/diverse-3.png': {
+                name: 'Priya',
+                colors: 'from-green-200 to-emerald-300',
+                faceColors: 'from-green-100 to-emerald-200',
+                eyeColor: 'bg-green-900',
+                smileColor: 'border-green-900',
+                glasses: false
+            },
+            'images/avatars/professional-1.png': {
+                name: 'Dr. Sarah',
+                colors: 'from-purple-200 to-violet-300',
+                faceColors: 'from-purple-100 to-violet-200',
+                eyeColor: 'bg-purple-900',
+                smileColor: 'border-purple-900',
+                glasses: true
+            },
+            'images/avatars/casual-1.png': {
+                name: 'Emma',
+                colors: 'from-pink-200 to-rose-300',
+                faceColors: 'from-pink-100 to-rose-200',
+                eyeColor: 'bg-pink-900',
+                smileColor: 'border-pink-900',
+                glasses: false
+            },
+            'images/avatars/diverse-4.png': {
+                name: 'Zara',
+                colors: 'from-teal-200 to-cyan-300',
+                faceColors: 'from-teal-100 to-cyan-200',
+                eyeColor: 'bg-teal-900',
+                smileColor: 'border-teal-900',
+                glasses: false
+            },
+            'images/avatars/diverse-5.png': {
+                name: 'Ahmed',
+                colors: 'from-red-200 to-pink-300',
+                faceColors: 'from-red-100 to-pink-200',
+                eyeColor: 'bg-red-900',
+                smileColor: 'border-red-900',
+                glasses: false
+            }
+        };
+    </script>
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
+                    <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Home</a>
                     {% if user_logged_in %}
-                    <!-- Display Logout Button if User is Logged In -->
-                    <li class="nav-item">
-                        <a href="{{ url_for('login.logout') }}" class="btn btn-outline-light me-2" style="width: 100px;">Logout</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('profile.view_profile') }}" class="btn btn-outline-light me-2" style="width: 100px;">Profile</a>
-                    </li>
+                    <a href="{{ url_for('profile.view_profile') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Profile</a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">Logout</a>
                     {% else %}
-                    <!-- Display Login Button if User is NOT Logged In -->
-                    <li class="nav-item">
-                        <a href="{{ url_for('login.login') }}" class="btn btn-outline-light me-2" style="width: 100px;">Login</a>
-                    </li>
+                    <a href="{{ url_for('login.login') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Login</a>
+                    <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-6 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">Sign Up</a>
                     {% endif %}
-
-                </ul>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-deep-plum hover:text-deep-rose focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+            </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+                <div class="flex flex-col space-y-4 pt-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Home</a>
+                    {% if user_logged_in %}
+                    <a href="{{ url_for('profile.view_profile') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Profile</a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">Logout</a>
+                    {% else %}
+                    <a href="{{ url_for('login.login') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Login</a>
+                    <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
             </div>
         </div>
     </nav>
-    
- 
-            <!-- 🌟 Progress Bar & Badges -->
-            <div class="progress-section">
-                <div class="container text-center mt-3">
+    <!-- Hero Section -->
+    <section class="py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="fade-in">
+                <h1 class="text-4xl md:text-6xl font-bold text-deep-plum mb-4 font-poppins">
+                    Your Learning Journey
+                </h1>
+                <p class="text-lg md:text-xl text-warm-brown mb-6 max-w-3xl mx-auto">
+                    Welcome back, {{ username }}! Continue your maternal health education journey through interactive stages.
+                </p>
+                
+                <!-- Current Avatar Display -->
+                {% if user_logged_in and user.avatar %}
+                <div class="flex justify-center mb-6">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                        <div class="text-center">
+                            <p class="text-sm text-warm-brown mb-3 font-medium">Your Current Avatar</p>
+                            <div id="current-avatar-display" class="w-16 h-16 mx-auto rounded-full border-4 border-deep-rose transition-all duration-300">
+                                <!-- Avatar will be rendered here by JavaScript -->
+                            </div>
+                            <p id="current-avatar-name" class="text-xs text-deep-plum font-medium mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="py-6 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl">
+                <div class="fade-in">
                     {% if user_logged_in %}
-                        <p>Your overall progress: {{ overall_progress }}%</p>
-                        <div class="progress-container">
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                    role="progressbar"
-                                    data-progress="{{ overall_progress }}">
-                                    {{ overall_progress }}%
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-bold text-deep-plum mb-4 font-poppins">Your Progress</h2>
+                            
+                            <!-- Gamification Stats -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="text-center bg-gradient-to-br from-yellow-100 to-orange-100 rounded-xl p-3 micro-pulse">
+                                    <div class="text-2xl font-bold text-orange-600" id="xp-display">0</div>
+                                    <div class="text-xs text-orange-700 font-medium">XP</div>
+                                </div>
+                                <div class="text-center bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl p-3 micro-pulse">
+                                    <div class="text-2xl font-bold text-blue-600" id="level-display">1</div>
+                                    <div class="text-xs text-blue-700 font-medium">Level</div>
+                                </div>
+                                <div class="text-center bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-3 micro-pulse">
+                                    <div class="text-2xl font-bold text-green-600" id="streak-display">0</div>
+                                    <div class="text-xs text-green-700 font-medium">Streak</div>
+                                </div>
+                                <div class="text-center bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl p-3 micro-pulse">
+                                    <div class="text-2xl font-bold text-purple-600" id="badges-display">0</div>
+                                    <div class="text-xs text-purple-700 font-medium">Badges</div>
+                                </div>
                                 </div>
                            
-
+                            <div class="relative w-full max-w-md mx-auto">
+                                <div class="w-full bg-warm-gray rounded-full h-6 mb-4">
+                                    {% set capped_overall_progress = overall_progress if overall_progress <= 100 else 100 %}
+                                    <div class="bg-gradient-to-r from-deep-rose to-warm-mauve h-6 rounded-full transition-all duration-1000 ease-out progress-bar"
+                                    data-progress="{{ capped_overall_progress }}">
+                                        <span class="text-white font-semibold text-sm flex items-center justify-center h-full">
+                                    {{ capped_overall_progress }}%
+                                        </span>
+                                </div>
+                            </div>
+                                <p class="text-warm-brown font-medium">Overall Completion</p>
+                        </div>
                             </div>
                        
-                    {% else %}
-                        <div class="alert alert-info mt-3">
-                            <strong>Want to track your progress?</strong> <a href="{{ url_for('login.login') }}">Login here</a> to save your progress and earn badges!
-                        </div>
-                    {% endif %}
-                
-            
-            
-    
-            <!-- Encouragement Message -->
-            <div class="claim-message-container">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                          </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                <h4 id="claim-message">🎉 Have you completed a stage? Go ahead and claim your badge! 🎖️</h4>
-            </div>
+                        <!-- Flash Messages - Only show for logged-in users -->
+                        {% if user_logged_in %}
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                        <div class="mb-6 p-4 rounded-xl {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ message }}
+                                  </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        {% endif %}
 
-            <div class="badge-container mt-2">
-                {% if user_logged_in and badge_claimable is defined and badge_data is defined and earned_stages is defined %}
+                        <!-- Badges Section -->
+                        <div class="text-center mb-8">
+                            <h3 class="text-xl font-semibold text-deep-plum mb-6">🏆 Your Achievements</h3>
+                            <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto" style="grid-template-columns: 1fr 1fr;">
+                                {% if badge_claimable is defined and badge_data is defined and earned_stages is defined %}
                 {% set stage_mapping = {
-                    'preconception': 'Preconception Care',
-                    'antenatal': 'Antenatal Care',
+                    'preconception': 'Preconception',
+                    'prenatal': 'Antenatal',
                     'birth_and_delivery': 'Birth & Delivery',
-                    'postnatal': 'Postnatal Care'
+                    'postnatal': 'Postnatal'
                 } %}
             
                 {% for stage_key, stage_display in stage_mapping.items() %}
                     {% set badge_class = '' %}
+                    {% set badge_icon = '' %}
+                    {% set badge_text = '' %}
+                    
                     {% if stage_key in earned_stages %}
-                        {% set badge_class = 'badge-earned' %}
-                    {% elif badge_claimable[stage_key] %}
-                        {% set badge_class = 'badge-claimable' %}
+                        {% set badge_class = 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-lg hover:shadow-xl transition-all duration-300' %}
+                        {% set badge_icon = '🏆' %}
+                        {% set badge_text = 'Earned' %}
+                    {% elif badge_claimable.get(stage_key, False) %}
+                        {% set badge_class = 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105' %}
+                        {% set badge_icon = '⭐' %}
+                        {% set badge_text = 'In Progress' %}
                     {% else %}
-                        {% set badge_class = 'badge-locked' %}
+                        {% set badge_class = 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60' %}
+                        {% set badge_icon = '🔒' %}
+                        {% set badge_text = 'Locked' %}
                     {% endif %}
             
-                    <span class="badge {{ badge_class }}"
-                          data-badge-name="{{ stage_display }}"
-                          data-stage-key="{{ stage_key }}"
-                          data-score="{{ badge_data[stage_key].score if stage_key in badge_data else 0 }}"
-                          data-progress="{{ badge_data[stage_key].progress if stage_key in badge_data else 0 }}"
-                          data-attempts="{{ badge_data[stage_key].attempts if stage_key in badge_data else 0 }}"
-                          onclick="showBadgeDetails(this)">
-                      🏅 {{ stage_display }}
-                    </span>
+                                        <div class="badge-card {{ badge_class }} w-full h-32 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden"
+                        data-badge-name="{{ stage_display }}"
+                        data-stage-key="{{ stage_key }}"
+                        data-score="{{ badge_data[stage_key].score if stage_key in badge_data else 0 }}"
+                        data-progress="{{ badge_data[stage_key].progress if stage_key in badge_data else 0 }}"
+                        data-attempts="{{ badge_data[stage_key].attempts if stage_key in badge_data else 0 }}"
+                        data-accuracy="{{ badge_data[stage_key].accuracy if stage_key in badge_data else 0 }}"
+                        data-attempts-progress="{{ badge_data[stage_key].attempts_progress if stage_key in badge_data else 0 }}"
+                        data-accuracy-progress="{{ badge_data[stage_key].accuracy_progress if stage_key in badge_data else 0 }}"
+                        onclick="showBadgeDetails(this)">
+                                            <!-- Icon -->
+                                            <div class="text-3xl mb-2 icon">
+                                                {{ badge_icon }}
+                                            </div>
+                                            
+                                            <!-- Stage Name -->
+                                            <div class="font-bold text-sm leading-tight mb-1 text-center">
+                                                {{ stage_display }}
+                                            </div>
+                                            
+                                            <!-- Status -->
+                                            <div class="text-xs font-medium opacity-90 mb-1">
+                                                {{ badge_text }}
+                                            </div>
+                                            
+                                            <!-- Progress Percentage -->
+                                            {% if stage_key in badge_data and badge_data[stage_key].progress > 0 %}
+                                                {% set capped_progress = badge_data[stage_key].progress if badge_data[stage_key].progress <= 100 else 100 %}
+                                                <div class="text-sm font-bold opacity-95" 
+                                                     title="Progress: {{ capped_progress | round(0) }}% (Based on attempts and accuracy)">
+                                                    {{ capped_progress | round(0) }}%
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Progress Bar -->
+                                            {% if stage_key in badge_data and badge_data[stage_key].progress > 0 %}
+                                                {% set capped_progress = badge_data[stage_key].progress if badge_data[stage_key].progress <= 100 else 100 %}
+                                                <div class="w-16 h-1 bg-white bg-opacity-30 rounded-full mt-2 overflow-hidden">
+                                                    <div class="h-full bg-white bg-opacity-80 rounded-full progress-bar" 
+                                                         data-progress="{{ capped_progress }}"></div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
                 {% endfor %}
             {% else %}
-                <p>Please <a href="{{ url_for('login.login') }}">log in</a> to view and claim your badges.</p>
+                                    <p class="text-warm-brown">Complete stages to earn badges!</p>
             {% endif %}
-            
         </div>
-            
-            <!-- Modal for Badge Details -->
-            <div class="modal" id="badgeModal" tabindex="-1" role="dialog" aria-labelledby="badgeModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="badgeModalLabel">Badge Details</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <!-- Hidden Input for user_ID -->
-                        <input type="hidden" id="userID" value="{{ user.user_ID }}">
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-6 rounded-2xl">
+                                <i class="fas fa-user-plus text-4xl text-blue-600 mb-4"></i>
+                                <h3 class="text-xl font-semibold text-blue-800 mb-2">Track Your Progress</h3>
+                                <p class="text-blue-700 mb-4">Login to save your progress, earn badges, and unlock achievements!</p>
+                                <a href="{{ url_for('login.login') }}" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition-colors font-semibold">
+                                    Login Now
+                                </a>
+                            </div>
+                        </div>
+            {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
 
-                        <span aria-hidden="true">&times;</span>
+    <!-- Badge Details Modal -->
+    <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-deep-plum font-poppins">Badge Details</h3>
+                <button onclick="closeBadgeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
                     </button>
                     </div>
-                    <div class="modal-body">
-                    <!-- Badge Information will be populated here -->
-                    <div class="modal-body">
-                        <p><strong>Badge:</strong> <span id="badge-name"></span></p>
-                        <p><strong>Score:</strong> <span id="badge-score"></span></p>
-                        <p><strong>Progress:</strong> <span id="badge-progress"></span></p>
-                        <p><strong>Attempts:</strong> <span id="badge-attempts"></span></p>
+            <div class="space-y-4">
+                <div class="flex justify-between">
+                    <span class="font-semibold text-warm-brown">Badge:</span>
+                    <span id="badge-name" class="text-deep-plum"></span>
                     </div>
-                    
+                <div class="flex justify-between">
+                    <span class="font-semibold text-warm-brown">Score:</span>
+                    <span id="badge-score" class="text-deep-plum"></span>
                     </div>
-                    <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="claimBadgeBtn">Claim Badge</button>
+                <div class="flex justify-between">
+                    <span class="font-semibold text-warm-brown">Accuracy:</span>
+                    <span id="badge-progress" class="text-deep-plum"></span>
+                    </div>
+                <div class="flex justify-between">
+                    <span class="font-semibold text-warm-brown">Attempts:</span>
+                    <span id="badge-attempts" class="text-deep-plum"></span>
+                </div>
+                
+                <!-- Progress Breakdown -->
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-semibold text-warm-brown mb-2">Progress Breakdown</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Attempts Progress:</span>
+                            <span id="attempts-progress" class="text-deep-plum"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Accuracy Progress:</span>
+                            <span id="accuracy-progress" class="text-deep-plum"></span>
+                        </div>
+                        <div class="flex justify-between font-semibold">
+                            <span>Total Progress:</span>
+                            <span id="total-progress" class="text-deep-plum"></span>
+                        </div>
                     </div>
                 </div>
+                </div>
+            <div class="flex space-x-4 mt-8">
+                <button onclick="closeBadgeModal()" class="flex-1 bg-warm-gray text-warm-brown py-3 rounded-xl hover:bg-gray-300 transition-colors font-semibold">
+                    Close
+                </button>
+                <button id="claimBadgeBtn" class="flex-1 bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold">
+                    Claim Badge
+                </button>
+            </div>
+            <input type="hidden" id="userID" value="{{ user.user_ID if user else '' }}">
                 </div>
             </div>
   
-            
-                     
+    <!-- Badge Message Modal -->
+    <div id="badgeMessageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-info-circle text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Badge Information</h3>
+            <p id="badgeMessageText" class="text-warm-brown mb-6 leading-relaxed">
+                <!-- Message will be inserted here -->
+            </p>
+            <button onclick="closeBadgeMessageModal()" 
+                    class="bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-6 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold">
+                <i class="fas fa-check mr-2"></i>
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Login Required Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-lock text-white text-3xl"></i>
+        </div>
+                <h3 class="text-2xl font-bold text-deep-plum mb-4 font-poppins">Login Required</h3>
+                <p class="text-warm-brown mb-6 leading-relaxed">
+                    Please log in to select and customize your avatar for your personalized learning journey. 
+                    Create an account to unlock all features!
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="{{ url_for('login.login') }}" 
+                       class="flex-1 bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-6 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold text-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Login Now
+                    </a>
+                    <a href="{{ url_for('signup.signup') }}" 
+                       class="flex-1 bg-white text-deep-plum py-3 px-6 rounded-xl hover:bg-warm-gray transition-colors font-semibold text-center border-2 border-deep-plum">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Sign Up
+                    </a>
+                </div>
+                <button onclick="closeLoginModal()" class="mt-4 text-gray-500 hover:text-gray-700 text-sm">
+                    <i class="fas fa-times mr-1"></i>
+                    Close
+                </button>
         </div>
     </div>
 </div>
    
+    <!-- Learning Stages Section -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-deep-plum mb-4 font-poppins">Learning Stages</h2>
+                <p class="text-lg text-warm-brown max-w-3xl mx-auto">
+                    Progress through each stage of maternal health education. Each stage builds upon the previous one, 
+                    creating a comprehensive learning journey.
+                </p>
+            </div>
 
-<!-- 🌟 Game Stages Section (Wrapped in White Background) -->
-<div class="container mt-4">
-    <div class="stages-wrapper">
-        <div class="row text-center">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
            <!-- Preconception Stage -->
-        <div class="col-md-3">
-            <div class="card stage-card">
-                <div class="card-body">
-                    <h5 class="card-title">Preconception Care</h5>
-                    <a href="{{ url_for('preconception.preconception') }}">play</a> 
-                    <p class="card-text">Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness.</p>
-                    <div class="completion">
+                <div class="stage-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-heart text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Preconception Care</h3>
+                        <p class="text-warm-brown mb-6 text-sm leading-relaxed">
+                            Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness.
+                        </p>
+                        
+                        <!-- Progress Section -->
+                        <div class="mb-6">
                         {% set preconception_progress = badge_data['preconception'].progress if 'preconception' in badge_data else 0 %}
-                        <span class="percentage">{{ preconception_progress | round(0) }}% Completed</span>
-                        <span class="stars">
+                        {% set preconception_progress = preconception_progress if preconception_progress <= 100 else 100 %}
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-warm-brown">Progress</span>
+                                <span class="text-sm font-bold text-deep-plum">{{ preconception_progress | round(0) }}%</span>
+                            </div>
+                            <div class="w-full bg-warm-gray rounded-full h-2">
+                                <div class="bg-gradient-to-r from-pink-400 to-pink-600 h-2 rounded-full transition-all duration-1000"
+                                     data-progress="{{ preconception_progress }}"></div>
+                            </div>
+                            
+                            <!-- Stars Rating -->
+                            <div class="flex justify-center mt-3">
                             {% set preconception_stars = (preconception_progress / 20) | round(0) %}
                             {% for i in range(5) %}
-                                {% if i < preconception_stars %}
-                                    ⭐
-                                {% else %}
-                                    ☆
-                                {% endif %}
+                                    <i class="fas fa-star text-sm {% if i < preconception_stars %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
                             {% endfor %}
-                        </span>
                     </div>
                 </div>
+
+                        <a href="{{ url_for('preconception.preconception') }}" 
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-pink-600 hover:to-pink-700 transition-all duration-300 group-hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>
+                            Start Learning
+                        </a>
             </div>
         </div>
+
             <!-- Antenatal Stage -->
-    <div class="col-md-3">
-        <div class="card stage-card">
-            <div class="card-body">
-                <h5 class="card-title">Antenatal Care</h5>
-                <a href="{{ url_for('prenatal.prenatal') }}">play</a> 
-                <p class="card-text">Track your baby's growth with regular checkups, fetal monitoring, and birth preparation.</p>
-                <div class="completion">
-                    {% set antenatal_progress = badge_data['antenatal'].progress if 'antenatal' in badge_data else 0 %}
-                    <span class="percentage">{{ antenatal_progress | round(0) }}% Completed</span>
-                    <span class="stars">
+                <div class="stage-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-baby text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Antenatal Care</h3>
+                        <p class="text-warm-brown mb-6 text-sm leading-relaxed">
+                            Track your baby's growth with regular checkups, fetal monitoring, and birth preparation.
+                        </p>
+                        
+                        <!-- Progress Section -->
+                        <div class="mb-6">
+                    {% set antenatal_progress = badge_data['prenatal'].progress if 'prenatal' in badge_data else 0 %}
+                    {% set antenatal_progress = antenatal_progress if antenatal_progress <= 100 else 100 %}
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-warm-brown">Progress</span>
+                                <span class="text-sm font-bold text-deep-plum">{{ antenatal_progress | round(0) }}%</span>
+            </div>
+                            <div class="w-full bg-warm-gray rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-1000"
+                                     data-progress="{{ antenatal_progress }}"></div>
+        </div>
+                            
+                            <!-- Stars Rating -->
+                            <div class="flex justify-center mt-3">
                         {% set antenatal_stars = (antenatal_progress / 20) | round(0) %}
                         {% for i in range(5) %}
-                            {% if i < antenatal_stars %}
-                                ⭐
-                            {% else %}
-                                ☆
-                            {% endif %}
+                                    <i class="fas fa-star text-sm {% if i < antenatal_stars %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
                         {% endfor %}
-                    </span>
                 </div>
             </div>
+
+                        <a href="{{ url_for('prenatal.prenatal') }}" 
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 group-hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>
+                            Start Learning
+                        </a>
         </div>
     </div>
 
     <!-- Birth Stage -->
-    <div class="col-md-3">
-        <div class="card stage-card">
-            <div class="card-body">
-                <h5 class="card-title">Birth & Delivery</h5>
-                <a href="{{ url_for('birth.birth') }}">play</a> 
-                <p class="card-text">Understanding labor signs, delivery options, and pain management.</p>
-                <div class="completion">
-                    {% set birth_progress = badge_data['birth_and_delivery'].progress if 'birth_and_delivery' in badge_data else 0 %}
-                    <span class="percentage">{{ birth_progress | round(0) }}% Completed</span>
-                    <span class="stars">
+                <div class="stage-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-hospital text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Birth & Delivery</h3>
+                        <p class="text-warm-brown mb-6 text-sm leading-relaxed">
+                            Understanding labor signs, delivery options, and pain management.
+                        </p>
+                        
+                        <!-- Progress Section -->
+                        <div class="mb-6">
+                    {% set birth_stage = badge_data.get('birth_and_delivery', None) %}
+                    {% set birth_progress = birth_stage.progress if birth_stage else 0 %}
+                    {% set birth_progress = birth_progress if birth_progress <= 100 else 100 %}
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-warm-brown">Progress</span>
+                                <span class="text-sm font-bold text-deep-plum">{{ birth_progress | round(0) }}%</span>
+                            </div>
+                            <div class="w-full bg-warm-gray rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all duration-1000"
+                                     data-progress="{{ birth_progress }}"></div>
+                            </div>
+                            
+                            <!-- Stars Rating -->
+                            <div class="flex justify-center mt-3">
                         {% set birth_stars = (birth_progress / 20) | round(0) %}
                         {% for i in range(5) %}
-                            {% if i < birth_stars %}
-                                ⭐
-                            {% else %}
-                                ☆
-                            {% endif %}
+                                    <i class="fas fa-star text-sm {% if i < birth_stars %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
                         {% endfor %}
-                    </span>
                 </div>
             </div>
+
+                        <a href="{{ url_for('birth.birth') }}" 
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 group-hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>
+                            Start Learning
+                        </a>
         </div>
     </div>
 
             <!-- Postnatal Stage -->
-            <div class="col-md-3">
-                <div class="card stage-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Postnatal Care</h5>
-                        <a href="{{ url_for('postnatal.postnatal') }}">play</a> 
-                        <p class="card-text">Support recovery with newborn care, breastfeeding guidance, and maternal well-being.</p>
-                        <div class="completion">
+                <div class="stage-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-child text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Postnatal Care</h3>
+                        <p class="text-warm-brown mb-6 text-sm leading-relaxed">
+                            Support recovery with newborn care, breastfeeding guidance, and maternal well-being.
+                        </p>
+                        
+                        <!-- Progress Section -->
+                        <div class="mb-6">
                             {% set postnatal_progress = badge_data['postnatal'].progress if 'postnatal' in badge_data else 0 %}
-                            <span class="percentage">{{ postnatal_progress | round(0) }}% Completed</span>
-                            <span class="stars">
+                            {% set postnatal_progress = postnatal_progress if postnatal_progress <= 100 else 100 %}
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-warm-brown">Progress</span>
+                                <span class="text-sm font-bold text-deep-plum">{{ postnatal_progress | round(0) }}%</span>
+                            </div>
+                            <div class="w-full bg-warm-gray rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-1000"
+                                     data-progress="{{ postnatal_progress }}"></div>
+                            </div>
+                            
+                            <!-- Stars Rating -->
+                            <div class="flex justify-center mt-3">
                                 {% set postnatal_stars = (postnatal_progress / 20) | round(0) %}
                                 {% for i in range(5) %}
-                                    {% if i < postnatal_stars %}
-                                        ⭐
-                                    {% else %}
-                                        ☆
-                                    {% endif %}
+                                    <i class="fas fa-star text-sm {% if i < postnatal_stars %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
                                 {% endfor %}
-                            </span>
                         </div>
                     </div>
+
+                        <a href="{{ url_for('postnatal.postnatal') }}" 
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 group-hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>
+                            Start Learning
+                        </a>
                 </div>
             </div>
         </div>
     </div>
+    </section>
+
+
+    <!-- Avatar Selection Section -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="fade-in">
+                <h2 class="text-3xl font-bold text-deep-plum mb-4 font-poppins">Choose Your Avatar</h2>
+                <p class="text-lg text-warm-brown mb-8">Select an avatar that represents you on your learning journey</p>
+                
+                <!-- Avatar Categories -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap justify-center gap-2 mb-4">
+                        <button onclick="filterAvatars('all')" class="avatar-filter-btn active px-4 py-2 rounded-full bg-deep-rose text-white text-sm font-medium transition-all">
+                            All
+                        </button>
+                        <button onclick="filterAvatars('diverse')" class="avatar-filter-btn px-4 py-2 rounded-full bg-warm-gray text-deep-plum text-sm font-medium transition-all hover:bg-deep-plum hover:text-white">
+                            Diverse
+                        </button>
+                        <button onclick="filterAvatars('professional')" class="avatar-filter-btn px-4 py-2 rounded-full bg-warm-gray text-deep-plum text-sm font-medium transition-all hover:bg-deep-plum hover:text-white">
+                            Professional
+                        </button>
+                        <button onclick="filterAvatars('casual')" class="avatar-filter-btn px-4 py-2 rounded-full bg-warm-gray text-deep-plum text-sm font-medium transition-all hover:bg-deep-plum hover:text-white">
+                            Casual
+                        </button>
+    </div>
 </div>
 
-
-
-
-    <!-- 🌟 Avatar Selection -->
-    <div class="avatar-container text-center mt-4">
-        <h3>Choose Your Avatar</h3>
-        <div class="avatar-scroll">
-            <form method="POST" action="/select-avatar">
-              <input type="hidden" name="avatar_path" value="images/man1/avatar-happy.png">
-              <button type="submit"><img src="{{ url_for('static', filename='images/man1/avatar-happy.png') }}" class="avatar"></button>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                    {% if user_logged_in %}
+                    <!-- Logged in users can select avatars -->
+                    
+                    <!-- Diverse Avatars -->
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="diverse">
+                        <input type="hidden" name="avatar_path" value="images/avatars/diverse-1.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-brown-800 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-brown-800 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-brown-800 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Aisha</p>
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="diverse">
+                        <input type="hidden" name="avatar_path" value="images/avatars/diverse-2.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-blue-200 to-indigo-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-blue-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-blue-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-blue-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Marcus</p>
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="diverse">
+                        <input type="hidden" name="avatar_path" value="images/avatars/diverse-3.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-green-200 to-emerald-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-green-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-green-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-green-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Priya</p>
+                        </button>
             </form>
-            <form method="POST" action="/select-avatar">
-              <input type="hidden" name="avatar_path" value="images/man2/avatar-happy.png">
-              <button type="submit"><img src="{{ url_for('static', filename='images/man2/avatar-happy.png') }}" class="avatar"></button>
+                    
+                    <!-- Professional Avatars -->
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="professional">
+                        <input type="hidden" name="avatar_path" value="images/avatars/professional-1.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-purple-200 to-violet-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-violet-200 flex items-center justify-center relative">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-purple-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-purple-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-purple-900 border-t-0 rounded-b-full"></div>
+                                    <div class="avatar-glasses absolute top-2 w-12 h-4 border-2 border-purple-900 rounded-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Dr. Sarah</p>
+                        </button>
             </form>
-            <form method="POST" action="/select-avatar">
-              <input type="hidden" name="avatar_path" value="images/woman1/avatar-happy.png">
-              <button type="submit"><img src="{{ url_for('static', filename='images/woman1/avatar-happy.png') }}" class="avatar"></button>
+                    
+                    <!-- Casual Avatars -->
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="casual">
+                        <input type="hidden" name="avatar_path" value="images/avatars/casual-1.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-pink-100 to-rose-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-pink-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-pink-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-pink-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Emma</p>
+                        </button>
             </form>
+                    
+                    <!-- Additional Diverse Avatars -->
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="diverse">
+                        <input type="hidden" name="avatar_path" value="images/avatars/diverse-4.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-teal-200 to-cyan-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-teal-100 to-cyan-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-teal-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-teal-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
           </div>
-          
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-teal-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Zara</p>
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="/select-avatar" class="group avatar-item" data-category="diverse">
+                        <input type="hidden" name="avatar_path" value="images/avatars/diverse-5.png">
+                        <button type="submit" class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-red-200 to-pink-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-red-100 to-pink-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-red-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-red-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
     </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-red-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Ahmed</p>
+                        </button>
+                    </form>
+                    
+                    {% else %}
+                    <!-- Non-logged in users see avatars but can't select them -->
+                    <div class="group cursor-pointer avatar-item" data-category="diverse" onclick="showLoginModal()">
+                        <div class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-brown-800 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-brown-800 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-brown-800 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Aisha</p>
+                            <div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-lock text-white text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group cursor-pointer avatar-item" data-category="diverse" onclick="showLoginModal()">
+                        <div class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-blue-200 to-indigo-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-blue-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-blue-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-blue-900 border-t-0 rounded-b-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Marcus</p>
+                            <div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-lock text-white text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group cursor-pointer avatar-item" data-category="professional" onclick="showLoginModal()">
+                        <div class="w-full bg-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
+                            <div class="avatar-container w-20 h-20 mx-auto rounded-full border-4 border-transparent group-hover:border-deep-rose transition-all duration-300 bg-gradient-to-br from-purple-200 to-violet-300 flex items-center justify-center">
+                                <div class="avatar-face w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-violet-200 flex items-center justify-center relative">
+                                    <div class="avatar-eyes flex space-x-1">
+                                        <div class="w-2 h-2 bg-purple-900 rounded-full animate-blink"></div>
+                                        <div class="w-2 h-2 bg-purple-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                    </div>
+                                    <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 border-purple-900 border-t-0 rounded-b-full"></div>
+                                    <div class="avatar-glasses absolute top-2 w-12 h-4 border-2 border-purple-900 rounded-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center mt-2 text-warm-brown font-medium">Dr. Sarah</p>
+                            <div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-lock text-white text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+    </div>
+    </section>
 
-    <!-- 🌟 Footer -->
-    <footer class="footer text-center mt-5">
-        <p>© 2025 FunzaMama. All rights reserved.</p>
-    </footer>    
-   
-    <!-- Your Modal HTML here -->
-<!-- Your badge-container HTML here -->
+    <!-- Sound Toggle Button -->
+    <button id="soundToggle" onclick="toggleSound()" class="sound-toggle" title="Toggle Sound">
+        <i class="fas fa-volume-up text-xl"></i>
+    </button>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Feedback Button -->
+    <button onclick="openFeedbackModal()" class="fixed bottom-6 left-6 bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-40" title="Send Feedback">
+        <i class="fas fa-comment-dots text-xl"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="bg-deep-plum text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="fade-in">
+                <h3 class="text-2xl font-bold mb-4 font-poppins">Funza Mama</h3>
+                <p class="text-lg mb-6 text-warm-pink">
+                    Empowering families through knowledge and play.
+                </p>
+                <div class="flex justify-center space-x-6 mb-8">
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-sm text-warm-pink">
+                    © 2025 Funza Mama. All rights reserved. | "Funza Mama" means "Teach the Mother" in Swahili.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Include Feedback Modal -->
+    {% include 'feedback_modal.html' %}
 
 <script>
-   $(document).ready(function () {
+        // Global variables
     let currentStageKey = null;
 
-    function getBadgeScore(stageKey) {
-        return $(`span[data-stage-key="${stageKey}"]`).data('score');
-    }
-
-    function getBadgeProgress(stageKey) {
-        return $(`span[data-stage-key="${stageKey}"]`).data('progress');
-    }
-
-    function getBadgeAttempts(stageKey) {
-        return $(`span[data-stage-key="${stageKey}"]`).data('attempts');
-    }
-
-    // ✅ This is the correct version of showBadgeDetails
-    window.showBadgeDetails = function (stageKey) {
-        currentStageKey = stageKey;
-
-        let badgeEl = $(`span[data-stage-key="${stageKey}"]`);
-
-        let badgeName = badgeEl.data('badge-name') || 'N/A';
-        let badgeScore = badgeEl.data('score') || 0;
-        let badgeProgress = badgeEl.data('progress') || 0;
-        let badgeAttempts = badgeEl.data('attempts') || 0;
-
-        $('#badge-name').text(badgeName);
-        $('#badge-score').text(badgeScore);
-        $('#badge-progress').text(badgeProgress + '%');
-        $('#badge-attempts').text(badgeAttempts);
-
-        $('#badgeModal').modal('show');
-    };
-
-    $('#claimBadgeBtn').click(function () {
-        const badgeName = $(`span[data-stage-key="${currentStageKey}"]`).data('badge-name');
-        const userId = $('#userID').val();
-
-        fetch('/claim_badge/' + currentStageKey, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                badge_name: badgeName,
-                user_ID: userId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                $(`span[data-stage-key="${currentStageKey}"]`)
-                    .removeClass('badge-claimable')
-                    .addClass('badge-earned');
-                $('#badgeModal').modal('hide');
-                alert(`🎉 You've earned the "${badgeName}" badge! Keep up the great work! 🌟`);
-            } else {
-                alert(data.message);
+        // Login modal functions
+        function showLoginModal() {
+            // Play click sound and vibrate
+            playClickSound();
+            vibrate([50]);
+            
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
             }
-        })
-        .catch(error => {
-            console.error('Error claiming badge:', error);
+        }
+
+        function closeLoginModal() {
+            // Play click sound and vibrate
+            playClickSound();
+            vibrate([30]);
+            
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }
+        }
+
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle hamburger icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+            }
         });
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections for fade-in animation
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Badge functionality
+        function showBadgeDetails(element) {
+            // Add micro-feedback
+            addMicroFeedback(element, 'micro-bounce');
+            createParticles(element, 3);
+            
+            currentStageKey = element.getAttribute('data-stage-key');
+            
+            const badgeName = element.getAttribute('data-badge-name') || 'N/A';
+            const badgeScore = element.getAttribute('data-score') || 0;
+            const badgeProgress = element.getAttribute('data-progress') || 0;
+            const badgeAttempts = element.getAttribute('data-attempts') || 0;
+            const badgeAccuracy = element.getAttribute('data-accuracy') || 0;
+            const attemptsProgress = element.getAttribute('data-attempts-progress') || 0;
+            const accuracyProgress = element.getAttribute('data-accuracy-progress') || 0;
+
+            // Update modal content
+            document.getElementById('badge-name').textContent = badgeName;
+            document.getElementById('badge-score').textContent = badgeScore;
+            document.getElementById('badge-progress').textContent = badgeAccuracy + '%';
+            document.getElementById('badge-attempts').textContent = badgeAttempts;
+            
+            // Update progress breakdown
+            document.getElementById('attempts-progress').textContent = attemptsProgress + '%';
+            document.getElementById('accuracy-progress').textContent = accuracyProgress + '%';
+            // Total progress should be the sum of attempts and accuracy progress
+            const totalProgress = parseFloat(attemptsProgress) + parseFloat(accuracyProgress);
+            document.getElementById('total-progress').textContent = totalProgress.toFixed(1) + '%';
+
+            // Show modal
+            document.getElementById('badgeModal').classList.remove('hidden');
+        }
+
+        function closeBadgeModal() {
+            document.getElementById('badgeModal').classList.add('hidden');
+        }
+
+        function showBadgeMessage(message) {
+            document.getElementById('badgeMessageText').textContent = message;
+            document.getElementById('badgeMessageModal').classList.remove('hidden');
+        }
+
+        function closeBadgeMessageModal() {
+            document.getElementById('badgeMessageModal').classList.add('hidden');
+        }
+
+        // Claim badge functionality
+        document.getElementById('claimBadgeBtn').addEventListener('click', function() {
+            const badgeElement = document.querySelector(`[data-stage-key="${currentStageKey}"]`);
+            const badgeName = badgeElement?.getAttribute('data-badge-name');
+            const userId = document.getElementById('userID').value;
+            const claimBtn = document.getElementById('claimBadgeBtn');
+
+    if (!badgeName) {
+        alert("Error: Badge name not found. Please check the badge element or data attributes.");
+        return;
+    }
+
+            if (!userId) {
+                alert("Please log in to claim badges.");
+        return;
+    }
+
+            // Play click sound and vibrate
+            playClickSound();
+            vibrate([50]);
+
+            // Show loading state
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming...';
+            claimBtn.classList.add('opacity-50');
+
+            console.log('Claiming badge:', badgeName);
+            console.log('User ID:', userId);
+
+    // Use a more robust fetch approach
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    fetch('/claim_badge/' + encodeURIComponent(badgeName), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ user_ID: userId }),
+        signal: controller.signal
+    })
+    .then(response => {
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Claim badge response:', data);
+        
+        // Reset button state first
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Claim Badge';
+        claimBtn.classList.remove('opacity-50');
+        
+        if (data.success) {
+            // Play clap sound and vibrate for successful badge claim
+            playClapSound();
+            vibrate([100, 50, 100, 50, 200]);
+            
+            // Update badge appearance
+            const badgeCard = document.querySelector(`[data-stage-key="${currentStageKey}"]`);
+            badgeCard.className = badgeCard.className.replace('bg-gradient-to-br from-blue-500 to-blue-700', 'bg-gradient-to-br from-amber-400 to-amber-600');
+            badgeCard.innerHTML = `
+                <div class="text-3xl mb-2 icon">🏆</div>
+                <div class="font-bold text-sm leading-tight mb-1 text-center">${badgeName}</div>
+                <div class="text-xs font-medium opacity-90 mb-1">Earned</div>
+                <div class="text-sm font-bold opacity-95">100%</div>
+            `;
+            
+            closeBadgeModal();
+            showBadgeMessage(`🎉 Congratulations! You've earned the "${badgeName}" badge! Keep up the great work! 🌟`);
+        } else {
+            // Play sad sound and vibrate for failed badge claim
+            playSadSound();
+            vibrate([200, 100, 200]);
+            
+            // Show user-friendly error message
+            showBadgeMessage(data.message);
+        }
+    })
+    .catch(error => {
+        clearTimeout(timeoutId);
+        console.error('Error claiming badge:', error);
+        
+        // Play sad sound and vibrate for error
+        playSadSound();
+        vibrate([200, 100, 200]);
+        
+        // Reset button state
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Claim Badge';
+        claimBtn.classList.remove('opacity-50');
+        
+        if (error.name === 'AbortError') {
+            showBadgeMessage('Request timed out. Please try again.');
+        } else if (error.message.includes('HTTP error')) {
+            if (error.message.includes('500')) {
+                showBadgeMessage('Server error occurred. Please try again or contact support if the issue persists.');
+            } else if (error.message.includes('404')) {
+                showBadgeMessage('Badge not found. Please complete the stage requirements first.');
+            } else {
+                showBadgeMessage('Unable to connect to the server. Please check your internet connection and try again.');
+            }
+        } else {
+            showBadgeMessage('Oops! Something went wrong while claiming your badge. Please try again or refresh the page.');
+        }
     });
 });
 
-const progressBar = document.querySelector('.progress-bar');
-    if (progressBar) {
-      const progress = progressBar.getAttribute('data-progress');
-      progressBar.style.width = progress + '%';
-    }
-    
-</script>
+        // Close modal when clicking outside
+        document.getElementById('badgeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBadgeModal();
+            }
+        });
 
+        document.getElementById('loginModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLoginModal();
+            }
+        });
 
+        document.getElementById('badgeMessageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBadgeMessageModal();
+            }
+        });
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Bootstrap JS -->
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBadgeModal();
+                closeLoginModal();
+                closeBadgeMessageModal();
+            }
+        });
 
+        // Avatar filtering functionality
+        function filterAvatars(category) {
+            const avatarItems = document.querySelectorAll('.avatar-item');
+            const filterButtons = document.querySelectorAll('.avatar-filter-btn');
+            
+            // Update active button
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('bg-warm-gray', 'text-deep-plum');
+                btn.classList.remove('bg-deep-rose', 'text-white');
+            });
+            
+            event.target.classList.add('active');
+            event.target.classList.remove('bg-warm-gray', 'text-deep-plum');
+            event.target.classList.add('bg-deep-rose', 'text-white');
+            
+            // Filter avatars
+            avatarItems.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        // Micro-feedback functions
+        function createParticles(element, count = 5) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.background = `hsl(${Math.random() * 60 + 300}, 70%, 60%)`;
+                particle.style.width = '8px';
+                particle.style.height = '8px';
+                particle.style.borderRadius = '50%';
+                particle.style.position = 'fixed';
+                particle.style.zIndex = '9999';
+                
+                // Random direction
+                const angle = (Math.PI * 2 * i) / count;
+                const velocity = 50 + Math.random() * 50;
+                particle.style.setProperty('--dx', Math.cos(angle) * velocity + 'px');
+                particle.style.setProperty('--dy', Math.sin(angle) * velocity + 'px');
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 2000);
+            }
+        }
+
+        function addMicroFeedback(element, type) {
+            element.classList.add(type);
+            setTimeout(() => {
+                element.classList.remove(type);
+            }, 600);
+        }
+
+        // Gamification calculations
+        function calculateGamificationStats() {
+            // Get data from badge cards in the DOM
+            const badgeCards = document.querySelectorAll('.badge-card');
+            let totalXP = 0;
+            let totalCorrect = 0;
+            let totalBadges = 0;
+            
+            badgeCards.forEach(card => {
+                const score = parseInt(card.getAttribute('data-score')) || 0;
+                const progress = parseInt(card.getAttribute('data-progress')) || 0;
+                
+                totalCorrect += score;
+                totalXP += score * 10; // 10 XP per correct answer
+                
+                // Count earned badges (progress >= 80%)
+                if (progress >= 80) {
+                    totalBadges++;
+                }
+            });
+            
+            totalXP += totalBadges * 50; // 50 XP bonus per badge
+            
+            // Calculate level (every 100 XP = 1 level)
+            const level = Math.floor(totalXP / 100) + 1;
+            
+            // Calculate streak (simplified - could be enhanced with actual streak tracking)
+            const streak = Math.min(totalCorrect, 7); // Max 7 day streak
+            
+            return {
+                xp: totalXP,
+                level: level,
+                streak: streak,
+                badges: totalBadges
+            };
+        }
+
+        function updateGamificationDisplay() {
+            const stats = calculateGamificationStats();
+            
+            // Animate the numbers
+            animateNumber('xp-display', stats.xp);
+            animateNumber('level-display', stats.level);
+            animateNumber('streak-display', stats.streak);
+            animateNumber('badges-display', stats.badges);
+        }
+
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+            
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        // Initialize progress bars animation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update gamification stats
+            updateGamificationDisplay();
+            
+            // Animate main progress bar
+            const mainProgressBar = document.querySelector('.progress-bar[data-progress]');
+            if (mainProgressBar) {
+                const progress = mainProgressBar.getAttribute('data-progress');
+                mainProgressBar.style.width = '0%';
+                setTimeout(() => {
+                    mainProgressBar.style.width = progress + '%';
+                }, 500);
+            }
+            
+            // Animate stage progress bars
+            const stageProgressBars = document.querySelectorAll('[data-progress]');
+            stageProgressBars.forEach(bar => {
+                const progress = bar.getAttribute('data-progress');
+                if (progress && !bar.classList.contains('progress-bar')) {
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = progress + '%';
+                    }, 800);
+                }
+            });
+
+            // Animate badge progress bars
+            const badgeProgressBars = document.querySelectorAll('.badge-card .progress-bar[data-progress]');
+            badgeProgressBars.forEach(bar => {
+                const progress = bar.getAttribute('data-progress');
+                if (progress) {
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = progress + '%';
+                    }, 1000);
+                }
+            });
+            
+            // Render current avatar if user is logged in
+            renderCurrentAvatar();
+        });
+        
+        // Function to render the current avatar
+        function renderCurrentAvatar() {
+            const currentAvatarDisplay = document.getElementById('current-avatar-display');
+            const currentAvatarName = document.getElementById('current-avatar-name');
+            
+            if (!currentAvatarDisplay || !currentAvatarName) return;
+            
+            // Get the user's current avatar from the server
+            const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
+            
+            if (userAvatar && window.avatarMap[userAvatar]) {
+                const avatarData = window.avatarMap[userAvatar];
+                
+                // Create the avatar HTML
+                const avatarHTML = `
+                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
+                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                            <div class="avatar-eyes flex space-x-1">
+                                <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                            </div>
+                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
+                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-1.5 w-8 h-3 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                currentAvatarDisplay.innerHTML = avatarHTML;
+                currentAvatarName.textContent = avatarData.name;
+            } else {
+                // Fallback for old image-based avatars or no avatar
+                if (userAvatar && userAvatar.includes('images/')) {
+                    currentAvatarDisplay.innerHTML = `<img src="/static/${userAvatar}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                    currentAvatarName.textContent = "Your Avatar";
+                } else {
+                    currentAvatarDisplay.innerHTML = `
+                        <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-500 text-xl"></i>
+                        </div>
+                    `;
+                    currentAvatarName.textContent = "No Avatar Selected";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
+

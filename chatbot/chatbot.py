@@ -73,7 +73,22 @@ def get_chatbot_response(user_message, language, user_role):
     
     return bot_response
 
-# Optional: Function to test accuracy
+
+# Optional: Function to test FAISS accuracy
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+# Dummy FAISS retrieval function (replace this with your real implementation)
+def get_relevant_data_faiss(query):
+    known_questions = [
+        "What is the purpose of prenatal visits?",
+        "How often should I attend prenatal visits?",
+        "What should I expect during a prenatal visit?",
+        "Can I bring a support person to my prenatal visits?",
+        "Are vaccines safe during pregnancy?"
+    ]
+    return any(q.lower() in query.lower() for q in known_questions)
+
+# Evaluation function
 def evaluate_faiss_accuracy(test_queries, ground_truths):
     retrieved_results = [get_relevant_data_faiss(query) for query in test_queries]
     y_true = [1 if truth else 0 for truth in ground_truths]
@@ -84,3 +99,22 @@ def evaluate_faiss_accuracy(test_queries, ground_truths):
         "Recall": recall_score(y_true, y_pred),
         "F1-Score": f1_score(y_true, y_pred)
     }
+
+# Sample test queries and their expected answers
+test_queries = [
+    "What is the purpose of prenatal visits?",        # relevant
+    "Can I take paracetamol while pregnant?",         # not in the dataset
+    "Are vaccines safe during pregnancy?",            # relevant
+    "What time should I eat during pregnancy?",       # not in the dataset
+    "Can I bring someone to prenatal visits?"         # relevant (variant wording)
+]
+
+# Ground truths: True if you expect FAISS to return a relevant result
+ground_truths = [True, False, True, False, True]
+
+# Run evaluation and print results
+results = evaluate_faiss_accuracy(test_queries, ground_truths)
+
+print("\n📊 FAISS Retrieval Evaluation Results:")
+for metric, value in results.items():
+    print(f"{metric}: {value:.2f}")

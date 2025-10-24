@@ -2,255 +2,614 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Your Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funza Mama — Your Profile</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'warm-pink': '#F8BBD9',
+                        'soft-purple': '#E8C5E8',
+                        'deep-rose': '#D17D98',
+                        'warm-mauve': '#B19CD9',
+                        'soft-cream': '#FFF8F0',
+                        'warm-gray': '#F5F5F5',
+                        'deep-plum': '#7D1C4A',
+                        'warm-brown': '#8B4513',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            background: linear-gradient(to right, #D17D98, #F4CCE9);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #56021F;
-            overflow-x: hidden;
-            display: flex;
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #F8BBD9 0%, #E8C5E8 50%, #FFF8F0 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #D17D98 0%, #B19CD9 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #B19CD9 0%, #D17D98 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Avatar Animations */
+        .avatar-container {
+            animation: avatarBreathe 3s ease-in-out infinite;
         }
 
-        /* Static Sidebar styles */
-       /* Static Sidebar styles */
-.sidebar {
-    height: 100%;
-    width: 250px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #7D1C4A;
-    padding-top: 60px;
-    transition: width 0.3s ease;
-}
-
-.sidebar .closebtn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 30px;
-    color: white;
-}
-
-.sidebar a {
-    padding: 15px 30px;
-    text-decoration: none;
-    font-size: 18px;
-    color: white;
-    display: block;
-    transition: 0.3s;
-}
-
-.sidebar a:hover {
-    background-color: #a03060;
-}
-
-/* Collapsed Sidebar */
-.sidebar.collapsed {
-    width: 60px;
-}
-
-/* Hide sidebar links when collapsed */
-.sidebar.collapsed .sidebar-link {
-    display: none;
-}
-
-
-        /* Page Content */
-        .main-content {
-            margin-left: 250px;
-            width: 100%;
-            transition: margin-left 0.3s ease;
-            padding: 20px;
+        .avatar-eyes .animate-blink {
+            animation: avatarBlink 4s ease-in-out infinite;
         }
 
-        .sidebar.collapsed + .main-content {
-            margin-left: 60px;
+        .avatar-smile {
+            animation: avatarSmile 2s ease-in-out infinite;
         }
 
-        /* Card styling */
-        .card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: none;
+        @keyframes avatarBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
-        .card-header {
-            font-weight: bold;
+        @keyframes avatarBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
         }
 
-        .btn-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: none;
+        @keyframes avatarSmile {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.1); }
         }
 
-        .btn-success:hover {
-            background-color: #155724;
+        /* Progress bars */
+        .progress-bar {
+            transition: width 0.8s ease-in-out;
+        }
+
+        /* Sound Control */
+        .sound-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sound-toggle {
+                right: 15px;
+                top: 75px;
+                padding: 8px;
+            }
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sound-toggle.muted {
+            background: rgba(239, 68, 68, 0.9);
             color: white;
-        }
-
-        .bg-primary {
-            background-color: #F4CCE9 !important;
-            color: #56021F !important;
-        }
-
-        .bg-info {
-            background-color: #D17D98 !important;
-            color: white !important;
-        }
-
-        .bg-warning {
-            background-color: #fff3cd !important;
-            color: #856404 !important;
-        }
-
-        .bg-danger {
-            background-color: #f8d7da !important;
-            color: #721c24 !important;
-        }
-
-        .form-control {
-            border-radius: 8px;
-            border: 1px solid #D17D98;
-        }
-
-        .form-control:focus {
-            border-color: #7D1C4A;
-            box-shadow: 0 0 0 0.2rem rgba(125, 28, 74, 0.25);
         }
     </style>
 </head>
-<body>
+<body class="font-inter gradient-bg min-h-screen">
+    <!-- Global JavaScript variables -->
+    <script>
+        // Sound System
+        let soundEnabled = true;
+        let audioContext = null;
+        
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // Play sound function
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            
+            initAudio();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        function playClickSound() {
+            playSound(800, 0.1, 'square');
+        }
+        
+        function playSuccessSound() {
+            playSound(523.25, 0.2); // C5
+            setTimeout(() => playSound(659.25, 0.2), 150); // E5
+            setTimeout(() => playSound(783.99, 0.3), 300); // G5
+        }
+        
+        // Vibration
+        function vibrate(pattern = [100]) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+        
+        // Sound toggle
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggle = document.getElementById('soundToggle');
+            const icon = toggle.querySelector('i');
+            
+            if (soundEnabled) {
+                toggle.classList.remove('muted');
+                icon.className = 'fas fa-volume-up text-xl';
+                playClickSound();
+            } else {
+                toggle.classList.add('muted');
+                icon.className = 'fas fa-volume-mute text-xl';
+            }
+        }
 
-<!-- Static Sidebar -->
-<!-- <div id="mySidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="toggleSidebar()">&#9776;</a>
-    
-   Hidden Links when Sidebar is Collapsed -->
-    <!-- <a href="{{ url_for('home.home') }}" class="sidebar-link"></a><img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"></a>
-    <a href="{{ url_for('home.home') }}" class="sidebar-link">Welcome to Funza Mama </a>
-    <a href="javascript:history.back()" class="sidebar-link">Back</a>
-    <a href="{{ url_for('login.logout') }}" class="sidebar-link">Logout</a> -->
-<!-- </div>  -->
+        // Avatar mapping for CSS-based avatars
+        window.avatarMap = {
+            'images/avatars/diverse-1.png': {
+                name: 'Aisha',
+                colors: 'from-amber-200 to-orange-300',
+                faceColors: 'from-amber-100 to-orange-200',
+                eyeColor: 'bg-brown-800',
+                smileColor: 'border-brown-800',
+                glasses: false
+            },
+            'images/avatars/diverse-2.png': {
+                name: 'Marcus',
+                colors: 'from-blue-200 to-indigo-300',
+                faceColors: 'from-blue-100 to-indigo-200',
+                eyeColor: 'bg-blue-900',
+                smileColor: 'border-blue-900',
+                glasses: false
+            },
+            'images/avatars/diverse-3.png': {
+                name: 'Priya',
+                colors: 'from-green-200 to-emerald-300',
+                faceColors: 'from-green-100 to-emerald-200',
+                eyeColor: 'bg-green-900',
+                smileColor: 'border-green-900',
+                glasses: false
+            },
+            'images/avatars/professional-1.png': {
+                name: 'Dr. Sarah',
+                colors: 'from-purple-200 to-violet-300',
+                faceColors: 'from-purple-100 to-violet-200',
+                eyeColor: 'bg-purple-900',
+                smileColor: 'border-purple-900',
+                glasses: true
+            },
+            'images/avatars/casual-1.png': {
+                name: 'Emma',
+                colors: 'from-pink-200 to-rose-300',
+                faceColors: 'from-pink-100 to-rose-200',
+                eyeColor: 'bg-pink-900',
+                smileColor: 'border-pink-900',
+                glasses: false
+            },
+            'images/avatars/diverse-4.png': {
+                name: 'Zara',
+                colors: 'from-teal-200 to-cyan-300',
+                faceColors: 'from-teal-100 to-cyan-200',
+                eyeColor: 'bg-teal-900',
+                smileColor: 'border-teal-900',
+                glasses: false
+            },
+            'images/avatars/diverse-5.png': {
+                name: 'Ahmed',
+                colors: 'from-red-200 to-pink-300',
+                faceColors: 'from-red-100 to-pink-200',
+                eyeColor: 'bg-red-900',
+                smileColor: 'border-red-900',
+                glasses: false
+            }
+        };
+    </script>
 
-<!-- Sidebar Content -->
-<div id="mySidebar" class="sidebar">
-
-    <a href="javascript:void(0)" class="closebtn" onclick="toggleSidebar()">&#9776;</a>
-    <!-- Logo and Home Link -->
-    <a href="{{ url_for('home.home') }}" class="sidebar-link">
-        <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="logo" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-    </a>
-
-    <!-- Welcome Message -->
-    <a href="{{ url_for('home.home') }}" class="sidebar-link">Welcome to Funza Mama</a>
-
-    <!-- Back Link (Optional) -->
-    <a href="javascript:history.back()" class="sidebar-link">Back</a>
-
-    <!-- Logout Link -->
-    <a href="{{ url_for('login.logout') }}" class="sidebar-link">Logout</a>
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
+                    <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Home</a>
+                    <a href="{{ url_for('gamestages.game') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Play Game</a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">Logout</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-deep-plum hover:text-deep-rose focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
 </div>
 
-
-
-<!-- Page Content -->
-<div class="main-content">
-    <!-- <button class="btn btn-light" onclick="toggleSidebar()">Toggle Sidebar</button> -->
-
-    <div class="container mt-4">
-        <h2 class="mb-4">Welcome, {{username}}</h2>
-
-        
-
-        <!-- Edit Profile Section -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary">Edit Profile</div>
-            <div class="card-body">
-                <!-- Change Username Form -->
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Change Username</label>
-                        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" required>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+                <div class="flex flex-col space-y-4 pt-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Home</a>
+                    <a href="{{ url_for('gamestages.game') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Play Game</a>
+                    <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">Logout</a>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Save Changes</button>
-                </form>
             </div>
         </div>
+    </nav>
 
-        <!-- Learning Suggestion (Static) -->
-        <div class="card mb-4">
-            <div class="card-header bg-danger">
-                Most Failed Stage: {{ stats.most_failed_stage.name }}
+    <!-- Hero Section -->
+    <section class="py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="fade-in">
+                <h1 class="text-4xl md:text-6xl font-bold text-deep-plum mb-4 font-poppins">
+                    Your Profile
+                </h1>
+                <p class="text-lg md:text-xl text-warm-brown mb-6 max-w-3xl mx-auto">
+                    Welcome back, {{ username }}! Manage your profile and track your learning progress.
+                </p>
             </div>
-            <div class="card-body d-flex align-items-center">
-                <!-- Avatar -->
-                <img src="{{ url_for('static', filename=user.avatar) }}" alt="Avatar" class="me-3" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+        </div>
+    </section>
 
-                <!-- Static Facts -->
-                <div>
-                    <p><strong>Early Detection & Prevention:</strong> Regular prenatal check-ups allow healthcare providers to identify potential complications early on, enabling timely interventions and prevention of conditions that may affect mother or baby.</p>
-                    <p><strong>Education and Awareness:</strong> Educating pregnant women and their families about potential complications and the importance of timely interventions significantly reduces risks associated with pregnancy.</p>
+    <!-- Profile Content -->
+    <section class="py-6 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-3 gap-8">
+                
+                <!-- Profile Info Card -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl card-hover">
+                        <div class="text-center">
+                            <h2 class="text-2xl font-bold text-deep-plum mb-6 font-poppins">Profile Information</h2>
+                            
+                            <!-- Avatar Display -->
+                            <div class="mb-6">
+                                <div id="profile-avatar" class="w-32 h-32 mx-auto rounded-full border-4 border-deep-rose mb-4">
+                                    <!-- Avatar will be rendered here by JavaScript -->
+                    </div>
+                                <p id="profile-avatar-name" class="text-lg font-semibold text-deep-plum"></p>
+        </div>
+
+                            <!-- User Details -->
+                            <div class="space-y-4 text-left">
+                                <div class="flex justify-between items-center py-2 border-b border-warm-gray">
+                                    <span class="font-semibold text-warm-brown">Name:</span>
+                                    <span class="text-deep-plum">{{ username }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-warm-gray">
+                                    <span class="font-semibold text-warm-brown">Email:</span>
+                                    <span class="text-deep-plum text-sm">{{ user.email if user else 'N/A' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-warm-gray">
+                                    <span class="font-semibold text-warm-brown">Member Since:</span>
+                                    <span class="text-deep-plum text-sm">{{ user.created_at.strftime('%B %Y') if user and user.created_at else 'N/A' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-semibold text-warm-brown">Role:</span>
+                                    <span class="text-deep-plum capitalize">{{ user.role if user else 'User' }}</span>
+                                </div>
+            </div>
                 </div>
             </div>
         </div>
 
-        <!-- Game Statistics Section -->
-        <div class="row">
-            <!-- Game Summary -->
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header bg-info">Game Statistics</div>
-                    <div class="card-body">
-                        <p><strong>Total Questions Attempted:</strong> {{ stats.total_attempted }}</p>
-                        <p><strong>Total Correct:</strong> {{ stats.total_correct }}</p>
-                        <p><strong>Total Failed:</strong> {{ stats.total_failed }}</p>
-                        <p><strong>Leading Stage:</strong> {{ stats.leading_stage }}</p>
+                <!-- Learning Statistics -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl card-hover">
+                        <h2 class="text-2xl font-bold text-deep-plum mb-6 font-poppins">Learning Statistics</h2>
+                        
+                        <!-- Stats Grid -->
+                        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="text-center bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl p-4">
+                                <div class="text-3xl font-bold text-blue-600">{{ stats.total_attempted if stats else 0 }}</div>
+                                <div class="text-sm text-blue-700 font-medium">Stage Attempts</div>
+                                <div class="text-xs text-blue-600 mt-1">({{ stats.total_correct + stats.total_failed if stats else 0 }} questions total)</div>
+                            </div>
+                            <div class="text-center bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-4">
+                                <div class="text-3xl font-bold text-green-600">{{ stats.total_correct if stats else 0 }}</div>
+                                <div class="text-sm text-green-700 font-medium">Correct Answers</div>
+                            </div>
+                            <div class="text-center bg-gradient-to-br from-orange-100 to-yellow-100 rounded-xl p-4">
+                                <div class="text-3xl font-bold text-orange-600">{{ stats.total_failed if stats else 0 }}</div>
+                                <div class="text-sm text-orange-700 font-medium">Incorrect Answers</div>
+                            </div>
+                            <div class="text-center bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl p-4">
+                                <div class="text-3xl font-bold text-purple-600">
+                                    {{ "%.1f"|format((stats.total_correct / (stats.total_correct + stats.total_failed) * 100) if stats and (stats.total_correct + stats.total_failed) > 0 else 0) }}%
                     </div>
+                                <div class="text-sm text-purple-700 font-medium">Accuracy Rate</div>
                 </div>
             </div>
 
             <!-- Stage Performance -->
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header bg-warning">Stage Performance</div>
-                    <div class="card-body">
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold text-deep-plum mb-4">Stage Performance</h3>
+                            <div class="space-y-4">
+                                {% if stats and stats.stages %}
                         {% for stage in stats.stages %}
-                            <p><strong>{{ stage.name }}</strong>: {{ stage.correct }} correct / {{ stage.failed }} failed</p>
+                                    <div class="bg-warm-gray/50 rounded-xl p-4">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-semibold text-deep-plum">{{ stage.name }}</span>
+                                            <div class="text-right">
+                                                <div class="text-sm text-warm-brown">{{ stage.correct }} correct / {{ stage.failed }} failed</div>
+                                                <div class="text-xs text-warm-brown">{{ stage.attempts if stage.attempts is defined else 0 }} attempts</div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full bg-warm-gray rounded-full h-2">
+                                            {% set stage_accuracy = (stage.correct / (stage.correct + stage.failed) * 100) if (stage.correct + stage.failed) > 0 else 0 %}
+                                            <div class="bg-gradient-to-r from-deep-rose to-warm-mauve h-2 rounded-full progress-bar" 
+                                                 style="width: {{ stage_accuracy }}%"></div>
+                                        </div>
+                                        <div class="text-xs text-warm-brown mt-1">{{ "%.1f"|format(stage_accuracy) }}% accuracy</div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center text-warm-brown py-8">
+                                        <i class="fas fa-chart-line text-4xl mb-4 text-warm-gray"></i>
+                                        <p>No learning data available yet. Start playing to see your progress!</p>
+                                    </div>
+                                {% endif %}
+            </div>
+        </div>
+
+                        <!-- Learning Insights -->
+                        {% if stats and stats.most_failed_stage and stats.most_failed_stage.total_attempts > 0 %}
+                        <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-6 border-l-4 border-red-400">
+                            <h3 class="text-lg font-semibold text-red-800 mb-3">
+                                <i class="fas fa-lightbulb mr-2"></i>
+                                Learning Focus Area
+                            </h3>
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-red-700 font-semibold">{{ stats.most_failed_stage.name }}</span>
+                                    <span class="text-red-600 text-sm">{{ stats.most_failed_stage.accuracy }}% accuracy</span>
+                                </div>
+                                <div class="w-full bg-red-200 rounded-full h-2 mb-2">
+                                    <div class="bg-red-500 h-2 rounded-full progress-bar" 
+                                         style="width: {{ stats.most_failed_stage.accuracy }}%"></div>
+                                </div>
+                                <div class="text-sm text-red-600">
+                                    {{ stats.most_failed_stage.correct }} correct / {{ stats.most_failed_stage.failed }} failed 
+                                    ({{ stats.most_failed_stage.total_attempts }} total attempts)
+                                </div>
+                            </div>
+                            <p class="text-sm text-red-600 mb-3">
+                                This stage has the lowest accuracy rate and needs more attention. Consider reviewing the learning materials and practicing more questions in this area.
+                            </p>
+                            {% if stats.most_failed_stage.facts %}
+                            <div class="bg-white/50 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-red-800 mb-2">Learning Tips:</h4>
+                                <ul class="text-sm text-red-700 space-y-1">
+                                    {% for fact in stats.most_failed_stage.facts %}
+                                    <li>• {{ fact }}</li>
                         {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% elif stats and stats.most_failed_stage and stats.most_failed_stage.total_attempts == 0 %}
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-l-4 border-blue-400">
+                            <h3 class="text-lg font-semibold text-blue-800 mb-3">
+                                <i class="fas fa-play-circle mr-2"></i>
+                                Ready to Start Learning
+                            </h3>
+                            <p class="text-blue-700 mb-2">
+                                You haven't attempted any stages yet. Start your learning journey to see personalized insights!
+                            </p>
+                            <a href="{{ url_for('gamestages.game') }}" 
+                               class="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <i class="fas fa-play mr-2"></i>
+                                Start Learning
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
+            <!-- Edit Profile Section -->
+            <div class="mt-8">
+                <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl card-hover">
+                    <h2 class="text-2xl font-bold text-deep-plum mb-6 font-poppins">Edit Profile</h2>
+                    
+                    <form method="POST" class="max-w-md">
+                        <div class="mb-6">
+                            <label for="username" class="block text-sm font-semibold text-warm-brown mb-2">Username</label>
+                            <input type="text" 
+                                   id="username" 
+                                   name="username" 
+                                   value="{{ username }}" 
+                                   class="w-full px-4 py-3 border border-warm-gray rounded-xl focus:ring-2 focus:ring-deep-rose focus:border-transparent transition-all"
+                                   required>
+                    </div>
+                        
+                        <button type="submit" 
+                                class="w-full bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-6 rounded-xl font-semibold hover:from-warm-mauve hover:to-deep-rose transition-all transform hover:scale-105"
+                                onclick="playSuccessSound(); vibrate([50])">
+                            <i class="fas fa-save mr-2"></i>
+                            Save Changes
+                        </button>
+                    </form>
         </div>
     </div>
 </div>
+    </section>
 
-<!-- Sidebar Toggle Script -->
-<!-- Sidebar Toggle Script -->
+    <!-- Sound Toggle Button -->
+    <button id="soundToggle" onclick="toggleSound()" class="sound-toggle" title="Toggle Sound">
+        <i class="fas fa-volume-up text-xl"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="bg-deep-plum text-white py-12 px-4 sm:px-6 lg:px-8 mt-16">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="fade-in">
+                <h3 class="text-2xl font-bold mb-4 font-poppins">Funza Mama</h3>
+                <p class="text-lg mb-6 text-warm-pink">
+                    Empowering families through knowledge and play.
+                </p>
+                <div class="flex justify-center space-x-6 mb-8">
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-warm-pink hover:text-white transition-colors">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-sm text-warm-pink">
+                    © 2025 Funza Mama. All rights reserved. | "Funza Mama" means "Teach the Mother" in Swahili.
+                </p>
+    </div>
+</div>
+    </footer>
+
 <script>
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle hamburger icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+            }
 
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById("mySidebar");
-        const mainContent = document.querySelector('.main-content');
-        
-        // Toggle the collapsed state on sidebar and content
-        sidebar.classList.toggle("collapsed");
-        mainContent.classList.toggle("collapsed");
-        
-        // Toggle visibility of links inside the sidebar based on collapsed state
-        const links = sidebar.querySelectorAll('.sidebar-link');
-        links.forEach(link => {
-            link.style.display = sidebar.classList.contains("collapsed") ? "none" : "block";
+            // Initialize audio
+            initAudio();
+            
+            // Render profile avatar
+            renderProfileAvatar();
         });
-    }
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        // Function to render the profile avatar
+        function renderProfileAvatar() {
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileAvatarName = document.getElementById('profile-avatar-name');
+            
+            if (!profileAvatar || !profileAvatarName) return;
+            
+            // Get the user's current avatar from the server
+            const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
+            
+            if (userAvatar && window.avatarMap[userAvatar]) {
+                const avatarData = window.avatarMap[userAvatar];
+                
+                // Create the avatar HTML
+                const avatarHTML = `
+                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
+                        <div class="avatar-face w-24 h-24 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                            <div class="avatar-eyes flex space-x-2">
+                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                            </div>
+                            <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
+                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-2 w-10 h-4 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                profileAvatar.innerHTML = avatarHTML;
+                profileAvatarName.textContent = avatarData.name;
+            } else {
+                // Fallback for old image-based avatars or no avatar
+                if (userAvatar && userAvatar.includes('images/')) {
+                    profileAvatar.innerHTML = `<img src="/static/${userAvatar}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                    profileAvatarName.textContent = "Your Avatar";
+                } else {
+                    profileAvatar.innerHTML = `
+                        <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-500 text-3xl"></i>
+                        </div>
+                    `;
+                    profileAvatarName.textContent = "No Avatar Selected";
+                }
+            }
+        }
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections for fade-in animation
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+</script>
 </body>
 </html>

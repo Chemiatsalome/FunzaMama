@@ -24,6 +24,16 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     avatar = db.Column(db.String(255), nullable=True)
+    # New columns for email verification - with nullable=True for backward compatibility
+    email_verified = db.Column(db.Boolean, default=False, nullable=True)
+    email_verification_token = db.Column(db.String(255), nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)
+    # User role: 'user' for regular users, 'admin' for administrators
+    role = db.Column(db.String(20), default='user', nullable=True)
+    # Demographics for analytics
+    age = db.Column(db.Integer, nullable=True)
+    gender = db.Column(db.String(10), nullable=True)
 
     # Relationships
     responses = db.relationship('UserResponse', backref='user', lazy=True)
@@ -36,6 +46,10 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def is_admin(self):
+        """Check if user has admin role"""
+        return self.role == 'admin'
 
 
 
@@ -107,3 +121,34 @@ class UserScenarioProgress(BaseModel):
     attempt_count = db.Column(db.Integer, default=0)
     last_attempt_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     completed = db.Column(db.Boolean, default=False)
+
+
+# ----------------------
+# UserQuestionHistory Model for Adaptive Learning
+# ----------------------
+class UserQuestionHistory(BaseModel):
+    __tablename__ = 'user_question_history'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_ID'), nullable=False)
+    stage = db.Column(db.String(50), nullable=False)
+    question_text = db.Column(db.Text, nullable=False)
+    question_hash = db.Column(db.String(64), nullable=False)
+    is_correct = db.Column(db.Boolean, nullable=False)
+    attempt_count = db.Column(db.Integer, default=1)
+    last_attempted = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    difficulty_level = db.Column(db.Integer, default=1)
+    needs_review = db.Column(db.Boolean, default=False)
+
+
+# ----------------------
+# Feedback Model
+# ----------------------
+class Feedback(BaseModel):
+    __tablename__ = 'feedback'
+    
+    user_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(50), nullable=False)  # bug, feature, content, other
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, reviewed, resolved, replied
+    admin_reply = db.Column(db.Text, nullable=True)
+    screenshot_path = db.Column(db.String(255), nullable=True)

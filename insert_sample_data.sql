@@ -1,0 +1,26 @@
+-- Sample Data for Funza Mama Database
+-- Run this AFTER creating the tables
+
+-- Note: The badge table will be created automatically when users start playing
+-- No sample badge data needed as badges are created dynamically
+
+-- Insert sample users
+INSERT INTO `users` (`first_name`, `second_name`, `username`, `email`, `password_hash`, `avatar`) VALUES
+('Sarah', 'Johnson', 'sarah_j', 'sarah@example.com', 'scrypt:32768:8:1$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L/2QzK1a2', 'images/woman1/avatar-happy.png'),
+('Michael', 'Brown', 'michael_b', 'michael@example.com', 'scrypt:32768:8:1$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L/2QzK1a2', 'images/man1/avatar-happy.png'),
+('Test', 'User', 'testuser', 'test@example.com', 'scrypt:32768:8:1$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L/2QzK1a2', 'images/man2/avatar-happy.png');
+
+-- Insert sample quiz questions
+INSERT INTO `quiz_questions` (`scenario`, `question`, `options`, `answer`, `correct_reason`, `incorrect_reason`) VALUES
+('preconception', 'What is the recommended daily folic acid intake for women planning to conceive?', '["400 mcg", "800 mcg", "1200 mcg", "1600 mcg"]', '400 mcg', 'The CDC recommends 400 mcg of folic acid daily for women of childbearing age to prevent neural tube defects.', 'Higher doses may be needed for women with certain medical conditions, but 400 mcg is the standard recommendation.'),
+('preconception', 'How long before conception should women start taking folic acid?', '["1 month", "3 months", "6 months", "1 year"]', '1 month', 'Women should start taking folic acid at least 1 month before conception for optimal protection.', 'While longer periods are beneficial, at least 1 month is the minimum recommended timeframe.'),
+('preconception', 'Which lifestyle factor is most important to address before pregnancy?', '["Exercise routine", "Smoking cessation", "Diet changes", "Sleep schedule"]', 'Smoking cessation', 'Smoking cessation is crucial as it affects fertility and can cause serious pregnancy complications.', 'While other factors are important, smoking has the most significant impact on pregnancy outcomes.'),
+('prenatal', 'When should a pregnant woman have her first prenatal visit?', '["As soon as she suspects pregnancy", "After 8 weeks", "After 12 weeks", "After 16 weeks"]', 'As soon as she suspects pregnancy', 'Early prenatal care is essential for monitoring the health of both mother and baby.', 'Delaying prenatal care can miss important early developmental milestones and potential issues.'),
+('prenatal', 'What is the recommended weight gain during pregnancy for a woman with normal BMI?', '["15-20 lbs", "25-35 lbs", "35-45 lbs", "45-55 lbs"]', '25-35 lbs', 'The recommended weight gain for women with normal BMI (18.5-24.9) is 25-35 pounds.', 'This range is specifically for normal BMI women; recommendations vary based on pre-pregnancy weight.'),
+('prenatal', 'Which trimester is most critical for fetal organ development?', '["First trimester", "Second trimester", "Third trimester", "All equally important"]', 'First trimester', 'The first trimester is when major organs and systems form, making it the most critical period.', 'While all trimesters are important, the first trimester is when the foundation is laid.'),
+('birth', 'What is the first stage of labor?', '["Pushing", "Cervical dilation", "Placenta delivery", "Recovery"]', 'Cervical dilation', 'The first stage involves cervical dilation from 0 to 10 centimeters.', 'This stage focuses on cervical preparation, not active pushing or delivery.'),
+('birth', 'When should you go to the hospital during labor?', '["At first contraction", "When contractions are 5 minutes apart", "When water breaks", "When contractions are 2 minutes apart"]', 'When contractions are 5 minutes apart', 'The 5-1-1 rule: contractions 5 minutes apart, lasting 1 minute, for 1 hour.', 'Going too early or too late can affect the birth experience and safety.'),
+('birth', 'What is the normal duration of the second stage of labor for first-time mothers?', '["30 minutes", "1-2 hours", "2-3 hours", "3-4 hours"]', '1-2 hours', 'The second stage (pushing) typically lasts 1-2 hours for first-time mothers.', 'This stage can vary, but 1-2 hours is the average for first-time mothers.'),
+('postnatal', 'How often should a newborn be fed in the first few weeks?', '["Every 2 hours", "Every 3-4 hours", "On demand", "Every 6 hours"]', 'On demand', 'Newborns should be fed on demand, typically every 2-3 hours, to ensure proper nutrition.', 'Rigid schedules can interfere with the baby\'s natural feeding patterns and growth.'),
+('postnatal', 'What is the recommended sleeping position for newborns?', '["On their stomach", "On their side", "On their back", "Any position is fine"]', 'On their back', 'Back sleeping reduces the risk of SIDS and is the safest position for newborns.', 'This position has been proven to significantly reduce the risk of sudden infant death syndrome.'),
+('postnatal', 'When should a newborn have their first pediatric visit?', '["Within 24 hours", "Within 3-5 days", "Within 1 week", "Within 2 weeks"]', 'Within 3-5 days', 'The first well-baby visit should occur within 3-5 days of birth to monitor early development.', 'This timing allows for early detection of any issues while not being too overwhelming for new parents.');

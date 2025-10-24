@@ -3,100 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funza Mama - Login</title>
+    <title>Login - Funza Mama</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'warm-pink': '#F8BBD9',
+                        'soft-purple': '#E8C5E8',
+                        'deep-rose': '#D63384',
+                        'warm-mauve': '#C77DFF',
+                        'soft-cream': '#FFF8F0',
+                        'warm-gray': '#F5F5F5',
+                        'deep-plum': '#6B46C1',
+                        'warm-brown': '#8B4513'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            background: linear-gradient(135deg, #D17D98, #F4CCE9);
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        .gradient-bg {
+            background: linear-gradient(135deg, #F8BBD9 0%, #E8C5E8 50%, #FFF8F0 100%);
         }
-        .login-container {
-            background: #FFF3F3;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
         }
-        h1 {
-            color: #7D1C4A;
-            font-size: 24px;
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .input-field {
-            width: 95%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #D17D98;
-            border-radius: 5px;
-            background: #FAE3E3;
+        
+        .form-input {
+            transition: all 0.3s ease;
         }
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background: #7D1C4A;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+        
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-        .btn:hover {
-            background: #56021F;
+        
+        .btn-primary {
+            transition: all 0.3s ease;
         }
-        .signup-link {
-            margin-top: 15px;
-            color: #7D1C4A;
-            font-size: 14px;
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
-        .alert {
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
     </style>
 </head>
-<body>
-    <div class="login-container">
+<body class="min-h-screen gradient-bg font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
+                    <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-4 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Login Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 fade-in">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-deep-rose to-warm-mauve rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sign-in-alt text-white text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-deep-plum font-poppins mb-2">Welcome Back</h2>
+                    <p class="text-warm-brown">Sign in to continue your learning journey</p>
+                </div>
+
+                <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
+                            <div class="mb-6 p-4 rounded-xl {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                <div class="flex items-center justify-between">
+                                    <span>{{ message }}</span>
+                                    <button onclick="this.parentElement.parentElement.remove()" class="text-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'yellow' if category == 'warning' else 'blue' }}-500 hover:text-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'yellow' if category == 'warning' else 'blue' }}-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <h1>Funza Mama</h1>
-        <form action="{{ url_for('login.login') }}" method="POST">
-            <input type="text" name="email" class="input-field" placeholder="email" required>
-            <input type="password" name="password" class="input-field" placeholder="Password" required>
-            <button type="submit" class="btn">Login</button>
-            <p class="signup-link">Don't have an account? <a href="{{ url_for('signup.signup') }}">Sign up</a></p>
-            <p class="signup-link">Or go back home? <a href="{{ url_for('home.home') }}">Home</a></p>
+
+                <!-- Login Form -->
+                <form method="POST" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-deep-plum mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                            placeholder="Enter your email"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-deep-plum mb-2">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                            placeholder="Enter your password"
+                        >
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input 
+                                id="remember-me" 
+                                name="remember-me" 
+                                type="checkbox" 
+                                class="h-4 w-4 text-deep-rose focus:ring-deep-rose border-gray-300 rounded"
+                            >
+                            <label for="remember-me" class="ml-2 block text-sm text-warm-brown">
+                                Remember me
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-deep-rose hover:text-deep-plum transition-colors">
+                                Forgot password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        class="btn-primary w-full bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-4 rounded-xl hover:from-warm-mauve hover:to-deep-rose font-semibold"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
         </form>
         
+                <!-- Divider -->
+                <div class="mt-8">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-warm-brown">New to Funza Mama?</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sign Up Link -->
+                <div class="mt-6 text-center">
+                    <a 
+                        href="{{ url_for('signup.signup') }}" 
+                        class="w-full bg-white text-deep-plum py-3 px-4 rounded-xl hover:bg-warm-gray transition-colors font-semibold border-2 border-deep-plum inline-block"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create New Account
+                    </a>
+                </div>
+
+                <!-- Back to Home -->
+                <div class="mt-4 text-center">
+                    <a 
+                        href="{{ url_for('home.home') }}" 
+                        class="text-warm-brown hover:text-deep-plum transition-colors text-sm"
+                    >
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features Preview -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 fade-in">
+                <h3 class="text-lg font-semibold text-deep-plum mb-4 text-center">What you'll get:</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm">Personalized learning journey</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-white text-sm"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm">AI-powered guidance</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-trophy text-white text-sm"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm">Track progress & earn badges</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-white/60 backdrop-blur-sm py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-warm-brown font-medium">
+                    <i class="fas fa-heart text-deep-rose mr-1"></i>
+                    Empowering families through knowledge and play
+                </p>
+                <p class="text-warm-brown text-sm mt-2">© 2024 Funza Mama. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

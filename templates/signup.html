@@ -3,318 +3,577 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup - Funza Mama</title>
+    <title>Sign Up - Funza Mama</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon"> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'warm-pink': '#F8BBD9',
+                        'soft-purple': '#E8C5E8',
+                        'deep-rose': '#D63384',
+                        'warm-mauve': '#C77DFF',
+                        'soft-cream': '#FFF8F0',
+                        'warm-gray': '#F5F5F5',
+                        'deep-plum': '#6B46C1',
+                        'warm-brown': '#8B4513'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* General Body Styling */
-/* General Body Styling */
-body {
-    background: linear-gradient(135deg, #D17D98, #F4CCE9);
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    color: #333;
-    padding: 20px; /* Adding space around the body */
-    box-sizing: border-box;
-}
-
-/* Container Styling */
-.signup-container {
-    background: #FFF3F3;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 380px; /* Slightly smaller width */
-    max-height: 500px; /* Limit the height */
-    overflow-y: auto; /* Allow scrolling if content overflows */
-    text-align: center;
-    margin-top: 30px; /* Add space at the top */
-    margin-bottom: 30px; /* Add space at the bottom */
-    box-sizing: border-box; /* Ensure padding is included in the container size */
-}
-
-/* Avatar Dropdown Styling */
-.custom-dropdown {
-    position: relative;
-    display: inline-block;
-    width: 90%;
-    margin-top: 20px; /* Add more space above the avatar section */
-}
-
-
-/* Heading Styling */
-h2 {
-    color: #7D1C4A;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-/* Input Styling */
-input {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #7D1C4A;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-/* Button Styling */
-button {
-    background: #7D1C4A;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 15px; 
-}
-
-button:hover {
-    background: #56021F;
-}
-
-/* Password Message Styling */
-.password-message {
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-/* Alert Styling */
-.alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.alert-warning {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-/* Avatar Dropdown Styling */
-.custom-dropdown {
-    position: relative;
-    display: inline-block;
-    width: 90%;
-    margin-top: 15px;
-}
-
-.selected-avatar {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 10px;
-    border: 1px solid #7D1C4A;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    justify-content: space-between;
-}
-
-.selected-avatar img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.selected-avatar span {
-    font-size: 16px;
-    color: #7D1C4A;
-}
-
-.avatar-options {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    border: 1px solid #7D1C4A;
-    border-radius: 5px;
-    z-index: 1;
-    max-height: 150px;
-    overflow-y: auto;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        .gradient-bg {
+            background: linear-gradient(135deg, #F8BBD9 0%, #E8C5E8 50%, #FFF8F0 100%);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 .avatar-option {
-    padding: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+            transition: all 0.3s ease;
 }
 
 .avatar-option:hover {
-    background-color: #f0f0f0;
-}
+            transform: scale(1.05);
+        }
+        
+        .avatar-option.selected {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* Avatar animations */
+        .avatar-container {
+            animation: avatarBreathe 3s ease-in-out infinite;
+        }
 
-.avatar-option img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
+        .avatar-eyes .animate-blink {
+            animation: avatarBlink 4s ease-in-out infinite;
+        }
 
-.custom-dropdown.open .avatar-options {
-    display: block;
-}
+        .avatar-smile {
+            animation: avatarSmile 2s ease-in-out infinite;
+        }
 
-/* Links Styling */
-.login-link {
-    margin-top: 15px;
-    color: #7D1C4A;
-    font-size: 14px;
-}
+        @keyframes avatarBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
 
-.login-link a {
-    text-decoration: none;
-    color: #7D1C4A;
-}
+        @keyframes avatarBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
 
-.login-link a:hover {
-    color: #56021F;
-}
-
-
+        @keyframes avatarSmile {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.1); }
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen gradient-bg font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
+                    <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="{{ url_for('login.login') }}" class="bg-deep-plum text-white px-4 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <div class="signup-container">
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl w-full space-y-8">
+            <!-- Signup Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 fade-in">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-deep-rose to-warm-mauve rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-plus text-white text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-deep-plum font-poppins mb-2">Join Funza Mama</h2>
+                    <p class="text-warm-brown">Start your personalized maternal health learning journey</p>
+                </div>
+
+                <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
+                            <div class="mb-6 p-4 rounded-xl {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                <div class="flex items-center justify-between">
+                                    <span>{{ message }}</span>
+                                    <button onclick="this.parentElement.parentElement.remove()" class="text-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'yellow' if category == 'warning' else 'blue' }}-500 hover:text-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'yellow' if category == 'warning' else 'blue' }}-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
         
-        <h2>Funza Mama - Signup</h2>
-        <form action="{{ url_for('signup.signup') }}" method="POST">
-            <input type="text" name="fname" placeholder="First Name" required>
-            <input type="text" name="lname" placeholder="Last Name" required>
-            <input type="text" name="Uname" placeholder="User Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-            <p class="password-message" id="password-message"></p>
-            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
-        
-            <!-- Avatar Selection Dropdown -->
-            <label for="avatar">Choose an Avatar:</label>
-            <div class="custom-dropdown">
-                <div class="selected-avatar">
-                    <img src="images/man1/avatar-happy.png" alt="avatar" id="avatar-img">
-                    <span>Select Avatar</span>
+                <!-- Signup Form -->
+                <form method="POST" class="space-y-6">
+                    <!-- Personal Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-user mr-2"></i>First Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="first_name" 
+                                name="fname" 
+                                required 
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                placeholder="Enter your first name"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-user mr-2"></i>Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="last_name" 
+                                name="lname" 
+                                required 
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                placeholder="Enter your last name"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-deep-plum mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                            placeholder="Enter your email"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-deep-plum mb-2">
+                            <i class="fas fa-user mr-2"></i>Username
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="Uname" 
+                            required 
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                            placeholder="Choose a username"
+                        >
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-lock mr-2"></i>Password
+                            </label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required 
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                placeholder="Create a password"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-lock mr-2"></i>Confirm Password
+                            </label>
+                            <input 
+                                type="password" 
+                                id="confirm_password" 
+                                name="confirm_password" 
+                                required 
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                placeholder="Confirm your password"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Demographics -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="age" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-calendar mr-2"></i>Age
+                            </label>
+                            <input 
+                                type="number" 
+                                id="age" 
+                                name="age" 
+                                required 
+                                min="13" 
+                                max="100"
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                placeholder="Enter your age"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-venus-mars mr-2"></i>Gender
+                            </label>
+                            <select 
+                                id="gender" 
+                                name="gender" 
+                                required 
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                            >
+                                <option value="">Select your gender</option>
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Avatar Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-deep-plum mb-4">
+                            <i class="fas fa-user-circle mr-2"></i>Choose Your Avatar
+                        </label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/diverse-1.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-brown-800 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-brown-800 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-brown-800 border-t-0 rounded-b-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-center text-deep-plum font-medium">Aisha</p>
+                                <input type="radio" name="avatar" value="images/avatars/diverse-1.png" class="hidden">
+                            </div>
+                            
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/diverse-2.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-indigo-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-blue-900 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-blue-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-blue-900 border-t-0 rounded-b-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-center text-deep-plum font-medium">Marcus</p>
+                                <input type="radio" name="avatar" value="images/avatars/diverse-2.png" class="hidden">
+                            </div>
+                            
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/diverse-3.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-green-200 to-emerald-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-green-900 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-green-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-green-900 border-t-0 rounded-b-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-center text-deep-plum font-medium">Priya</p>
+                                <input type="radio" name="avatar" value="images/avatars/diverse-3.png" class="hidden">
+                            </div>
+                            
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/professional-1.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-purple-200 to-violet-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-violet-200 flex items-center justify-center relative">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-purple-900 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-purple-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-purple-900 border-t-0 rounded-b-full"></div>
+                                            <div class="avatar-glasses absolute top-1.5 w-8 h-3 border-2 border-purple-900 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-center text-deep-plum font-medium">Dr. Sarah</p>
+                                <input type="radio" name="avatar" value="images/avatars/professional-1.png" class="hidden">
+                            </div>
+                            
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/casual-1.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-rose-200 flex items-center justify-center">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-pink-900 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-pink-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-pink-900 border-t-0 rounded-b-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-center text-deep-plum font-medium">Emma</p>
+                                <input type="radio" name="avatar" value="images/avatars/casual-1.png" class="hidden">
+                            </div>
+                            
+                            <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/diverse-4.png', this)">
+                                <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
+                                    <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br from-teal-200 to-cyan-300 flex items-center justify-center">
+                                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br from-teal-100 to-cyan-200 flex items-center justify-center">
+                                            <div class="avatar-eyes flex space-x-1">
+                                                <div class="w-1.5 h-1.5 bg-teal-900 rounded-full animate-blink"></div>
+                                                <div class="w-1.5 h-1.5 bg-teal-900 rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                            </div>
+                                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 border-teal-900 border-t-0 rounded-b-full"></div>
+                                        </div>
                 </div>
-                <div class="avatar-options">
-                    <div class="avatar-option" data-value="images/man1/avatar-happy.png">
-                        <img src="{{ url_for('static', filename='images/man1/avatar-happy.png') }}"alt="Happy Man ">
                     </div>
-                    <div class="avatar-option" data-value="images/man2/avatar-happy.png'">
-                        <img src="{{ url_for('static', filename='images/man2/avatar-happy.png') }}" alt="Happy Man ">
+                                <p class="text-xs text-center text-deep-plum font-medium">Zara</p>
+                                <input type="radio" name="avatar" value="images/avatars/diverse-4.png" class="hidden">
                     </div>
-                    <div class="avatar-option" data-value="images/woman1/avatar-sad.png">
-                        <img src="{{ url_for('static', filename='images/woman1/avatar-happy.png') }}" alt="Happy Lady">
                     </div>
                 </div>
-                <input type="hidden" name="avatar" id="avatar-input" value="images/man1/avatar-happy.png">
+
+                    <!-- Terms and Conditions -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input 
+                                id="terms" 
+                                name="terms" 
+                                type="checkbox" 
+                                required
+                                class="h-4 w-4 text-deep-rose focus:ring-deep-rose border-gray-300 rounded"
+                            >
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="terms" class="text-warm-brown">
+                                I agree to the <a href="#" class="text-deep-rose hover:text-deep-plum font-medium">Terms of Service</a> 
+                                and <a href="#" class="text-deep-rose hover:text-deep-plum font-medium">Privacy Policy</a>
+                            </label>
+                        </div>
             </div>
-        <br>
-            <button type="submit">Signup</button>
+
+                    <button 
+                        type="submit" 
+                        class="btn-primary w-full bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-4 rounded-xl hover:from-warm-mauve hover:to-deep-rose font-semibold"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create Account
+                    </button>
         </form>
         
-        <p class="login-link">Already have an account? <a href="{{ url_for('login.login') }}">Login</a></p>
-        <p class="login-link">Or Go back home? <a href="{{ url_for('home.home') }}">Home</a></p>
+                <!-- Divider -->
+                <div class="mt-8">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-warm-brown">Already have an account?</span>
+                        </div>
+                    </div>
     </div>
 
+                <!-- Login Link -->
+                <div class="mt-6 text-center">
+                    <a 
+                        href="{{ url_for('login.login') }}" 
+                        class="w-full bg-white text-deep-plum py-3 px-4 rounded-xl hover:bg-warm-gray transition-colors font-semibold border-2 border-deep-plum inline-block"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In Instead
+                    </a>
+                </div>
+
+                <!-- Back to Home -->
+                <div class="mt-4 text-center">
+                    <a 
+                        href="{{ url_for('home.home') }}" 
+                        class="text-warm-brown hover:text-deep-plum transition-colors text-sm"
+                    >
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features Preview -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 fade-in">
+                <h3 class="text-lg font-semibold text-deep-plum mb-4 text-center">What you'll get:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex flex-col items-center space-y-2">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white text-lg"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm text-center">Interactive Learning</span>
+                    </div>
+                    <div class="flex flex-col items-center space-y-2">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-white text-lg"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm text-center">AI Guidance</span>
+                    </div>
+                    <div class="flex flex-col items-center space-y-2">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-trophy text-white text-lg"></i>
+                        </div>
+                        <span class="text-warm-brown text-sm text-center">Progress Tracking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white/60 backdrop-blur-sm py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-warm-brown font-medium">
+                    <i class="fas fa-heart text-deep-rose mr-1"></i>
+                    Empowering families through knowledge and play
+                </p>
+                <p class="text-warm-brown text-sm mt-2">© 2024 Funza Mama. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const passwordInput = document.getElementById("password");
-            const confirmPasswordInput = document.getElementById("confirm_password");
-            const passwordMessage = document.getElementById("password-message");
-
-            if (passwordInput && confirmPasswordInput) {
-                passwordInput.addEventListener("input", function () {
-                    const password = passwordInput.value;
-                    let message = "";
-
-                    if (password.length < 8) {
-                        message = "Password must be at least 8 characters.";
-                    } else if (!/[A-Z]/.test(password)) {
-                        message = "Include at least one uppercase letter.";
-                    } else if (!/[a-z]/.test(password)) {
-                        message = "Include at least one lowercase letter.";
-                    } else if (!/[0-9]/.test(password)) {
-                        message = "Include at least one number.";
-                    } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) {
-                        message = "Include at least one special character.";
-                    }
-
-                    passwordMessage.textContent = message;
-                    passwordMessage.style.color = message ? "red" : "green";
-                });
-
-                confirmPasswordInput.addEventListener("input", function () {
-                    if (confirmPasswordInput.value !== passwordInput.value) {
-                        confirmPasswordInput.setCustomValidity("Passwords do not match.");
-                    } else {
-                        confirmPasswordInput.setCustomValidity("");
-                    }
-                });
+        function selectAvatar(avatarPath, element) {
+            // Play click sound and vibrate
+            playClickSound();
+            vibrate([50]);
+            
+            // Remove selected class from all options
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.classList.remove('selected');
+                option.classList.remove('bg-deep-rose/20');
+                option.classList.add('bg-warm-gray/30');
+            });
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            element.classList.remove('bg-warm-gray/30');
+            element.classList.add('bg-deep-rose/20');
+            
+            // Check the radio button
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+        }
+        
+        // Sound System for signup
+        let soundEnabled = true;
+        let audioContext = null;
+        
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
-        });
+        }
+        
+        // Play sound function
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            
+            initAudio();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        function playClickSound() {
+            playSound(800, 0.1, 'square');
+        }
+        
+        // Vibration
+        function vibrate(pattern = [100]) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
 
-        document.addEventListener("DOMContentLoaded", function () {
-    const dropdown = document.querySelector('.custom-dropdown');
-    const selectedAvatar = document.querySelector('.selected-avatar');
-    const avatarOptions = document.querySelector('.avatar-options');
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarImg = document.getElementById('avatar-img');
-
-    // Toggle dropdown visibility
-    selectedAvatar.addEventListener('click', function () {
-        dropdown.classList.toggle('open');
-    });
-
-    // Change avatar when an option is selected
-    const options = document.querySelectorAll('.avatar-option');
-    options.forEach(option => {
-        option.addEventListener('click', function () {
-            const value = this.getAttribute('data-value');
-            avatarInput.value = value;
-            avatarImg.src = value;
-            avatarImg.alt = this.querySelector('img').alt;
-            dropdown.classList.remove('open');
-        });
-    });
-
-    // Close the dropdown if clicked outside
-    document.addEventListener('click', function (e) {
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            form.addEventListener('submit', function(e) {
+                if (password.value !== confirmPassword.value) {
+                    e.preventDefault();
+                    alert('Passwords do not match!');
+                    return false;
         }
     });
 });
-
     </script>
 </body>
 </html>

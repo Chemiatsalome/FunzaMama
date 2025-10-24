@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Funza Mama</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --deep-plum: #6B46C1;
+            --warm-mauve: #C084FC;
+            --deep-rose: #E11D48;
+            --warm-pink: #F8BBD9;
+            --warm-brown: #8B4513;
+            --warm-gray: #F3F4F6;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #F8BBD9 0%, #C084FC 50%, #E11D48 100%);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .admin-sidebar {
+            background: linear-gradient(180deg, var(--deep-plum) 0%, var(--warm-mauve) 100%);
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+        }
+    </style>
+</head>
+<body class="font-inter gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover">
+                    <span class="text-lg sm:text-2xl font-bold text-deep-plum font-poppins">Funza Mama Admin</span>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <span class="hidden sm:block text-sm text-gray-600">Welcome, Admin</span>
+                    <button id="mobile-menu-btn" class="lg:hidden text-gray-600 hover:text-gray-800 p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base">
+                        <i class="fas fa-sign-out-alt mr-1 sm:mr-2"></i>
+                        <span class="hidden sm:inline">Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex min-h-screen">
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+        
+        <!-- Sidebar -->
+        <div id="admin-sidebar" class="admin-sidebar w-64 min-h-screen p-4 sm:p-6 fixed lg:relative transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50">
+            <div class="space-y-2">
+                <div class="sidebar-item active px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                </div>
+                <div class="sidebar-item px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('users')">
+                    <i class="fas fa-users mr-3"></i>Users
+                </div>
+                <div class="sidebar-item px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('analytics')">
+                    <i class="fas fa-chart-line mr-3"></i>Analytics
+                </div>
+                <div class="sidebar-item px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('feedback')">
+                    <i class="fas fa-comments mr-3"></i>Feedback
+                </div>
+                <div class="sidebar-item px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('reports')">
+                    <i class="fas fa-file-export mr-3"></i>Reports
+                </div>
+                <div class="sidebar-item px-4 py-3 rounded-lg text-white cursor-pointer" onclick="showSection('settings')">
+                    <i class="fas fa-cog mr-3"></i>Settings
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-4 sm:p-6 lg:p-8">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="section">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">System Overview</h1>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Users</p>
+                                <p class="text-3xl font-bold text-deep-plum" id="total-users">0</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Active Today</p>
+                                <p class="text-3xl font-bold text-green-600" id="active-users">0</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-user-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Completions</p>
+                                <p class="text-3xl font-bold text-purple-600" id="total-completions">0</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-trophy text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Avg. Score</p>
+                                <p class="text-3xl font-bold text-orange-600" id="avg-score">0%</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <i class="fas fa-star text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8">
+                    <!-- Stage Completion Chart -->
+                    <div class="stat-card rounded-2xl p-4 sm:p-6 card-hover fade-in">
+                        <h3 class="text-lg sm:text-xl font-bold text-deep-plum mb-4">Stage Completion Rates</h3>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="stageCompletionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- User Growth Chart -->
+                    <div class="stat-card rounded-2xl p-4 sm:p-6 card-hover fade-in">
+                        <h3 class="text-lg sm:text-xl font-bold text-deep-plum mb-4">User Growth (Last 30 Days)</h3>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="userGrowthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                    <h3 class="text-xl font-bold text-deep-plum mb-4">Recent Activity</h3>
+                    <div class="space-y-3" id="recent-activity">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users-section" class="section hidden">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">User Management</h1>
+                
+                <!-- User Role Tabs -->
+                <div class="mb-6">
+                    <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+                        <button onclick="showUserTab('all')" id="tab-all" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white text-deep-plum shadow-sm">
+                            All Users
+                        </button>
+                        <button onclick="showUserTab('users')" id="tab-users" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-deep-plum">
+                            Regular Users
+                        </button>
+                        <button onclick="showUserTab('admins')" id="tab-admins" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-deep-plum">
+                            Admins
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stat-card rounded-2xl p-4 sm:p-6 card-hover fade-in">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                        <div>
+                            <h3 class="text-xl font-bold text-deep-plum" id="users-section-title">All Users</h3>
+                            <p class="text-sm text-gray-600 mt-1" id="users-section-description">Manage all system users</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="exportUsers()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                <i class="fas fa-download mr-2"></i>Export CSV
+                            </button>
+                            <button onclick="showExportHelp()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                <i class="fas fa-question-circle mr-2"></i>Help
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Desktop Table View -->
+                    <div class="hidden lg:block overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3">User</th>
+                                    <th class="px-6 py-3">Email</th>
+                                    <th class="px-6 py-3">Joined</th>
+                                    <th class="px-6 py-3">Progress</th>
+                                    <th class="px-6 py-3">Last Active</th>
+                                    <th class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                                <!-- User rows will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Mobile Card View -->
+                    <div class="lg:hidden space-y-4" id="users-cards">
+                        <!-- User cards will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="section hidden">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">Learning Analytics</h1>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8">
+                    <!-- Retention Analysis -->
+                    <div class="stat-card rounded-2xl p-4 sm:p-6 card-hover fade-in">
+                        <h3 class="text-lg sm:text-xl font-bold text-deep-plum mb-4">Knowledge Retention</h3>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="retentionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance by Topic -->
+                    <div class="stat-card rounded-2xl p-4 sm:p-6 card-hover fade-in">
+                        <h3 class="text-lg sm:text-xl font-bold text-deep-plum mb-4">Performance by Topic</h3>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="topicPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                    <h3 class="text-xl font-bold text-deep-plum mb-4">Top Performers</h3>
+                    <div class="space-y-3" id="leaderboard">
+                        <!-- Leaderboard items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Advanced Analytics Tabs -->
+                <div class="mt-8">
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button onclick="showAnalyticsTab('learning-effectiveness')" 
+                                class="analytics-tab px-4 py-2 rounded-lg font-medium transition-colors bg-deep-plum text-white">
+                            Learning Effectiveness
+                        </button>
+                        <button onclick="showAnalyticsTab('demographics')" 
+                                class="analytics-tab px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300">
+                            Demographics
+                        </button>
+                        <button onclick="showAnalyticsTab('engagement')" 
+                                class="analytics-tab px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300">
+                            Engagement
+                        </button>
+                    </div>
+
+                    <!-- Learning Effectiveness Tab -->
+                    <div id="learning-effectiveness-tab" class="analytics-tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Improvement Rates by Stage</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="improvementChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Mastery Rates</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="masteryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card rounded-2xl p-6 card-hover">
+                            <h3 class="text-xl font-bold text-deep-plum mb-4">Learning Progression</h3>
+                            <div class="chart-container h-80">
+                                <canvas id="progressionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demographics Tab -->
+                    <div id="demographics-tab" class="analytics-tab-content hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Performance by Age Group</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="ageGroupChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Gender Performance</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="genderChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Professional vs General</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="professionalChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Tab -->
+                    <div id="engagement-tab" class="analytics-tab-content hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">User Journey Funnel</h3>
+                                <div class="chart-container h-64">
+                                    <canvas id="funnelChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="stat-card rounded-2xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-deep-plum mb-4">Session Analytics</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span class="font-medium">Avg Session Duration</span>
+                                        <span class="text-deep-plum font-bold" id="avg-session-duration">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span class="font-medium">Return User Rate</span>
+                                        <span class="text-deep-plum font-bold" id="return-user-rate">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span class="font-medium">Avg Questions/Session</span>
+                                        <span class="text-deep-plum font-bold" id="avg-questions-session">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card rounded-2xl p-6 card-hover">
+                            <h3 class="text-xl font-bold text-deep-plum mb-4">Content Effectiveness</h3>
+                            <div class="chart-container h-64">
+                                <canvas id="contentEffectivenessChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div id="feedback-section" class="section hidden">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">User Feedback</h1>
+                
+                <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-deep-plum">All Feedback</h3>
+                        <div class="flex space-x-2">
+                            <select id="feedback-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                                <option value="all">All Categories</option>
+                                <option value="bug">Bug Reports</option>
+                                <option value="feature">Feature Requests</option>
+                                <option value="content">Content Issues</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="reviewed">Reviewed</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                            <button onclick="exportFeedback()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4" id="feedback-list">
+                        <!-- Feedback items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reports-section" class="section hidden">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">Reports & Export</h1>
+                
+                <!-- ReportLab Notice -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle text-yellow-600 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-yellow-800">PDF Reports Notice</h3>
+                            <p class="text-sm text-yellow-700 mt-1">
+                                PDF report generation requires ReportLab. If reports fail to generate, install it with: 
+                                <code class="bg-yellow-100 px-2 py-1 rounded text-xs">pip install reportlab</code>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <h3 class="text-xl font-bold text-deep-plum mb-4">User Performance Report</h3>
+                        <p class="text-gray-600 mb-4">Export detailed user performance data</p>
+                        <button onclick="generateUserReport()" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-file-pdf mr-2"></i>Generate PDF
+                        </button>
+                    </div>
+                    
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <h3 class="text-xl font-bold text-deep-plum mb-4">Analytics Summary</h3>
+                        <p class="text-gray-600 mb-4">Export system analytics and metrics</p>
+                        <button onclick="generateAnalyticsReport()" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-chart-bar mr-2"></i>Generate Report
+                        </button>
+                    </div>
+                    
+                    <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                        <h3 class="text-xl font-bold text-deep-plum mb-4">Feedback Summary</h3>
+                        <p class="text-gray-600 mb-4">Export user feedback and suggestions</p>
+                        <button onclick="generateFeedbackReport()" class="w-full bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-comments mr-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="section hidden">
+                <h1 class="text-3xl font-bold text-deep-plum mb-8 fade-in">System Settings</h1>
+                
+                <div class="stat-card rounded-2xl p-6 card-hover fade-in">
+                    <h3 class="text-xl font-bold text-deep-plum mb-4">System Configuration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">System Status</label>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                                <span class="text-green-600 font-medium">Online</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Database Status</label>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                                <span class="text-green-600 font-medium">Connected</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Service</label>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                                <span class="text-green-600 font-medium">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 'dashboard';
+        let currentUserTab = 'all';
+        let allUsers = [];
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            initializeFeedbackFilter();
+            
+            // Mobile menu functionality
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const adminSidebar = document.getElementById('admin-sidebar');
+            
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    adminSidebar.classList.remove('-translate-x-full');
+                    mobileMenuOverlay.classList.remove('hidden');
+                });
+            }
+            
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', function() {
+                    adminSidebar.classList.add('-translate-x-full');
+                    mobileMenuOverlay.classList.add('hidden');
+                });
+            }
+            
+            // Close mobile menu when clicking on sidebar items
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth < 1024) { // lg breakpoint
+                        adminSidebar.classList.add('-translate-x-full');
+                        mobileMenuOverlay.classList.add('hidden');
+                    }
+                });
+            });
+        });
+        
+        // Navigation functions
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+            
+            // Remove active class from all sidebar items
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(section + '-section').classList.remove('hidden');
+            
+            // Add active class to selected sidebar item
+            event.target.closest('.sidebar-item').classList.add('active');
+            
+            currentSection = section;
+            
+            // Load section-specific data
+            if (section === 'users') {
+                loadUsersData();
+            } else if (section === 'analytics') {
+                loadAnalyticsData();
+            } else if (section === 'feedback') {
+                loadFeedbackData();
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                console.log('Loading dashboard data...');
+                const response = await fetch('/admin/api/dashboard');
+                const data = await response.json();
+                console.log('Dashboard data received:', data);
+                
+                if (data.success) {
+                    document.getElementById('total-users').textContent = data.stats.totalUsers;
+                    document.getElementById('active-users').textContent = data.stats.activeUsers;
+                    document.getElementById('total-completions').textContent = data.stats.totalCompletions;
+                    document.getElementById('avg-score').textContent = data.stats.avgScore + '%';
+                    
+                    // Load recent activity
+                    loadRecentActivity(data.recentActivity);
+                    
+                    // Load chart data
+                    loadStageCompletionChart();
+                    loadUserGrowthChart();
+                } else {
+                    console.error('Dashboard data error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // User tab management
+        function showUserTab(tab) {
+            currentUserTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-deep-plum', 'shadow-sm');
+                btn.classList.add('text-gray-600', 'hover:text-deep-plum');
+            });
+            
+            document.getElementById(`tab-${tab}`).classList.add('bg-white', 'text-deep-plum', 'shadow-sm');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-600', 'hover:text-deep-plum');
+            
+            // Update section title and description
+            const title = document.getElementById('users-section-title');
+            const description = document.getElementById('users-section-description');
+            
+            switch(tab) {
+                case 'all':
+                    title.textContent = 'All Users';
+                    description.textContent = 'Manage all system users';
+                    break;
+                case 'users':
+                    title.textContent = 'Regular Users';
+                    description.textContent = 'Manage regular user accounts';
+                    break;
+                case 'admins':
+                    title.textContent = 'Administrators';
+                    description.textContent = 'Manage administrator accounts';
+                    break;
+            }
+            
+            // Filter and display users
+            displayFilteredUsers();
+        }
+        
+        function displayFilteredUsers() {
+            if (!allUsers.length) return;
+            
+            let filteredUsers = allUsers;
+            
+            if (currentUserTab === 'users') {
+                filteredUsers = allUsers.filter(user => user.role !== 'admin');
+            } else if (currentUserTab === 'admins') {
+                filteredUsers = allUsers.filter(user => user.role === 'admin');
+            }
+            
+            // Load desktop table view
+            const tbody = document.getElementById('users-table');
+            tbody.innerHTML = '';
+            
+            // Load mobile card view
+            const cardsContainer = document.getElementById('users-cards');
+            cardsContainer.innerHTML = '';
+            
+            filteredUsers.forEach(user => {
+                renderUserRow(user, tbody);
+                renderUserCard(user, cardsContainer);
+            });
+        }
+        
+        function renderUserRow(user, container) {
+            const row = document.createElement('tr');
+            row.className = 'bg-white border-b hover:bg-gray-50';
+            row.innerHTML = `
+                <td class="px-6 py-4 font-medium text-gray-900">
+                    <div class="flex items-center space-x-2">
+                        <span>${user.name}</span>
+                        ${user.role === 'admin' ? '<span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Admin</span>' : ''}
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-gray-600">${user.email}</td>
+                <td class="px-6 py-4 text-gray-600">${new Date(user.created_at).toLocaleDateString()}</td>
+                <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${Math.min(user.progress, 100)}%"></div>
+                    </div>
+                    <span class="text-xs text-gray-600">${user.progress}%${user.progress > 100 ? ' (capped at 100%)' : ''}</span>
+                </td>
+                <td class="px-6 py-4 text-gray-600">${new Date(user.last_active).toLocaleDateString()}</td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <button onclick="viewUser('${user.user_ID}')" class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50" title="View User">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="editUser('${user.user_ID}')" class="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50" title="Edit User">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${user.role !== 'admin' ? `<button onclick="deleteUser('${user.user_ID}')" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50" title="Delete User">
+                            <i class="fas fa-trash"></i>
+                        </button>` : '<span class="text-gray-400 text-xs">Protected</span>'}
+                    </div>
+                </td>
+            `;
+            container.appendChild(row);
+        }
+        
+        function renderUserCard(user, container) {
+            const card = document.createElement('div');
+            card.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm';
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <h4 class="font-medium text-gray-900 text-sm">${user.name}</h4>
+                            ${user.role === 'admin' ? '<span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Admin</span>' : ''}
+                        </div>
+                        <p class="text-xs text-gray-600">${user.email}</p>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="viewUser('${user.user_ID}')" class="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50" title="View User">
+                            <i class="fas fa-eye text-sm"></i>
+                        </button>
+                        <button onclick="editUser('${user.user_ID}')" class="text-green-600 hover:text-green-800 p-2 rounded hover:bg-green-50" title="Edit User">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        ${user.role !== 'admin' ? `<button onclick="deleteUser('${user.user_ID}')" class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50" title="Delete User">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>` : '<span class="text-gray-400 text-xs">Protected</span>'}
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Joined: ${new Date(user.created_at).toLocaleDateString()}</span>
+                        <span>Last Active: ${new Date(user.last_active).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-600">Progress</span>
+                            <span class="text-xs font-medium text-gray-900">${user.progress}%${user.progress > 100 ? ' (capped)' : ''}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${Math.min(user.progress, 100)}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        // Load users data
+        async function loadUsersData() {
+            try {
+                console.log('Loading users data...');
+                const response = await fetch('/admin/api/users');
+                const data = await response.json();
+                console.log('Users data received:', data);
+                
+                if (data.success) {
+                    allUsers = data.users;
+                    displayFilteredUsers();
+                }
+            } catch (error) {
+                console.error('Error loading users data:', error);
+            }
+        }
+        
+        // CSV Export Help
+        function showExportHelp() {
+            alert(`CSV Export - Why You Need It:
+
+🎯 REAL-WORLD USE CASES:
+
+📊 For Data Analysis:
+• Import into Excel/Google Sheets for deeper analysis
+• Create charts and graphs for presentations
+• Identify user engagement patterns
+• Track learning progress trends
+
+📈 For Business Reporting:
+• Generate monthly/quarterly reports for stakeholders
+• Show user growth and engagement metrics
+• Demonstrate platform success to investors/funders
+• Create executive dashboards
+
+🔍 For Compliance & Backup:
+• Meet data retention requirements
+• Create audit trails for regulatory compliance
+• Backup user data before system updates
+• Maintain historical records for legal purposes
+
+📋 For User Management:
+• Export specific user groups (e.g., inactive users)
+• Create mailing lists for targeted communications
+• Generate user reports for customer support
+• Track user journey and engagement
+
+💡 PRACTICAL EXAMPLES:
+• "Show me all users who joined last month"
+• "Export users with low progress for follow-up"
+• "Create a report of admin activities"
+• "Generate user data for our annual report"
+
+The CSV includes: Names, emails, roles, progress, join dates, last activity, and more!
+
+This is essential for any serious platform management.`);
+        }
+        
+        // Load stage completion chart with real data
+        async function loadStageCompletionChart() {
+            try {
+                console.log('Loading stage completion data...');
+                const response = await fetch('/admin/api/charts/stage-completion');
+                const data = await response.json();
+                console.log('Stage completion data received:', data);
+                
+                if (data.success) {
+                    console.log('Stage completion debug info:', data.debug);
+                    console.log('Completion data:', data.data);
+                    console.log('Total users:', data.total_users);
+                    console.log('Completion summary:', data.completion_summary);
+                    const ctx = document.getElementById('stageCompletionChart');
+                    if (!ctx) {
+                        console.error('Chart canvas not found!');
+                        return;
+                    }
+                    
+                    const chartData = [
+                        data.data.preconception || 0,
+                        data.data.antenatal || 0,
+                        data.data.birth || 0,
+                        data.data.postnatal || 0
+                    ];
+                    
+                    console.log('Chart data values:', chartData);
+                    
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Preconception', 'Antenatal', 'Birth', 'Postnatal'],
+                            datasets: [{
+                                data: chartData,
+                                backgroundColor: ['#6B46C1', '#C084FC', '#E11D48', '#F8BBD9'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.error('Stage completion data error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading stage completion data:', error);
+            }
+        }
+        
+        // Load user growth chart with real data
+        async function loadUserGrowthChart() {
+            try {
+                console.log('Loading user growth data...');
+                const response = await fetch('/admin/api/charts/user-growth');
+                const data = await response.json();
+                console.log('User growth data received:', data);
+                
+                if (data.success) {
+                    const ctx = document.getElementById('userGrowthChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Object.keys(data.data),
+                            datasets: [{
+                                label: 'New Users',
+                                data: Object.values(data.data),
+                                borderColor: '#6B46C1',
+                                backgroundColor: 'rgba(107, 70, 193, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.error('User growth data error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading user growth data:', error);
+            }
+        }
+        
+        // User action functions
+        function viewUser(userId) {
+            console.log('Viewing user:', userId);
+            alert(`Viewing user details for user ID: ${userId}`);
+            // TODO: Implement user detail modal
+        }
+        
+        function editUser(userId) {
+            console.log('Editing user:', userId);
+            alert(`Edit user functionality for user ID: ${userId}`);
+            // TODO: Implement user edit modal
+        }
+        
+        // Load analytics data
+        async function loadAnalyticsData() {
+            try {
+                console.log('Loading analytics data...');
+                const response = await fetch('/admin/api/analytics');
+                const data = await response.json();
+                console.log('Analytics data received:', data);
+                
+                if (data.success) {
+                    // Update retention chart
+                    updateRetentionChart(data.retention);
+                    
+                    // Update topic performance chart
+                    updateTopicPerformanceChart(data.topic_performance);
+                    
+                    // Load leaderboard
+                    loadLeaderboard(data.leaderboard);
+                } else {
+                    console.error('Analytics data error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+        
+        // Update retention chart with real data
+        function updateRetentionChart(retentionData) {
+            const ctx = document.getElementById('retentionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(retentionData).map(stage => stage.charAt(0).toUpperCase() + stage.slice(1)),
+                    datasets: [{
+                        label: 'Average Score %',
+                        data: Object.values(retentionData),
+                        backgroundColor: ['#6B46C1', '#C084FC', '#E11D48', '#F8BBD9'],
+                        borderColor: ['#6B46C1', '#C084FC', '#E11D48', '#F8BBD9'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Global variable to store all feedback data
+        let allFeedbackData = [];
+        let currentFeedbackFilter = 'all';
+        let currentStatusFilter = 'all';
+
+        // Load feedback data
+        async function loadFeedbackData() {
+            try {
+                const response = await fetch('/admin/api/feedback');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allFeedbackData = data.feedback;
+                    displayFilteredFeedback();
+                } else {
+                    console.error('Error loading feedback:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading feedback data:', error);
+            }
+        }
+
+        // Display filtered feedback
+        function displayFilteredFeedback() {
+            const container = document.getElementById('feedback-list');
+            container.innerHTML = '';
+            
+            let filteredFeedback = allFeedbackData;
+            
+            // Apply category filter
+            if (currentFeedbackFilter !== 'all') {
+                filteredFeedback = filteredFeedback.filter(feedback => 
+                    feedback.category === currentFeedbackFilter
+                );
+            }
+            
+            // Apply status filter
+            if (currentStatusFilter !== 'all') {
+                filteredFeedback = filteredFeedback.filter(feedback => 
+                    feedback.status === currentStatusFilter
+                );
+            }
+            
+            if (filteredFeedback.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No feedback found for the selected filters.</p>';
+                return;
+            }
+            
+            filteredFeedback.forEach(feedback => {
+                const item = document.createElement('div');
+                item.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${feedback.user_name}</h4>
+                            <p class="text-sm text-gray-600">${feedback.email}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 text-xs rounded-full ${getCategoryColor(feedback.category)}">${feedback.category}</span>
+                            <span class="text-xs text-gray-500">${new Date(feedback.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-3">${feedback.message}</p>
+                    ${feedback.admin_reply ? `
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-reply text-blue-600 mr-2"></i>
+                                <span class="text-sm font-medium text-blue-800">Admin Reply:</span>
+                            </div>
+                            <p class="text-blue-700 text-sm">${feedback.admin_reply}</p>
+                        </div>
+                    ` : ''}
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            ${feedback.status === 'pending' ? `
+                                <button onclick="markAsReviewed('${feedback.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors">
+                                    <i class="fas fa-check mr-1"></i>Mark as Reviewed
+                                </button>
+                            ` : ''}
+                            ${feedback.status === 'reviewed' ? `
+                                <button onclick="markAsResolved('${feedback.id}')" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 rounded hover:bg-green-50 transition-colors">
+                                    <i class="fas fa-check-circle mr-1"></i>Mark as Resolved
+                                </button>
+                            ` : ''}
+                            <button onclick="replyToFeedback('${feedback.id}')" class="text-purple-600 hover:text-purple-800 text-sm px-3 py-1 rounded hover:bg-purple-50 transition-colors">
+                                <i class="fas fa-reply mr-1"></i>Reply
+                            </button>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full ${getStatusColor(feedback.status)}">${feedback.status}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Initialize feedback filter event listeners
+        function initializeFeedbackFilter() {
+            const categoryFilter = document.getElementById('feedback-filter');
+            const statusFilter = document.getElementById('status-filter');
+            
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', function() {
+                    currentFeedbackFilter = this.value;
+                    displayFilteredFeedback();
+                });
+            }
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentStatusFilter = this.value;
+                    displayFilteredFeedback();
+                });
+            }
+        }
+        
+        
+        // Utility functions
+        function getCategoryColor(category) {
+            const colors = {
+                'bug': 'bg-red-100 text-red-800',
+                'feature': 'bg-blue-100 text-blue-800',
+                'content': 'bg-yellow-100 text-yellow-800',
+                'other': 'bg-gray-100 text-gray-800'
+            };
+            return colors[category] || colors['other'];
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'reviewed': 'bg-blue-100 text-blue-800',
+                'resolved': 'bg-green-100 text-green-800',
+                'closed': 'bg-gray-100 text-gray-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+        
+        function loadRecentActivity(activities) {
+            const container = document.getElementById('recent-activity');
+            container.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center space-x-3 p-3 bg-gray-50 rounded-lg';
+                item.innerHTML = `
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">${activity.description}</p>
+                        <p class="text-xs text-gray-500">${new Date(activity.timestamp).toLocaleString()}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // Update topic performance chart with real data
+        function updateTopicPerformanceChart(topicData) {
+            const ctx = document.getElementById('topicPerformanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(topicData),
+                    datasets: [{
+                        label: 'Performance %',
+                        data: Object.values(topicData),
+                        backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'],
+                        borderColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function loadLeaderboard(leaderboard) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No user data available yet.</p>';
+                return;
+            }
+            
+            leaderboard.forEach((user, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200';
+                
+                // Gender icon
+                const genderIcon = user.gender === 'female' ? '♀️' : 
+                                 user.gender === 'male' ? '♂️' : 
+                                 user.gender === 'other' ? '⚧' : '❓';
+                
+                // Time spent formatting
+                const timeSpent = user.time_spent || 0;
+                const hours = Math.floor(timeSpent / 60);
+                const minutes = timeSpent % 60;
+                const timeDisplay = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-deep-plum to-deep-rose text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                            ${index + 1}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h4 class="font-bold text-gray-900 text-lg">${user.name}</h4>
+                                <span class="text-lg">${genderIcon}</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-envelope mr-1"></i>${user.email}</span>
+                                <span><i class="fas fa-calendar mr-1"></i>Age ${user.age} (${user.age_group})</span>
+                                <span><i class="fas fa-clock mr-1"></i>${timeDisplay}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-deep-plum mb-1">${user.score}%</div>
+                        <div class="text-sm text-gray-600">
+                            <div>${user.completions} questions</div>
+                            <div class="text-xs text-gray-500">Last active: ${new Date(user.last_active).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // Action functions
+        function exportUsers() {
+            const filter = currentUserTab || 'all';
+            window.open(`/admin/api/export/users?filter=${filter}`, '_blank');
+        }
+        
+        function exportFeedback() {
+            window.open('/admin/api/export/feedback', '_blank');
+        }
+        
+        async function generateUserReport() {
+            try {
+                const response = await fetch('/admin/api/reports/users');
+                
+                if (response.ok) {
+                    // If it's a PDF, download it
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'user_performance_report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    // Handle error response
+                    const data = await response.json();
+                    showNotification(data.message || data.error || 'Error generating report', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating user report:', error);
+                showNotification('Error generating user report', 'error');
+            }
+        }
+        
+        async function generateAnalyticsReport() {
+            try {
+                const response = await fetch('/admin/api/reports/analytics');
+                
+                if (response.ok) {
+                    // If it's a PDF, download it
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'analytics_report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    // Handle error response
+                    const data = await response.json();
+                    showNotification(data.message || data.error || 'Error generating report', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating analytics report:', error);
+                showNotification('Error generating analytics report', 'error');
+            }
+        }
+        
+        async function generateFeedbackReport() {
+            try {
+                const response = await fetch('/admin/api/reports/feedback');
+                
+                if (response.ok) {
+                    // If it's a PDF, download it
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'feedback_report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    // Handle error response
+                    const data = await response.json();
+                    showNotification(data.message || data.error || 'Error generating report', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating feedback report:', error);
+                showNotification('Error generating feedback report', 'error');
+            }
+        }
+        
+        async function markAsReviewed(feedbackId) {
+            try {
+                const response = await fetch('/admin/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback_id: feedbackId,
+                        action: 'mark_reviewed'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the feedback status in the UI
+                    updateFeedbackStatus(feedbackId, 'reviewed');
+                    showNotification('Feedback marked as reviewed', 'success');
+                } else {
+                    showNotification('Error marking feedback as reviewed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error marking feedback as reviewed:', error);
+                showNotification('Error marking feedback as reviewed', 'error');
+            }
+        }
+        
+        async function markAsResolved(feedbackId) {
+            try {
+                const response = await fetch('/admin/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback_id: feedbackId,
+                        action: 'mark_resolved'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the feedback status in the UI
+                    updateFeedbackStatus(feedbackId, 'resolved');
+                    showNotification('Feedback marked as resolved', 'success');
+                } else {
+                    showNotification('Error marking feedback as resolved: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error marking feedback as resolved:', error);
+                showNotification('Error marking feedback as resolved', 'error');
+            }
+        }
+        
+        async function replyToFeedback(feedbackId) {
+            const reply = prompt('Enter your reply to this feedback:');
+            if (reply === null) return; // User cancelled
+            
+            if (reply.trim() === '') {
+                showNotification('Please enter a reply', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback_id: feedbackId,
+                        action: 'reply',
+                        reply: reply.trim()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the feedback status in the UI
+                    updateFeedbackStatus(feedbackId, 'replied');
+                    showNotification('Reply sent successfully', 'success');
+                    // Reload feedback to show the new reply
+                    loadFeedbackData();
+                } else {
+                    showNotification('Error sending reply: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                showNotification('Error sending reply', 'error');
+            }
+        }
+        
+        function updateFeedbackStatus(feedbackId, newStatus) {
+            // Find the feedback item in the current display and update its status
+            const feedbackItems = document.querySelectorAll('#feedback-list > div');
+            feedbackItems.forEach(item => {
+                const buttons = item.querySelectorAll('button[onclick*="' + feedbackId + '"]');
+                if (buttons.length > 0) {
+                    // Find the status span and update it
+                    const statusSpan = item.querySelector('span:last-child');
+                    if (statusSpan) {
+                        statusSpan.textContent = newStatus;
+                        statusSpan.className = `px-2 py-1 text-xs rounded-full ${getStatusColor(newStatus)}`;
+                    }
+                }
+            });
+        }
+        
+        function showNotification(message, type) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+        
+        function viewUser(userId) {
+            // Implementation for viewing user details
+            console.log('Viewing user:', userId);
+        }
+        
+        function editUser(userId) {
+            // Implementation for editing user
+            console.log('Editing user:', userId);
+        }
+    </script>
+
+    <!-- User Management Modals -->
+    <!-- View User Modal -->
+    <div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-4 sm:p-6 border-b">
+                    <h3 class="text-lg sm:text-xl font-bold text-deep-plum">User Details</h3>
+                    <button onclick="closeViewUserModal()" class="text-gray-400 hover:text-gray-600 p-1">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="userDetailsContent" class="p-4 sm:p-6">
+                    <!-- User details will be loaded here -->
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 p-4 sm:p-6 border-t">
+                    <button onclick="closeViewUserModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 order-2 sm:order-1">Close</button>
+                    <button onclick="editUserFromModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 order-1 sm:order-2">Edit User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center p-4 sm:p-6 border-b">
+                    <h3 class="text-lg sm:text-xl font-bold text-deep-plum">Edit User</h3>
+                    <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600 p-1">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="editUserForm" class="p-4 sm:p-6">
+                    <input type="hidden" id="editUserId" name="userId">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                            <input type="text" id="editFirstName" name="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                            <input type="text" id="editLastName" name="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="editEmail" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                            <input type="text" id="editUsername" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                            <select id="editRole" name="role" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="editStatus" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="active">Active</option>
+                                <option value="suspended">Suspended</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 p-4 sm:p-6 border-t">
+                    <button onclick="closeEditUserModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 order-2 sm:order-1">Cancel</button>
+                    <button onclick="saveUserChanges()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 order-1 sm:order-2">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Confirmation Modal -->
+    <div id="deleteUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Delete User</h3>
+                        <p class="text-sm text-gray-500 mb-4">Are you sure you want to delete this user? This action cannot be undone.</p>
+                        <p id="deleteUserName" class="text-sm font-medium text-gray-900"></p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 p-4 sm:p-6 border-t">
+                    <button onclick="closeDeleteUserModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 order-2 sm:order-1">Cancel</button>
+                    <button onclick="confirmDeleteUser()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 order-1 sm:order-2">Delete User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User Management Functions
+        let currentUserId = null;
+
+        function viewUser(userId) {
+            currentUserId = userId;
+            loadUserDetails(userId);
+            document.getElementById('viewUserModal').classList.remove('hidden');
+        }
+
+        function editUser(userId) {
+            currentUserId = userId;
+            loadUserForEdit(userId);
+            document.getElementById('editUserModal').classList.remove('hidden');
+        }
+
+        function deleteUser(userId) {
+            currentUserId = userId;
+            // Get user name for confirmation
+            fetch(`/admin/api/users/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('deleteUserName').textContent = data.user.name;
+                        document.getElementById('deleteUserModal').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user for deletion:', error);
+                    alert('Error loading user details');
+                });
+        }
+
+        function closeViewUserModal() {
+            document.getElementById('viewUserModal').classList.add('hidden');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.add('hidden');
+        }
+
+        function closeDeleteUserModal() {
+            document.getElementById('deleteUserModal').classList.add('hidden');
+        }
+
+        function editUserFromModal() {
+            closeViewUserModal();
+            editUser(currentUserId);
+        }
+
+        async function loadUserDetails(userId) {
+            try {
+                const response = await fetch(`/admin/api/users/${userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.user;
+                    const content = document.getElementById('userDetailsContent');
+                    content.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                                    <p class="text-gray-900 text-sm sm:text-base">${user.name}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                                    <p class="text-gray-900 text-sm sm:text-base break-all">${user.email}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                                    <p class="text-gray-900 text-sm sm:text-base">${user.username || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Role</label>
+                                    <p class="text-gray-900 text-sm sm:text-base">${user.role || 'user'}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Joined</label>
+                                    <p class="text-gray-900 text-sm sm:text-base">${new Date(user.created_at).toLocaleDateString()}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Last Active</label>
+                                    <p class="text-gray-900 text-sm sm:text-base">${new Date(user.last_active).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Progress</label>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-1 overflow-hidden">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${Math.min(user.progress, 100)}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600">${user.progress}%${user.progress > 100 ? ' (capped at 100%)' : ''}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('userDetailsContent').innerHTML = '<p class="text-red-600">Error loading user details</p>';
+                }
+            } catch (error) {
+                console.error('Error loading user details:', error);
+                document.getElementById('userDetailsContent').innerHTML = '<p class="text-red-600">Error loading user details</p>';
+            }
+        }
+
+        async function loadUserForEdit(userId) {
+            try {
+                const response = await fetch(`/admin/api/users/${userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.user;
+                    document.getElementById('editUserId').value = user.user_ID;
+                    document.getElementById('editFirstName').value = user.first_name || '';
+                    document.getElementById('editLastName').value = user.last_name || '';
+                    document.getElementById('editEmail').value = user.email || '';
+                    document.getElementById('editUsername').value = user.username || '';
+                    document.getElementById('editRole').value = user.role || 'user';
+                    document.getElementById('editStatus').value = user.status || 'active';
+                } else {
+                    alert('Error loading user details');
+                }
+            } catch (error) {
+                console.error('Error loading user for edit:', error);
+                alert('Error loading user details');
+            }
+        }
+
+        async function saveUserChanges() {
+            try {
+                const formData = new FormData(document.getElementById('editUserForm'));
+                const userData = Object.fromEntries(formData.entries());
+                
+                const response = await fetch(`/admin/api/users/${currentUserId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User updated successfully!');
+                    closeEditUserModal();
+                    loadUsersData(); // Refresh the users table
+                } else {
+                    alert('Error updating user: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                alert('Error updating user');
+            }
+        }
+
+        async function confirmDeleteUser() {
+            try {
+                const response = await fetch(`/admin/api/users/${currentUserId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User deleted successfully!');
+                    closeDeleteUserModal();
+                    loadUsersData(); // Refresh the users table
+                } else {
+                    alert('Error deleting user: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error deleting user');
+            }
+        }
+
+        // =============================================================================
+        // ADVANCED ANALYTICS FUNCTIONS
+        // =============================================================================
+
+        // Analytics tab switching
+        function showAnalyticsTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.analytics-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.analytics-tab').forEach(tab => {
+                tab.classList.remove('bg-deep-plum', 'text-white');
+                tab.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('bg-deep-plum', 'text-white');
+            
+            // Load data for the selected tab
+            loadAnalyticsTabData(tabName);
+        }
+
+        // Load data for specific analytics tab
+        async function loadAnalyticsTabData(tabName) {
+            try {
+                let response;
+                switch(tabName) {
+                    case 'learning-effectiveness':
+                        response = await fetch('/admin/api/analytics/learning-effectiveness');
+                        const learningData = await response.json();
+                        if (learningData.success) {
+                            updateLearningEffectivenessCharts(learningData.learning_effectiveness);
+                        }
+                        break;
+                    case 'demographics':
+                        response = await fetch('/admin/api/analytics/demographics');
+                        const demoData = await response.json();
+                        if (demoData.success) {
+                            updateDemographicsCharts(demoData);
+                        }
+                        break;
+                    case 'engagement':
+                        response = await fetch('/admin/api/analytics/engagement');
+                        const engagementData = await response.json();
+                        if (engagementData.success) {
+                            updateEngagementCharts(engagementData);
+                        }
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+
+        // Update Learning Effectiveness Charts
+        function updateLearningEffectivenessCharts(data) {
+            // Improvement Rates Chart
+            const improvementCtx = document.getElementById('improvementChart');
+            if (improvementCtx) {
+                new Chart(improvementCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            label: 'Improvement Rate (%)',
+                            data: Object.values(data).map(stage => stage.improvement_rate),
+                            backgroundColor: 'rgba(139, 69, 19, 0.8)',
+                            borderColor: 'rgba(139, 69, 19, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Mastery Rates Chart
+            const masteryCtx = document.getElementById('masteryChart');
+            if (masteryCtx) {
+                new Chart(masteryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            data: Object.values(data).map(stage => stage.mastery_rate),
+                            backgroundColor: [
+                                'rgba(139, 69, 19, 0.8)',
+                                'rgba(255, 193, 7, 0.8)',
+                                'rgba(40, 167, 69, 0.8)',
+                                'rgba(220, 53, 69, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Learning Progression Chart
+            const progressionCtx = document.getElementById('progressionChart');
+            if (progressionCtx) {
+                // Prepare data for learning progression
+                const stages = Object.keys(data);
+                const datasets = [];
+                
+                // Create a dataset for each stage showing progression over attempts
+                stages.forEach((stage, index) => {
+                    const stageData = data[stage];
+                    if (stageData.retention_curve && stageData.retention_curve.length > 0) {
+                        // Calculate average scores for each attempt number
+                        const attemptScores = {};
+                        stageData.retention_curve.forEach(userCurve => {
+                            userCurve.forEach(point => {
+                                if (!attemptScores[point.attempt]) {
+                                    attemptScores[point.attempt] = [];
+                                }
+                                attemptScores[point.attempt].push(point.score);
+                            });
+                        });
+                        
+                        // Calculate average scores for each attempt
+                        const attemptNumbers = Object.keys(attemptScores).sort((a, b) => parseInt(a) - parseInt(b));
+                        const averageScores = attemptNumbers.map(attempt => {
+                            const scores = attemptScores[attempt];
+                            return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                        });
+                        
+                        datasets.push({
+                            label: stage.charAt(0).toUpperCase() + stage.slice(1),
+                            data: averageScores,
+                            borderColor: [
+                                'rgba(139, 69, 19, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(220, 53, 69, 1)'
+                            ][index],
+                            backgroundColor: [
+                                'rgba(139, 69, 19, 0.2)',
+                                'rgba(255, 193, 7, 0.2)',
+                                'rgba(40, 167, 69, 0.2)',
+                                'rgba(220, 53, 69, 0.2)'
+                            ][index],
+                            fill: false,
+                            tension: 0.4
+                        });
+                    }
+                });
+                
+                // If no retention curve data, show improvement rates as progression
+                if (datasets.length === 0) {
+                    stages.forEach((stage, index) => {
+                        datasets.push({
+                            label: stage.charAt(0).toUpperCase() + stage.slice(1),
+                            data: [0, data[stage].improvement_rate],
+                            borderColor: [
+                                'rgba(139, 69, 19, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(220, 53, 69, 1)'
+                            ][index],
+                            backgroundColor: [
+                                'rgba(139, 69, 19, 0.2)',
+                                'rgba(255, 193, 7, 0.2)',
+                                'rgba(40, 167, 69, 0.2)',
+                                'rgba(220, 53, 69, 0.2)'
+                            ][index],
+                            fill: false,
+                            tension: 0.4
+                        });
+                    });
+                }
+                
+                new Chart(progressionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: datasets.length > 0 && datasets[0].data.length > 2 ? 
+                               Array.from({length: datasets[0].data.length}, (_, i) => `Attempt ${i + 1}`) :
+                               ['Initial', 'Final'],
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Score (%)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Attempt Number'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Learning Progression Across Stages'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update Demographics Charts
+        function updateDemographicsCharts(data) {
+            // Age Group Performance Chart
+            const ageGroupCtx = document.getElementById('ageGroupChart');
+            if (ageGroupCtx) {
+                new Chart(ageGroupCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.age_groups),
+                        datasets: [{
+                            label: 'Average Score (%)',
+                            data: Object.values(data.age_groups).map(group => group.avg_score),
+                            backgroundColor: 'rgba(139, 69, 19, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gender Performance Chart
+            const genderCtx = document.getElementById('genderChart');
+            if (genderCtx) {
+                new Chart(genderCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(data.gender_performance),
+                        datasets: [{
+                            data: Object.values(data.gender_performance).map(gender => gender.avg_score),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 205, 86, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Professional vs General Chart
+            const professionalCtx = document.getElementById('professionalChart');
+            if (professionalCtx) {
+                new Chart(professionalCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.professional_performance),
+                        datasets: [{
+                            label: 'Average Score (%)',
+                            data: Object.values(data.professional_performance).map(prof => prof.avg_score),
+                            backgroundColor: ['rgba(40, 167, 69, 0.8)', 'rgba(139, 69, 19, 0.8)']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update Engagement Charts
+        function updateEngagementCharts(data) {
+            // User Journey Funnel Chart
+            const funnelCtx = document.getElementById('funnelChart');
+            if (funnelCtx) {
+                new Chart(funnelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.funnel_data),
+                        datasets: [{
+                            label: 'Users',
+                            data: Object.values(data.funnel_data),
+                            backgroundColor: 'rgba(139, 69, 19, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Content Effectiveness Chart
+            const contentCtx = document.getElementById('contentEffectivenessChart');
+            if (contentCtx) {
+                new Chart(contentCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.content_effectiveness.difficulty_rankings),
+                        datasets: [{
+                            label: 'Success Rate (%)',
+                            data: Object.values(data.content_effectiveness.difficulty_rankings),
+                            backgroundColor: 'rgba(255, 193, 7, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update session analytics
+            document.getElementById('avg-session-duration').textContent = data.session_data.avg_session_duration + ' min';
+            document.getElementById('return-user-rate').textContent = data.session_data.return_user_rate + '%';
+            document.getElementById('avg-questions-session').textContent = data.session_data.avg_questions_per_session;
+        }
+    </script>
+</body>
+</html>
