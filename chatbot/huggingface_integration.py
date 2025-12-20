@@ -291,3 +291,4 @@ def get_teaching_facts_by_stage(stage_name):
     """Generate teaching content for a given maternal health stage using Hugging Face"""
     model = get_hf_model()
     return model.generate_teaching_facts(stage_name)
+

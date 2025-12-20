@@ -193,3 +193,7 @@ For the Funza Mama project, I recommend starting with the **hybrid approach**:
 4. **Scalability**: Can adjust based on usage patterns
 
 The hybrid system gives you the best of both worlds - cost savings from local models and reliability from cloud APIs.
+
+
+
+

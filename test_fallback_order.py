@@ -144,3 +144,7 @@ if __name__ == "__main__":
         print("✅ Always works (fallback responses)")
     else:
         print("\n⚠️ Some tests failed. Check the output above.")
+
+
+
+

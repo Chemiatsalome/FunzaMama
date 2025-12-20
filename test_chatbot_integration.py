@@ -118,3 +118,7 @@ if __name__ == "__main__":
         print("✅ Proper fallback when AI providers are unavailable")
     else:
         print("\n⚠️ Some tests failed. Check the output above.")
+
+
+
+

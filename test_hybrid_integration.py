@@ -102,3 +102,7 @@ if __name__ == "__main__":
     else:
         print("\n⚠️ Some tests failed. Check the errors above.")
         print("The system will still work with Together API as fallback.")
+
+
+
+

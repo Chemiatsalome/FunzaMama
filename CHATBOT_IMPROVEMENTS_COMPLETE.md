@@ -109,3 +109,7 @@ The chatbot now recognizes and responds intelligently to:
 Your chatbot now provides **intelligent, helpful responses** even when the AI providers are not available, ensuring users always get valuable maternal health information! 🚀
 
 The system is **production-ready** and will provide excellent user experience regardless of AI provider availability.
+
+
+
+

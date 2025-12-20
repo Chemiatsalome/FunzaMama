@@ -197,3 +197,7 @@ Your Funza Mama platform now has a **hybrid AI system** that:
 The system is **production-ready** and will automatically start saving costs as soon as you set up Hugging Face models. Until then, it continues working with Together API as before.
 
 **Next step**: Run `python setup_huggingface.py` to start saving costs! 🚀
+
+
+
+
