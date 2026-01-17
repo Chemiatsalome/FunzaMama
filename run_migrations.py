@@ -16,7 +16,21 @@ def run_migrations():
             if not database_url:
                 print("❌ ERROR: DATABASE_URL not found!")
                 print("   Set DATABASE_URL in Railway Dashboard → Variables")
+                print("   Or create a .env file with DATABASE_URL")
+                print("   Note: Use PUBLIC database URL for local connections (not postgres.railway.internal)")
                 sys.exit(1)
+            
+            # Check if using Railway internal hostname (won't work locally)
+            if 'postgres.railway.internal' in database_url:
+                print("⚠️  WARNING: Using Railway internal hostname (postgres.railway.internal)")
+                print("   This only works inside Railway's network!")
+                print("   For local connections, use the PUBLIC database URL from Railway.")
+                print("   Get it from: Railway Dashboard → Database → Settings → Connect")
+                print("   Or use: railway run flask db upgrade (runs on Railway)")
+                response = input("\n   Continue anyway? (y/n): ")
+                if response.lower() != 'y':
+                    print("   Exiting. Get public URL or run on Railway.")
+                    sys.exit(1)
             
             # Mask password in logs
             masked_url = database_url.split('@')[1] if '@' in database_url else '***'
