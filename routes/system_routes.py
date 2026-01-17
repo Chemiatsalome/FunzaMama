@@ -175,35 +175,40 @@ def home():
                     user_id = session.get('user_ID', 'guest_user')
                     session_id = session.get('session_id', None)  # Use session ID if available
                     clear_history = data.get('clear_history', False)  # Allow clearing history for new conversations
+                    
+                    # Only pass current_question if user is explicitly asking about it
+                    # For new questions, don't pass old question context
                     bot_response = get_chatbot_response(
                         user_message, 
                         language, 
                         user_role, 
-                        current_question, 
-                        current_options, 
-                        current_answer,
+                        current_question if data.get('is_question_context', False) else None,  # Only use if explicitly flagged
+                        current_options if data.get('is_question_context', False) else None,
+                        current_answer if data.get('is_question_context', False) else None,
                         user_id=user_id,
                         session_id=session_id,
                         clear_history=clear_history
                     )
                 
                 # Check if the response indicates rate limiting
-                if "high demand" in bot_response.lower() or "rate limit" in bot_response.lower():
+                if bot_response and ("high demand" in bot_response.lower() or "rate limit" in bot_response.lower()):
                     print("Rate limit detected, switching to fallback chatbot")
-                    # Use the simple fallback instead
-                    from chatbot.chatbot import get_simple_fallback_response
-                    bot_response = get_simple_fallback_response(user_message)
+                    # Use intelligent fallback but with the NEW user message, not old question
+                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)  # Don't use old question context
                     
             except Exception as chatbot_error:
+                import traceback
                 print(f"Chatbot function error: {chatbot_error}")
+                print(f"Traceback: {traceback.format_exc()}")
                 # Check if it's a rate limit error
                 if "rate" in str(chatbot_error).lower() or "limit" in str(chatbot_error).lower() or "quota" in str(chatbot_error).lower():
                     print("Rate limit detected in exception, using fallback")
-                    from chatbot.chatbot import get_simple_fallback_response
-                    bot_response = get_simple_fallback_response(user_message)
+                    # Use intelligent fallback but with the NEW user message, not old question
+                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)  # Don't use old question context
                 else:
-                    # Other error fallback - use intelligent fallback
-                    bot_response = get_intelligent_fallback_response(user_message, current_question, current_options, current_answer)
+                    # Other error fallback - use intelligent fallback with NEW message only
+                    # Don't use current_question for new questions - it causes confusion
+                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)
             
             return jsonify({"response": bot_response})
             

@@ -79,69 +79,92 @@ def clear_chat_history(user_id="guest_user", session_id=None):
 
 # Function to generate chatbot response
 def get_chatbot_response(user_message, language, user_role, current_question=None, current_options=None, current_answer=None, user_id="guest_user", session_id=None, clear_history=False):
-    grounded_info = get_relevant_data_faiss(user_message)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        grounded_info = get_relevant_data_faiss(user_message)
 
-    system_prompt = f"""
-    User Role: {user_role}
-    Language: {language}
-    
-    You are FunzaMama, an AI chatbot specializing in maternal health education across all pregnancy stages. 
-    
-    IMPORTANT: 
-    - Maintain conversation context from previous messages
-    - Be conversational and engaging, allowing for follow-up questions
-    - End responses by asking if the user has more questions or wants to explore related topics
-    - Format responses in structured HTML with clear sections
-    - Keep responses informative but not overwhelming (300-500 words)
-    - Use friendly, supportive, and encouraging tone
-    """
-    
-    # Add context if this is about a failed question
-    if current_question and current_answer:
-        system_prompt += f"\n\nIMPORTANT CONTEXT: The user just got this question wrong:\n"
-        system_prompt += f"Question: {current_question}\n"
-        if current_options:
-            system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
-        system_prompt += f"Correct Answer: {current_answer}\n"
-        system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational."
-    
-    if grounded_info:
-        system_prompt += f"\nUse this verified data:\n{grounded_info}"
-    
-    # Get or initialize chat history for this user/session
-    chat_history = get_chat_history(user_id, session_id)
-    
-    # Clear history if requested (e.g., starting a new conversation)
-    if clear_history:
-        chat_history.clear()
-    
-    # Append user message
-    chat_history.append({"role": "user", "content": user_message})
-    
-    # Trim chat history to stay under token limit (keep last ~10 messages for context)
-    total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
-    while total_tokens > 1500 or len(chat_history) > 20:  # Limit to 20 messages max
-        if len(chat_history) > 2:  # Keep at least user and assistant messages
-            chat_history.pop(0)  # Remove oldest message
-        else:
-            break
+        system_prompt = f"""
+        User Role: {user_role}
+        Language: {language}
+        
+        You are FunzaMama, an AI chatbot specializing in maternal health education across all pregnancy stages. 
+        
+        IMPORTANT: 
+        - ALWAYS respond to the user's CURRENT message/question, not previous questions
+        - Maintain conversation context from previous messages in the chat history
+        - Be conversational and engaging, allowing for follow-up questions
+        - If the user asks a NEW question, answer that NEW question, not a previous one
+        - End responses by asking if the user has more questions or wants to explore related topics
+        - Format responses in structured HTML with clear sections
+        - Keep responses informative but not overwhelming (300-500 words)
+        - Use friendly, supportive, and encouraging tone
+        """
+        
+        # Only add current_question context if it's explicitly provided AND the user message references it
+        # This prevents old question context from interfering with new questions
+        if current_question and current_answer:
+            # Check if user message actually references the current question
+            user_msg_lower = user_message.lower()
+            question_keywords = current_question.lower().split()[:5]  # First 5 words of question
+            if any(keyword in user_msg_lower for keyword in question_keywords if len(keyword) > 3):
+                # User is asking about the current question - provide context
+                system_prompt += f"\n\nIMPORTANT CONTEXT: The user is asking about a question they just encountered:\n"
+                system_prompt += f"Question: {current_question}\n"
+                if current_options:
+                    system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
+                system_prompt += f"Correct Answer: {current_answer}\n"
+                system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational."
+            # Otherwise, ignore current_question - user is asking something new
+        
+        if grounded_info:
+            system_prompt += f"\nUse this verified data:\n{grounded_info}"
+        
+        # Get or initialize chat history for this user/session
+        chat_history = get_chat_history(user_id, session_id)
+        
+        # Clear history if requested (e.g., starting a new conversation)
+        if clear_history:
+            chat_history.clear()
+        
+        # Append user message
+        chat_history.append({"role": "user", "content": user_message})
+        
+        # Trim chat history to stay under token limit (keep last ~10 messages for context)
         total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
-    
-    # Generate response
-    response = together_client.chat.completions.create(
-        model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",  # Faster model for chat
-        messages=[{"role": "system", "content": system_prompt}] + chat_history,
-        max_tokens=699,
-        temperature=0.11,
-        top_p=1,
-        top_k=50,
-        repetition_penalty=1,
-        stop=["<|eot_id|>"]
-    )
+        while total_tokens > 1500 or len(chat_history) > 20:  # Limit to 20 messages max
+            if len(chat_history) > 2:  # Keep at least user and assistant messages
+                chat_history.pop(0)  # Remove oldest message
+            else:
+                break
+            total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
+        
+        # Generate response
+        logger.info(f"Calling Together AI for user message: {user_message[:50]}...")
+        response = together_client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",  # Faster model for chat
+            messages=[{"role": "system", "content": system_prompt}] + chat_history,
+            max_tokens=699,
+            temperature=0.7,  # Increased from 0.11 for more varied responses
+            top_p=0.9,  # Adjusted for better response quality
+            top_k=50,
+            repetition_penalty=1.1,  # Slight increase to reduce repetition
+            stop=["<|eot_id|>"]
+        )
 
-    bot_response = response.choices[0].message.content
-    chat_history.append({"role": "assistant", "content": bot_response})
+        bot_response = response.choices[0].message.content
+        if not bot_response or len(bot_response.strip()) == 0:
+            raise ValueError("Empty response from Together AI")
+        
+        chat_history.append({"role": "assistant", "content": bot_response})
+        logger.info(f"Successfully generated response: {bot_response[:50]}...")
+        
+        return bot_response
     
-    return bot_response
+    except Exception as e:
+        logger.error(f"Error in get_chatbot_response: {e}", exc_info=True)
+        # Re-raise the exception so the route can handle it properly
+        raise
 
 
