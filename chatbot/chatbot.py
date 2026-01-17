@@ -102,21 +102,16 @@ def get_chatbot_response(user_message, language, user_role, current_question=Non
         - Use friendly, supportive, and encouraging tone
         """
         
-        # Only add current_question context if it's explicitly provided AND the user message references it
-        # This prevents old question context from interfering with new questions
+        # Add current_question context if provided (user is asking about a failed question)
+        # When current_question is provided, it means the user wants help with that specific question
         if current_question and current_answer:
-            # Check if user message actually references the current question
-            user_msg_lower = user_message.lower()
-            question_keywords = current_question.lower().split()[:5]  # First 5 words of question
-            if any(keyword in user_msg_lower for keyword in question_keywords if len(keyword) > 3):
-                # User is asking about the current question - provide context
-                system_prompt += f"\n\nIMPORTANT CONTEXT: The user is asking about a question they just encountered:\n"
-                system_prompt += f"Question: {current_question}\n"
-                if current_options:
-                    system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
-                system_prompt += f"Correct Answer: {current_answer}\n"
-                system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational."
-            # Otherwise, ignore current_question - user is asking something new
+            system_prompt += f"\n\nIMPORTANT CONTEXT: The user is asking about a question they just encountered:\n"
+            system_prompt += f"Question: {current_question}\n"
+            if current_options:
+                system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
+            system_prompt += f"Correct Answer: {current_answer}\n"
+            system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational. "
+            system_prompt += f"However, if the user asks a NEW question (not about this question), answer their NEW question instead."
         
         if grounded_info:
             system_prompt += f"\nUse this verified data:\n{grounded_info}"

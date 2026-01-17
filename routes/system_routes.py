@@ -150,65 +150,90 @@ def home():
             if not user_message:
                 return jsonify({"error": "Message is required"}), 400
 
-            # Check if hybrid AI service is requested
-            use_hybrid = data.get('use_hybrid', False)
-            stage = data.get('stage', 'general')
+            # PRIMARY: Always use Together AI via get_chatbot_response
+            # This is the main method - Together AI is the primary provider
+            # Fallback to intelligent_fallback_response only if Together AI fails
             
             try:
-                if use_hybrid:
-                    # Use hybrid AI service (Together API main, Hugging Face fallback, then fallback responses)
-                    from chatbot.hybrid_ai_service import get_hybrid_service
-                    hybrid_service = get_hybrid_service("together")  # Together API first for reliability
-                    
-                    # Create context for the hybrid service
-                    context = {
-                        'current_question': current_question,
-                        'current_options': current_options,
-                        'current_answer': current_answer
-                    }
-                    
-                    # Generate chat response using hybrid service
-                    bot_response = hybrid_service.generate_chat_response(user_message, stage, context)
-                else:
-                    # Use original chatbot with conversation continuity
-                    # Pass user_id and session_id for per-user chat history
-                    user_id = session.get('user_ID', 'guest_user')
-                    session_id = session.get('session_id', None)  # Use session ID if available
-                    clear_history = data.get('clear_history', False)  # Allow clearing history for new conversations
-                    
-                    # Only pass current_question if user is explicitly asking about it
-                    # For new questions, don't pass old question context
+                user_id = session.get('user_ID', 'guest_user')
+                session_id = session.get('session_id', None)  # Use session ID if available
+                clear_history = data.get('clear_history', False)  # Allow clearing history for new conversations
+                
+                print(f"🤖 Using Together AI for chat response (user: {user_id})")
+                
+                # Determine if this is about a failed/current question:
+                # - If current_question is provided, user is asking about a failed question → use context
+                # - If current_question is NOT provided, user is asking a new question → don't use old context
+                is_about_failed_question = current_question is not None and current_question.strip() != ""
+                
+                if is_about_failed_question:
+                    print(f"📝 User asking about failed question: {current_question[:50]}...")
+                    # User is asking about a failed question - provide context to Together AI
                     bot_response = get_chatbot_response(
                         user_message, 
                         language, 
                         user_role, 
-                        current_question if data.get('is_question_context', False) else None,  # Only use if explicitly flagged
-                        current_options if data.get('is_question_context', False) else None,
-                        current_answer if data.get('is_question_context', False) else None,
+                        current_question,  # Provide question context
+                        current_options,
+                        current_answer,
+                        user_id=user_id,
+                        session_id=session_id,
+                        clear_history=clear_history
+                    )
+                else:
+                    print(f"💬 User asking new question: {user_message[:50]}...")
+                    # User is asking a new question - don't use old question context
+                    bot_response = get_chatbot_response(
+                        user_message, 
+                        language, 
+                        user_role, 
+                        None,  # No question context for new questions
+                        None,
+                        None,
                         user_id=user_id,
                         session_id=session_id,
                         clear_history=clear_history
                     )
                 
-                # Check if the response indicates rate limiting
+                print(f"✅ Together AI response received: {bot_response[:100]}...")
+                
+                # Check if the response indicates rate limiting (should be rare with Together AI)
                 if bot_response and ("high demand" in bot_response.lower() or "rate limit" in bot_response.lower()):
-                    print("Rate limit detected, switching to fallback chatbot")
-                    # Use intelligent fallback but with the NEW user message, not old question
-                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)  # Don't use old question context
+                    print("⚠️ Rate limit detected in Together AI response, using fallback")
+                    # Use intelligent fallback with question context if available
+                    bot_response = get_intelligent_fallback_response(
+                        user_message, 
+                        current_question if is_about_failed_question else None,
+                        current_options if is_about_failed_question else None,
+                        current_answer if is_about_failed_question else None
+                    )
                     
             except Exception as chatbot_error:
                 import traceback
-                print(f"Chatbot function error: {chatbot_error}")
+                print(f"❌ Together AI error: {chatbot_error}")
                 print(f"Traceback: {traceback.format_exc()}")
+                
+                # Determine if this is about a failed question for fallback
+                is_about_failed_question = current_question is not None and current_question.strip() != ""
+                
                 # Check if it's a rate limit error
                 if "rate" in str(chatbot_error).lower() or "limit" in str(chatbot_error).lower() or "quota" in str(chatbot_error).lower():
-                    print("Rate limit detected in exception, using fallback")
-                    # Use intelligent fallback but with the NEW user message, not old question
-                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)  # Don't use old question context
+                    print("⚠️ Together AI rate limit detected, using fallback")
+                    bot_response = get_intelligent_fallback_response(
+                        user_message, 
+                        current_question if is_about_failed_question else None,
+                        current_options if is_about_failed_question else None,
+                        current_answer if is_about_failed_question else None
+                    )
                 else:
-                    # Other error fallback - use intelligent fallback with NEW message only
-                    # Don't use current_question for new questions - it causes confusion
-                    bot_response = get_intelligent_fallback_response(user_message, None, None, None)
+                    # Other error - use intelligent fallback with appropriate context
+                    print("⚠️ Together AI service error, using fallback")
+                    bot_response = get_intelligent_fallback_response(
+                        user_message, 
+                        current_question if is_about_failed_question else None,
+                        current_options if is_about_failed_question else None,
+                        current_answer if is_about_failed_question else None
+                    )
             
             return jsonify({"response": bot_response})
             
