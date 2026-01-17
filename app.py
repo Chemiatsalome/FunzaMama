@@ -25,8 +25,12 @@ load_dotenv()
 
 app.config.from_object('config.Config')
 
+# Initialize database connection (lazy - doesn't connect until first use)
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Ensure database connection is lazy (don't connect at import time)
+# SQLAlchemy will connect only when first query is made
 
 # Initialize Mail only if available
 if MAIL_AVAILABLE:
