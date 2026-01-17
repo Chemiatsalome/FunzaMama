@@ -7,28 +7,37 @@ class Config:
     # For local development, use MySQL
     if os.environ.get('FLASK_ENV') == 'production':
         # Railway automatically provides DATABASE_URL when PostgreSQL is connected
-        # Get it from: Railway Dashboard → Database Service → Variables tab → DATABASE_URL
+        # OR MySQL variables (MYSQLHOST, MYSQLUSER, etc.) when MySQL is connected
         DATABASE_URL = os.environ.get('DATABASE_URL')
         
-        # Debug: Check if DATABASE_URL is loaded (don't print the full URL for security)
-        if DATABASE_URL:
+        # If DATABASE_URL not found, try to build from MySQL variables (Railway MySQL)
+        if not DATABASE_URL:
+            mysql_host = os.environ.get('MYSQLHOST')
+            mysql_user = os.environ.get('MYSQLUSER')
+            mysql_password = os.environ.get('MYSQLPASSWORD')
+            mysql_database = os.environ.get('MYSQLDATABASE')
+            mysql_port = os.environ.get('MYSQLPORT', '3306')
+            
+            if mysql_host and mysql_user and mysql_database:
+                # Build MySQL connection string from Railway MySQL variables
+                SQLALCHEMY_DATABASE_URI = (
+                    f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@"
+                    f"{mysql_host}:{mysql_port}/{mysql_database}"
+                )
+                print(f"✅ Using MySQL from Railway variables: {mysql_host}:{mysql_port}/{mysql_database}")
+            else:
+                # No database connection available
+                print("⚠️ WARNING: No database connection found!")
+                print("⚠️ Neither DATABASE_URL (PostgreSQL) nor MySQL variables found.")
+                print("⚠️ App will start but database operations will fail.")
+                SQLALCHEMY_DATABASE_URI = 'postgresql://placeholder:placeholder@localhost/placeholder'
+        else:
+            # PostgreSQL DATABASE_URL found
             # Mask password in logs for security
             masked_url = DATABASE_URL.split('@')[1] if '@' in DATABASE_URL else '***'
             print(f"✅ DATABASE_URL loaded: postgresql://***@{masked_url}")
-        else:
-            print("⚠️ WARNING: DATABASE_URL not found!")
-            print("⚠️ Railway should automatically provide this when PostgreSQL is connected.")
-            print("⚠️ Check: Railway Dashboard → Database Service → Variables tab")
-            print("⚠️ App will start but database operations will fail until DATABASE_URL is set.")
-        
-        if not DATABASE_URL:
-            # Don't crash at import time - use a placeholder that will fail gracefully on first DB access
-            # This allows the app to start so we can see other errors
-            # Use a placeholder that will fail on connection attempt (not at import time)
-            SQLALCHEMY_DATABASE_URI = 'postgresql://placeholder:placeholder@localhost/placeholder'
-        else:
+            
             # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
-            # Also ensure it's postgresql:// (not postgres://)
             if DATABASE_URL.startswith('postgres://'):
                 SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
             elif DATABASE_URL.startswith('postgresql://'):
