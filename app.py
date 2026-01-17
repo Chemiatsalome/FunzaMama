@@ -17,20 +17,13 @@ except ImportError:
 
 app = Flask(__name__)
 
-# Add explicit logging for Render debugging
-import logging
-import sys
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-logger = logging.getLogger(__name__)
-logger.info("🚀 Flask app instance created")
 
 CORS(app, supports_credentials=True)
 
 load_dotenv()
 
-logger.info("📋 Loading configuration...")
+
 app.config.from_object('config.Config')
-logger.info("✅ Configuration loaded")
 
 # Initialize database connection (lazy - doesn't connect until first use)
 db.init_app(app)
@@ -94,14 +87,6 @@ app.register_blueprint(feedback_bp)
 if admin_available:
     app.register_blueprint(admin_bp)
     print("Admin routes registered successfully!")
-
-# Add a simple health check endpoint for Render port detection
-@app.route('/health')
-def health_check():
-    """Simple health check endpoint for Render port detection"""
-    return {'status': 'ok', 'message': 'Funza Mama is running!'}, 200
-
-logger.info("✅ All blueprints registered, app is ready!")
 
 # CLI command to create admin user (run once: flask create-admin)
 @app.cli.command("create-admin")
