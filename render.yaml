@@ -2,13 +2,11 @@ services:
   - type: web
     name: funzamama-app
     env: python
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -m pip show gunicorn
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: PREFERRED_URL_SCHEME
         value: https
 
