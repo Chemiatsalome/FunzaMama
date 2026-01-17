@@ -1,0 +1,96 @@
+# Minimal production requirements for Railway deployment
+# Excludes heavy ML libraries (PyTorch, transformers) since Together AI is primary provider
+
+# Core Flask dependencies
+Flask==3.1.0
+Flask-CORS==6.0.2
+Flask-Mail==0.9.1
+Flask-Migrate==4.1.0
+Flask-SQLAlchemy==3.1.1
+Werkzeug==3.1.3
+Jinja2==3.1.5
+MarkupSafe==3.0.2
+itsdangerous==2.2.0
+blinker==1.9.0
+
+# Database
+SQLAlchemy==2.0.39
+psycopg2-binary>=2.9.9
+mysql-connector-python==9.2.0
+alembic==1.15.1
+greenlet>=3.3.0
+
+# Server
+gunicorn>=21.2.0
+asgiref>=3.7.0
+
+# Together AI (primary AI provider)
+together==1.4.6
+
+# HTTP/API clients
+requests==2.32.3
+httpx==0.28.1
+httpcore==1.0.7
+h11==0.14.0
+aiohttp>=3.13.0
+aiohappyeyeballs==2.6.1
+aiosignal>=1.4.0
+frozenlist==1.5.0
+multidict==6.2.0
+yarl==1.18.3
+
+# Utilities
+python-dotenv==1.2.1
+click==8.1.8
+colorama==0.4.6
+typer==0.15.2
+shellingham==1.5.4
+rich==13.9.4
+tabulate==0.9.0
+Pygments==2.19.1
+
+# Data handling (minimal versions)
+numpy>=2.0.0
+pandas>=2.3.3
+python-dateutil==2.9.0.post0
+pytz==2025.1
+tzdata==2025.1
+
+# Configuration
+pydantic>=2.12.0
+PyYAML==6.0.2
+
+# Other utilities
+certifi==2025.1.31
+charset-normalizer==3.4.1
+idna==3.10
+urllib3==2.3.0
+six==1.17.0
+sniffio==1.3.1
+packaging==24.2
+filelock==3.18.0
+fsspec==2025.3.0
+typing_extensions>=4.14.1
+annotated-types==0.7.0
+eval_type_backport==0.2.2
+distro==1.9.0
+anyio==4.9.0
+attrs==25.3.0
+starlette==0.46.1
+uvicorn==0.34.0
+fastapi==0.115.11
+Mako==1.3.9
+markdown-it-py==3.0.0
+mdurl==0.1.2
+propcache==0.3.0
+tqdm==4.67.1
+
+# NOTE: Heavy ML libraries removed (torch, transformers, sentence-transformers, faiss-cpu)
+# These are only needed for local Hugging Face fallback, which is rarely used
+# If you need them, add back:
+# torch>=2.9.0
+# transformers==4.50.0
+# sentence-transformers==3.4.1
+# faiss-cpu==1.13.2
+# accelerate>=0.20.0
+# bitsandbytes>=0.41.0

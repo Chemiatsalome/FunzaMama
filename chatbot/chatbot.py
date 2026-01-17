@@ -1,33 +1,55 @@
 # chatbot.py
-import faiss
 import json
-import numpy as np
 from together import Together
-from sentence_transformers import SentenceTransformer
+
+# Optional imports for FAISS grounding (can be disabled to reduce image size)
+try:
+    import faiss
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
+    FAISS_AVAILABLE = True
+    
+    # Load Sentence Transformer model
+    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+    
+    # File paths
+    FAISS_INDEX_PATH = "faiss_grounded_data.index"
+    GROUNDED_OUTPUTS_PATH = "grounded_outputs.json"
+    
+    # Load FAISS index and grounded outputs
+    try:
+        faiss_index = faiss.read_index(FAISS_INDEX_PATH)
+        with open(GROUNDED_OUTPUTS_PATH, "r", encoding="utf-8") as f:
+            grounded_outputs = json.load(f)
+    except (FileNotFoundError, Exception) as e:
+        print(f"⚠️ FAISS index not found or error loading: {e}. Grounding disabled.")
+        FAISS_AVAILABLE = False
+        faiss_index = None
+        grounded_outputs = None
+except ImportError:
+    print("⚠️ FAISS/sentence-transformers not available. Grounding disabled. Using Together AI only.")
+    FAISS_AVAILABLE = False
+    faiss_index = None
+    grounded_outputs = None
 
 # Initialize Together AI client
 together_client = Together(api_key="e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e")
 
-# Load Sentence Transformer model
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-# File paths
-FAISS_INDEX_PATH = "faiss_grounded_data.index"
-GROUNDED_OUTPUTS_PATH = "grounded_outputs.json"
-
-# Load FAISS index and grounded outputs
-faiss_index = faiss.read_index(FAISS_INDEX_PATH)
-with open(GROUNDED_OUTPUTS_PATH, "r", encoding="utf-8") as f:
-    grounded_outputs = json.load(f)
-
-# Function to retrieve relevant data using FAISS
+# Function to retrieve relevant data using FAISS (optional)
 def get_relevant_data_faiss(user_message):
-    user_embedding = embedding_model.encode([user_message], normalize_embeddings=True)
-    D, I = faiss_index.search(np.array(user_embedding, dtype=np.float32), 1)
+    if not FAISS_AVAILABLE or faiss_index is None or grounded_outputs is None:
+        return None
     
-    if I[0][0] < len(grounded_outputs) and D[0][0] < 0.7:
-        return grounded_outputs[I[0][0]]
-    else:
+    try:
+        user_embedding = embedding_model.encode([user_message], normalize_embeddings=True)
+        D, I = faiss_index.search(np.array(user_embedding, dtype=np.float32), 1)
+        
+        if I[0][0] < len(grounded_outputs) and D[0][0] < 0.7:
+            return grounded_outputs[I[0][0]]
+        else:
+            return None
+    except Exception as e:
+        print(f"⚠️ Error in FAISS search: {e}")
         return None
 
 # Function to get or initialize chat history for a user/session
