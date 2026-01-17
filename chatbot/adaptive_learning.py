@@ -9,13 +9,8 @@ import random
 from datetime import datetime, timedelta
 from models import db
 from models.models import UserQuestionHistory, UserResponse
-from .optimized_modelintegration import (
-    get_chatbot_response_preconception,
-    get_chatbot_response_prenatal, 
-    get_chatbot_response_birth,
-    get_chatbot_response_postnatal,
-    get_hybrid_questions
-)
+# Lazy imports to avoid circular dependency with optimized_modelintegration
+# Functions imported only when needed in generate_ai_questions()
 
 def generate_question_hash(question_text):
     """Generate a unique hash for a question to track it across sessions"""
@@ -158,6 +153,8 @@ def generate_ai_questions(stage, difficulty_level, num_questions=10, user_id=Non
         return []
     
     try:
+        # Lazy import to avoid circular dependency
+        from .optimized_modelintegration import get_hybrid_questions
         # Use hybrid approach for better performance for all users
         ai_response = get_hybrid_questions(stage, user_id, difficulty_level)
         

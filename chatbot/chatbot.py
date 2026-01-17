@@ -4,7 +4,6 @@ import json
 import numpy as np
 from together import Together
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics import precision_score, recall_score, f1_score
 
 # Initialize Together AI client
 together_client = Together(api_key="e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e")
@@ -31,34 +30,84 @@ def get_relevant_data_faiss(user_message):
     else:
         return None
 
-# Chat history for conversation memory
-chat_history = []
+# Function to get or initialize chat history for a user/session
+def get_chat_history(user_id="guest_user", session_id=None):
+    """
+    Get chat history for a specific user/session
+    Note: In production, this should be stored in database or Redis for persistence
+    For now, we'll use a simple dictionary keyed by user_id
+    """
+    if not hasattr(get_chat_history, 'history_store'):
+        get_chat_history.history_store = {}
+    
+    key = f"{user_id}_{session_id}" if session_id else str(user_id)
+    if key not in get_chat_history.history_store:
+        get_chat_history.history_store[key] = []
+    
+    return get_chat_history.history_store[key]
+
+def clear_chat_history(user_id="guest_user", session_id=None):
+    """Clear chat history for a specific user/session"""
+    if not hasattr(get_chat_history, 'history_store'):
+        get_chat_history.history_store = {}
+    
+    key = f"{user_id}_{session_id}" if session_id else str(user_id)
+    if key in get_chat_history.history_store:
+        get_chat_history.history_store[key] = []
 
 # Function to generate chatbot response
-def get_chatbot_response(user_message, language, user_role):
+def get_chatbot_response(user_message, language, user_role, current_question=None, current_options=None, current_answer=None, user_id="guest_user", session_id=None, clear_history=False):
     grounded_info = get_relevant_data_faiss(user_message)
 
     system_prompt = f"""
     User Role: {user_role}
     Language: {language}
     
-    You are FunzaMama, an AI chatbot specializing in maternal health education across all pregnancy stages. Format responses in structured HTML.
+    You are FunzaMama, an AI chatbot specializing in maternal health education across all pregnancy stages. 
+    
+    IMPORTANT: 
+    - Maintain conversation context from previous messages
+    - Be conversational and engaging, allowing for follow-up questions
+    - End responses by asking if the user has more questions or wants to explore related topics
+    - Format responses in structured HTML with clear sections
+    - Keep responses informative but not overwhelming (300-500 words)
+    - Use friendly, supportive, and encouraging tone
     """
+    
+    # Add context if this is about a failed question
+    if current_question and current_answer:
+        system_prompt += f"\n\nIMPORTANT CONTEXT: The user just got this question wrong:\n"
+        system_prompt += f"Question: {current_question}\n"
+        if current_options:
+            system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
+        system_prompt += f"Correct Answer: {current_answer}\n"
+        system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational."
+    
     if grounded_info:
         system_prompt += f"\nUse this verified data:\n{grounded_info}"
+    
+    # Get or initialize chat history for this user/session
+    chat_history = get_chat_history(user_id, session_id)
+    
+    # Clear history if requested (e.g., starting a new conversation)
+    if clear_history:
+        chat_history.clear()
     
     # Append user message
     chat_history.append({"role": "user", "content": user_message})
     
-    # Trim chat history to stay under token limit
+    # Trim chat history to stay under token limit (keep last ~10 messages for context)
     total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
-    while total_tokens > 1500:
-        chat_history.pop(0)
+    while total_tokens > 1500 or len(chat_history) > 20:  # Limit to 20 messages max
+        if len(chat_history) > 2:  # Keep at least user and assistant messages
+            chat_history.pop(0)  # Remove oldest message
+        else:
+            break
         total_tokens = sum(len(msg["content"].split()) for msg in chat_history)
     
     # Generate response
     response = together_client.chat.completions.create(
-        model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+        model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",  # Faster model for chat
         messages=[{"role": "system", "content": system_prompt}] + chat_history,
         max_tokens=699,
         temperature=0.11,
@@ -74,47 +123,3 @@ def get_chatbot_response(user_message, language, user_role):
     return bot_response
 
 
-# Optional: Function to test FAISS accuracy
-from sklearn.metrics import precision_score, recall_score, f1_score
-
-# Dummy FAISS retrieval function (replace this with your real implementation)
-def get_relevant_data_faiss(query):
-    known_questions = [
-        "What is the purpose of prenatal visits?",
-        "How often should I attend prenatal visits?",
-        "What should I expect during a prenatal visit?",
-        "Can I bring a support person to my prenatal visits?",
-        "Are vaccines safe during pregnancy?"
-    ]
-    return any(q.lower() in query.lower() for q in known_questions)
-
-# Evaluation function
-def evaluate_faiss_accuracy(test_queries, ground_truths):
-    retrieved_results = [get_relevant_data_faiss(query) for query in test_queries]
-    y_true = [1 if truth else 0 for truth in ground_truths]
-    y_pred = [1 if res else 0 for res in retrieved_results]
-
-    return {
-        "Precision": precision_score(y_true, y_pred),
-        "Recall": recall_score(y_true, y_pred),
-        "F1-Score": f1_score(y_true, y_pred)
-    }
-
-# Sample test queries and their expected answers
-test_queries = [
-    "What is the purpose of prenatal visits?",        # relevant
-    "Can I take paracetamol while pregnant?",         # not in the dataset
-    "Are vaccines safe during pregnancy?",            # relevant
-    "What time should I eat during pregnancy?",       # not in the dataset
-    "Can I bring someone to prenatal visits?"         # relevant (variant wording)
-]
-
-# Ground truths: True if you expect FAISS to return a relevant result
-ground_truths = [True, False, True, False, True]
-
-# Run evaluation and print results
-results = evaluate_faiss_accuracy(test_queries, ground_truths)
-
-print("\n📊 FAISS Retrieval Evaluation Results:")
-for metric, value in results.items():
-    print(f"{metric}: {value:.2f}")

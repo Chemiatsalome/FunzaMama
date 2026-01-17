@@ -1,8 +1,11 @@
+import os
+from werkzeug.utils import secure_filename
 from flask import Blueprint, render_template, request, redirect, url_for, session,flash,  jsonify
 from chatbot.chatbot import get_chatbot_response  # Import the chatbot function
 from models.models import User, Badge, UserResponse
 from .gamelogic import check_and_award_badge
 from chatbot.modelintergration import get_teaching_facts_by_stage
+from datetime import datetime
 
 from models import db
 
@@ -55,12 +58,55 @@ def get_intelligent_fallback_response(user_message, current_question="", current
     elif any(word in input_lower for word in ['postpartum', 'after', 'recovery', 'newborn']):
         return maternal_responses['postpartum'][0]
     
-    # If there's a current question context, provide specific help
-    if current_question and current_options:
-        return f"Based on your question about '{current_question}', here are some key points to consider:\n\n• Regular prenatal care is essential\n• Balanced nutrition supports healthy development\n• Exercise and rest are both important\n• Stay connected with your healthcare provider\n• Trust your instincts and ask questions\n\nRemember, every pregnancy journey is unique. Always consult your healthcare provider for personalized advice."
+    # If there's a current question context, provide specific help for FAILED QUESTIONS
+    if current_question:
+        # Check if this is about a failed question (user is asking about the question they just got wrong)
+        if current_answer and current_options:
+            # This is a failed question - provide helpful explanation
+            response = f"I can help you understand '{current_question}'!\n\n"
+            response += f"**The correct answer is: {current_answer}**\n\n"
+            
+            # Provide context-specific help based on question content
+            question_lower = current_question.lower()
+            if any(word in question_lower for word in ['nutrition', 'diet', 'food', 'vitamin', 'supplement']):
+                response += "**Key points about nutrition:**\n"
+                response += "• Eat a balanced diet with fruits, vegetables, whole grains, and lean proteins\n"
+                response += "• Take prenatal vitamins as recommended by your healthcare provider\n"
+                response += "• Stay hydrated by drinking plenty of water\n"
+                response += "• Avoid certain foods like raw fish, unpasteurized dairy, and excessive caffeine\n\n"
+            elif any(word in question_lower for word in ['exercise', 'activity', 'workout', 'fitness']):
+                response += "**Key points about exercise:**\n"
+                response += "• Regular moderate exercise is generally safe and beneficial during pregnancy\n"
+                response += "• Activities like walking, swimming, and prenatal yoga are excellent choices\n"
+                response += "• Listen to your body and stop if you feel pain or discomfort\n"
+                response += "• Consult your healthcare provider before starting any new exercise routine\n\n"
+            elif any(word in question_lower for word in ['prenatal', 'visit', 'checkup', 'appointment']):
+                response += "**Key points about prenatal care:**\n"
+                response += "• Regular prenatal visits are essential for monitoring your health and baby's development\n"
+                response += "• These visits allow your healthcare provider to detect and address any issues early\n"
+                response += "• Bring questions and concerns to each appointment\n"
+                response += "• Follow your healthcare provider's recommendations for tests and screenings\n\n"
+            elif any(word in question_lower for word in ['labor', 'birth', 'delivery', 'contraction']):
+                response += "**Key points about labor and birth:**\n"
+                response += "• Know the signs of labor: regular contractions, water breaking, or bloody show\n"
+                response += "• Create a birth plan but remain flexible\n"
+                response += "• Have a support person ready to accompany you\n"
+                response += "• Trust your healthcare team during delivery\n\n"
+            else:
+                response += "**General guidance:**\n"
+                response += "• Always consult your healthcare provider for personalized medical advice\n"
+                response += "• Trust reliable sources for maternal health information\n"
+                response += "• Every pregnancy is unique - what works for others may not work for you\n"
+                response += "• Don't hesitate to ask questions - knowledge empowers you\n\n"
+            
+            response += "Would you like me to explain any specific aspect of this topic in more detail?"
+            return response
+        else:
+            # General question context without answer
+            return f"Based on your question about '{current_question}', here are some key points to consider:\n\n• Regular prenatal care is essential\n• Balanced nutrition supports healthy development\n• Exercise and rest are both important\n• Stay connected with your healthcare provider\n• Trust your instincts and ask questions\n\nRemember, every pregnancy journey is unique. Always consult your healthcare provider for personalized advice."
     
     # Default helpful response
-    return "I'm here to help with your maternal health questions! While I'm experiencing some technical difficulties, I can still provide general guidance. For specific medical concerns, always consult your healthcare provider. What would you like to know about pregnancy, childbirth, or postnatal care?"
+    return "I can help with preconception planning, nutrition, and preparing for a healthy pregnancy. For specific medical concerns, always consult your healthcare provider. What would you like to know more about?" "I'm here to help with your maternal health questions! While I'm experiencing some technical difficulties, I can still provide general guidance. For specific medical concerns, always consult your healthcare provider. What would you like to know about pregnancy, childbirth, or postnatal care?"
 
 home_bp = Blueprint("home", __name__)
 gamestages_bp = Blueprint("gamestages", __name__)
@@ -124,8 +170,22 @@ def home():
                     # Generate chat response using hybrid service
                     bot_response = hybrid_service.generate_chat_response(user_message, stage, context)
                 else:
-                    # Use original chatbot
-                    bot_response = get_chatbot_response(user_message, language, user_role, current_question, current_options, current_answer)
+                    # Use original chatbot with conversation continuity
+                    # Pass user_id and session_id for per-user chat history
+                    user_id = session.get('user_ID', 'guest_user')
+                    session_id = session.get('session_id', None)  # Use session ID if available
+                    clear_history = data.get('clear_history', False)  # Allow clearing history for new conversations
+                    bot_response = get_chatbot_response(
+                        user_message, 
+                        language, 
+                        user_role, 
+                        current_question, 
+                        current_options, 
+                        current_answer,
+                        user_id=user_id,
+                        session_id=session_id,
+                        clear_history=clear_history
+                    )
                 
                 # Check if the response indicates rate limiting
                 if "high demand" in bot_response.lower() or "rate limit" in bot_response.lower():
@@ -227,7 +287,7 @@ def update_badge_progress(user_id, stage):
 
 @gamestages_bp.route('/gamestages')
 def game():
-    print("Route accessed")
+    # print("Route accessed")  # Debug output commented out
     username = "Guest"
     earned_stages = []
     badge_claimable = {}
@@ -304,8 +364,8 @@ def game():
             earned_badge_count = sum(1 for badge in earned_badges if badge.progress >= 100.0)
             overall_progress = round((earned_badge_count / total_stages) * 100, 1)
             
-            print(f"Debug - Earned badges: {earned_badge_count}/{total_stages}")
-            print(f"Debug - Overall progress: {overall_progress}%")
+            # print(f"Debug - Earned badges: {earned_badge_count}/{total_stages}")  # Debug output commented out
+            # print(f"Debug - Overall progress: {overall_progress}%")  # Debug output commented out
 
             # ✅ Build badge_data dictionary with detailed progress info
             badge_data = {}
@@ -367,13 +427,13 @@ def game():
 
             selected_badge_data = badge_data.get(selected_badge) if selected_badge else None
 
-            # ✅ Debug print statements
-            print("USERNAME:", username)
-            print("EARNED STAGES:", earned_stages)
-            print("BADGE DATA:", badge_data)
-            print("SELECTED BADGE:", selected_badge)
-            print("SELECTED BADGE DATA:", selected_badge_data)
-            print("OVERALL PROGRESS:", overall_progress)
+            # ✅ Debug print statements (commented out)
+            # print("USERNAME:", username)  # Debug output commented out
+            # print("EARNED STAGES:", earned_stages)  # Debug output commented out
+            # print("BADGE DATA:", badge_data)  # Debug output commented out
+            # print("SELECTED BADGE:", selected_badge)  # Debug output commented out
+            # print("SELECTED BADGE DATA:", selected_badge_data)  # Debug output commented out
+            # print("OVERALL PROGRESS:", overall_progress)  # Debug output commented out
 
             return render_template(
                 'gamestages.html',
@@ -460,20 +520,77 @@ def view_profile():
         username = f"{user.first_name} {user.second_name}".strip()
         avatar = user.avatar
 
-        # Handle POST request to change username
+        # Handle POST request to change username or avatar
         if request.method == 'POST':
-            new_username = request.form['username']
+            # Handle username update
+            if 'username' in request.form:
+                new_username = request.form['username']
 
-            # Check if the new username already exists
-            existing_user = User.query.filter_by(username=new_username).first()
-            if existing_user:
-                flash("Username already exists, please pick a different one.", 'error')
-            else:
-                # Update username in the database
-                user.username = new_username
-                db.session.commit()
-                flash("Username updated successfully!", 'success')
-                username = new_username  # Update username for the current session
+                # Check if the new username already exists
+                existing_user = User.query.filter_by(username=new_username).first()
+                if existing_user:
+                    flash("Username already exists, please pick a different one.", 'error')
+                else:
+                    # Update username in the database
+                    user.username = new_username
+                    db.session.commit()
+                    flash("Username updated successfully!", 'success')
+                    username = new_username  # Update username for the current session
+            
+            # Handle avatar upload
+            if 'avatar_file' in request.files:
+                file = request.files['avatar_file']
+                if file and file.filename != '':
+                    # Validate file type
+                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                        # Create uploads directory if it doesn't exist
+                        upload_dir = os.path.join('static', 'uploads', 'avatars')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        
+                        # Delete old uploaded avatar if it exists (not predefined)
+                        if user.avatar and user.avatar.startswith('uploads/avatars/'):
+                            old_path = os.path.join('static', user.avatar)
+                            if os.path.exists(old_path):
+                                try:
+                                    os.remove(old_path)
+                                except:
+                                    pass  # Ignore errors when deleting old file
+                        
+                        # Generate unique filename
+                        filename = secure_filename(file.filename)
+                        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                        filename = f"{user_id}_{timestamp}_{filename}"
+                        
+                        # Save file
+                        file_path = os.path.join(upload_dir, filename)
+                        file.save(file_path)
+                        
+                        # Update user avatar in database
+                        user.avatar = f"uploads/avatars/{filename}"
+                        db.session.commit()
+                        avatar = user.avatar
+                        flash('Avatar uploaded successfully!', 'success')
+                    else:
+                        flash('Invalid file type. Please upload PNG, JPG, JPEG, GIF, or WEBP.', 'warning')
+            
+            # Handle predefined avatar selection
+            if 'avatar' in request.form:
+                avatar_path = request.form.get('avatar')
+                if avatar_path:
+                    # Delete old uploaded avatar if it exists (not predefined)
+                    if user.avatar and user.avatar.startswith('uploads/avatars/'):
+                        old_path = os.path.join('static', user.avatar)
+                        if os.path.exists(old_path):
+                            try:
+                                os.remove(old_path)
+                            except:
+                                pass  # Ignore errors when deleting old file
+                    
+                    user.avatar = avatar_path
+                    db.session.commit()
+                    avatar = user.avatar
+                    flash('Avatar updated successfully!', 'success')
 
         # Query user responses
         responses = UserResponse.query.filter_by(user_id=user_id).all()
@@ -578,23 +695,43 @@ def view_profile():
                     worst_accuracy = accuracy
                     worst_stage = stage
         
-        # If no stages have attempts, default to the first stage
+        # If no stages have attempts, default to the first stage (use 'antenatal' not 'prenatal')
         if worst_stage is None:
-            worst_stage = 'prenatal'
+            worst_stage = 'antenatal'  # Changed from 'prenatal' to match stage_data keys
             worst_accuracy = 0
+
+        # Ensure worst_stage exists in stage_data (safety check)
+        if worst_stage not in stage_data:
+            # Map 'prenatal' to 'antenatal' if needed
+            if worst_stage == 'prenatal':
+                worst_stage = 'antenatal'
+            else:
+                # Fallback to first available stage
+                worst_stage = list(stage_data.keys())[0] if stage_data else 'antenatal'
 
         # Get teaching facts from LLaMA model
         teaching_facts = get_teaching_facts_by_stage(worst_stage)
 
-        # Add to stats with more detailed information
-        stats["most_failed_stage"] = {
-            "name": worst_stage.capitalize(),
-            "accuracy": round(worst_accuracy, 1),
-            "correct": stage_data[worst_stage]['correct'],
-            "failed": stage_data[worst_stage]['failed'],
-            "total_attempts": stage_data[worst_stage]['correct'] + stage_data[worst_stage]['failed'],
-            "facts": teaching_facts
-        }
+        # Add to stats with more detailed information (with safety check)
+        if worst_stage in stage_data:
+            stats["most_failed_stage"] = {
+                "name": worst_stage.capitalize(),
+                "accuracy": round(worst_accuracy, 1),
+                "correct": stage_data[worst_stage]['correct'],
+                "failed": stage_data[worst_stage]['failed'],
+                "total_attempts": stage_data[worst_stage]['correct'] + stage_data[worst_stage]['failed'],
+                "facts": teaching_facts
+            }
+        else:
+            # Fallback if stage_data is empty or worst_stage doesn't exist
+            stats["most_failed_stage"] = {
+                "name": "No Stage",
+                "accuracy": 0,
+                "correct": 0,
+                "failed": 0,
+                "total_attempts": 0,
+                "facts": []
+            }
 
     # Render the profile page with the dynamic username and stats
     return render_template("profile.html", username=username, stats=stats, avatar=avatar, user=user)

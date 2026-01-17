@@ -4,7 +4,7 @@ from models import db
 from models.models import UserResponse, QuizQuestion
 
 # Initialize Together AI client
-together_client = Together(api_key="e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e")
+together_client = Together(api_key="9075598f252c645841df758d606857135f2adf2111b3e73df7850d304a4380e1")
 
 maternal_health_prompt_preconception_stage = """
 You are an AI that generates **maternal health quizzes focused on the preconception stage (When preparing to get pregnant - Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness)** in JSON format.

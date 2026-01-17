@@ -399,11 +399,17 @@
                     <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-6">
-                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Home</a>
                     {% if user_logged_in %}
+                    <!-- Avatar in Navigation -->
+                    <div id="navAvatar" class="w-10 h-10 rounded-full border-2 border-deep-rose shadow-md flex-shrink-0">
+                        <!-- Avatar will be rendered here by JavaScript -->
+                    </div>
+                    <span class="text-deep-plum font-medium">Welcome, {{ username }}</span>
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Home</a>
                     <a href="{{ url_for('profile.view_profile') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Profile</a>
                     <a href="{{ url_for('login.logout') }}" class="bg-deep-plum text-white px-6 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">Logout</a>
                     {% else %}
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Home</a>
                     <a href="{{ url_for('login.login') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">Login</a>
                     <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-6 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">Sign Up</a>
                     {% endif %}
@@ -418,6 +424,15 @@
             <!-- Mobile menu -->
             <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
                 <div class="flex flex-col space-y-4 pt-4">
+                    {% if user_logged_in %}
+                    <div class="flex items-center space-x-3 px-4 py-2">
+                        <!-- Avatar in Mobile Menu -->
+                        <div id="navAvatarMobile" class="w-10 h-10 rounded-full border-2 border-deep-rose shadow-md flex-shrink-0">
+                            <!-- Avatar will be rendered here by JavaScript -->
+                        </div>
+                        <span class="text-deep-plum font-medium">Welcome, {{ username }}</span>
+                    </div>
+                    {% endif %}
                     <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Home</a>
                     {% if user_logged_in %}
                     <a href="{{ url_for('profile.view_profile') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">Profile</a>
@@ -432,13 +447,22 @@
         </div>
     </nav>
     <!-- Hero Section -->
-    <section class="py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto text-center">
+    <section class="py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-warm-pink/30 via-soft-purple/20 to-transparent"></div>
+            <img src="{{ url_for('static', filename='images/backgroundimage1.avif') }}" 
+                 alt="Maternal Health Education" 
+                 class="w-full h-full object-cover opacity-20"
+                 onerror="this.style.display='none';">
+        </div>
+        
+        <div class="max-w-7xl mx-auto text-center relative z-10">
             <div class="fade-in">
-                <h1 class="text-4xl md:text-6xl font-bold text-deep-plum mb-4 font-poppins">
+                <h1 class="text-4xl md:text-6xl font-bold text-deep-plum mb-4 font-poppins drop-shadow-lg">
                     Your Learning Journey
                 </h1>
-                <p class="text-lg md:text-xl text-warm-brown mb-6 max-w-3xl mx-auto">
+                <p class="text-lg md:text-xl text-warm-brown mb-6 max-w-3xl mx-auto drop-shadow-md">
                     Welcome back, {{ username }}! Continue your maternal health education journey through interactive stages.
                 </p>
                 
@@ -1584,47 +1608,114 @@
             renderCurrentAvatar();
         });
         
-        // Function to render the current avatar
-        function renderCurrentAvatar() {
-            const currentAvatarDisplay = document.getElementById('current-avatar-display');
-            const currentAvatarName = document.getElementById('current-avatar-name');
+        // Function to render avatar based on avatar path (for navigation - smaller size)
+        function renderAvatar(avatarElement, avatarPath) {
+            if (!avatarElement || !avatarPath) return;
             
-            if (!currentAvatarDisplay || !currentAvatarName) return;
-            
-            // Get the user's current avatar from the server
-            const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
-            
-            if (userAvatar && window.avatarMap[userAvatar]) {
-                const avatarData = window.avatarMap[userAvatar];
+            if (window.avatarMap[avatarPath]) {
+                const avatarData = window.avatarMap[avatarPath];
                 
-                // Create the avatar HTML
+                // Create the avatar HTML (smaller size for navigation)
                 const avatarHTML = `
                     <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
-                        <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
-                            <div class="avatar-eyes flex space-x-1">
-                                <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink"></div>
-                                <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                        <div class="avatar-face w-8 h-8 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                            <div class="avatar-eyes flex space-x-0.5">
+                                <div class="w-1 h-1 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                <div class="w-1 h-1 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
                             </div>
-                            <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
-                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-1.5 w-8 h-3 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                            <div class="avatar-smile absolute bottom-1.5 w-4 h-1.5 border border-${avatarData.smileColor.replace('border-', '')} border-t-0 rounded-b-full"></div>
+                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-0.5 w-6 h-2 border ${avatarData.eyeColor} rounded-full"></div>` : ''}
                         </div>
                     </div>
                 `;
                 
-                currentAvatarDisplay.innerHTML = avatarHTML;
-                currentAvatarName.textContent = avatarData.name;
+                avatarElement.innerHTML = avatarHTML;
             } else {
-                // Fallback for old image-based avatars or no avatar
-                if (userAvatar && userAvatar.includes('images/')) {
-                    currentAvatarDisplay.innerHTML = `<img src="/static/${userAvatar}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
-                    currentAvatarName.textContent = "Your Avatar";
+                // Handle uploaded images or old image-based avatars
+                if (avatarPath) {
+                    if (avatarPath.includes('uploads/avatars/') || avatarPath.includes('images/')) {
+                        // Uploaded custom avatar or predefined image avatar
+                        avatarElement.innerHTML = `<img src="/static/${avatarPath}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                    } else {
+                        // Fallback for invalid paths
+                        avatarElement.innerHTML = `
+                            <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                <i class="fas fa-user text-gray-500 text-xs"></i>
+                            </div>
+                        `;
+                    }
                 } else {
-                    currentAvatarDisplay.innerHTML = `
+                    // No avatar selected
+                    avatarElement.innerHTML = `
                         <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                            <i class="fas fa-user text-gray-500 text-xl"></i>
+                            <i class="fas fa-user text-gray-500 text-xs"></i>
                         </div>
                     `;
-                    currentAvatarName.textContent = "No Avatar Selected";
+                }
+            }
+        }
+        
+        // Function to render the current avatar in navigation and hero section
+        function renderCurrentAvatar() {
+            const navAvatar = document.getElementById('navAvatar');
+            const navAvatarMobile = document.getElementById('navAvatarMobile');
+            const currentAvatarDisplay = document.getElementById('current-avatar-display');
+            const currentAvatarName = document.getElementById('current-avatar-name');
+            
+            // Get the user's current avatar from the server
+            const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
+            
+            // Render in navigation (desktop and mobile)
+            if (navAvatar) {
+                renderAvatar(navAvatar, userAvatar);
+            }
+            if (navAvatarMobile) {
+                renderAvatar(navAvatarMobile, userAvatar);
+            }
+            
+            // Render in hero section (if exists)
+            if (currentAvatarDisplay && currentAvatarName) {
+                if (userAvatar && window.avatarMap[userAvatar]) {
+                    const avatarData = window.avatarMap[userAvatar];
+                    
+                    // Create the avatar HTML
+                    const avatarHTML = `
+                        <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
+                            <div class="avatar-face w-12 h-12 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                                <div class="avatar-eyes flex space-x-1">
+                                    <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                    <div class="w-1.5 h-1.5 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                                </div>
+                                <div class="avatar-smile absolute bottom-2 w-4 h-2 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
+                                ${avatarData.glasses ? `<div class="avatar-glasses absolute top-1.5 w-8 h-3 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    currentAvatarDisplay.innerHTML = avatarHTML;
+                    currentAvatarName.textContent = avatarData.name;
+                } else {
+                    // Fallback for uploaded images or old image-based avatars
+                    if (userAvatar) {
+                        if (userAvatar.includes('uploads/avatars/') || userAvatar.includes('images/')) {
+                            currentAvatarDisplay.innerHTML = `<img src="/static/${userAvatar}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                            currentAvatarName.textContent = "Your Avatar";
+                        } else {
+                            currentAvatarDisplay.innerHTML = `
+                                <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-500 text-xl"></i>
+                                </div>
+                            `;
+                            currentAvatarName.textContent = "No Avatar Selected";
+                        }
+                    } else {
+                        currentAvatarDisplay.innerHTML = `
+                            <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                <i class="fas fa-user text-gray-500 text-xl"></i>
+                            </div>
+                        `;
+                        currentAvatarName.textContent = "No Avatar Selected";
+                    }
                 }
             }
         }

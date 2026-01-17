@@ -1,4 +1,6 @@
 import re  # Import regular expressions for password validation
+import os
+from werkzeug.utils import secure_filename
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
@@ -39,8 +41,46 @@ def signup():
         confirm_password = request.form.get('confirm_password')
         age = request.form.get('age')
         gender = request.form.get('gender')
-        avatar_path = request.form.get('avatar')  # Get the selected avatar path
+        avatar_path = request.form.get('avatar')  # Get the selected avatar path (predefined)
+        
+        # Handle uploaded avatar file (if user uploaded their own)
+        uploaded_avatar = None
+        if 'avatar_file' in request.files:
+            file = request.files['avatar_file']
+            if file and file.filename != '':
+                # Validate file type
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                    # Create uploads directory if it doesn't exist
+                    upload_dir = os.path.join('static', 'uploads', 'avatars')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    
+                    # Generate unique filename
+                    filename = secure_filename(file.filename)
+                    # Use timestamp + filename to ensure uniqueness
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    filename = f"{timestamp}_{filename}"
+                    
+                    # Save file
+                    file_path = os.path.join(upload_dir, filename)
+                    file.save(file_path)
+                    
+                    # Store relative path for database
+                    uploaded_avatar = f"uploads/avatars/{filename}"
+                else:
+                    flash('Invalid file type. Please upload PNG, JPG, JPEG, GIF, or WEBP.', 'warning')
 
+        # Store form data in session for persistence on errors (except passwords for security)
+        session['signup_form_data'] = {
+            'fname': fname or '',
+            'lname': lname or '',
+            'email': email or '',
+            'Uname': Uname or '',
+            'age': age or '',
+            'gender': gender or '',
+            'avatar': avatar_path or ''
+        }
+        
         # Validate inputs
         if not (fname and lname and Uname and email and password and confirm_password and age and gender):
             flash('All fields are required.', 'danger')
@@ -85,14 +125,17 @@ def signup():
         email_service = EmailService()
         verification_token = email_service.generate_verification_token()
         
-        # Create new user and assign the selected avatar
+        # Use uploaded avatar if provided, otherwise use selected predefined avatar
+        final_avatar = uploaded_avatar if uploaded_avatar else avatar_path
+        
+        # Create new user and assign the selected/uploaded avatar
         new_user = User(
             first_name=fname, 
             second_name=lname, 
             username=Uname, 
             email=email, 
             password_hash=hashed_password, 
-            avatar=avatar_path,
+            avatar=final_avatar,
             age=age,
             gender=gender,
             email_verified=False,
@@ -101,6 +144,9 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        # Clear form data from session on successful registration
+        session.pop('signup_form_data', None)
+        
         # Send verification email
         if email_service.send_verification_email(email, f"{fname} {lname}", verification_token):
             flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
@@ -113,7 +159,10 @@ def signup():
         
         return redirect(url_for('login.login'))
 
-    return render_template('signup.html')
+    # GET request - restore form data if available (from previous validation errors)
+    # Use get() instead of pop() so data persists until successful registration
+    form_data = session.get('signup_form_data', None) if request.method == 'GET' else None
+    return render_template('signup.html', form_data=form_data)
 
 
 #Login Functionality 
@@ -261,10 +310,16 @@ def forgot_password():
         db.session.commit()
         
         # Send password reset email
-        if email_service.send_password_reset_email(user.email, f"{user.first_name} {user.second_name}", reset_token):
-            return jsonify({"success": True, "message": "Password reset email sent successfully"})
+        email_sent = email_service.send_password_reset_email(user.email, f"{user.first_name} {user.second_name}", reset_token)
+        if email_sent:
+            return jsonify({"success": True, "message": "Password reset email sent successfully. Please check your inbox."})
         else:
-            return jsonify({"success": False, "error": "Failed to send password reset email"}), 500
+            # Log the error for debugging
+            print(f"❌ Failed to send password reset email to {user.email}")
+            return jsonify({
+                "success": False, 
+                "error": "Failed to send password reset email. Please check the server logs for details or contact support."
+            }), 500
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

@@ -2,14 +2,16 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from flask import current_app, url_for
+from flask import current_app, url_for, request, has_request_context
 import secrets
 import string
 
 class EmailService:
     def __init__(self):
-        self.smtp_server = "smtp.gmail.com"  # Change to your SMTP server
-        self.smtp_port = 587
+        # Get SMTP settings from config (supports custom SMTP servers)
+        self.smtp_server = current_app.config.get('MAIL_SERVER', 'smtp.gmail.com')
+        self.smtp_port = current_app.config.get('MAIL_PORT', 587)
+        self.use_tls = current_app.config.get('MAIL_USE_TLS', True)
         self.sender_email = current_app.config.get('MAIL_USERNAME', 'noreply@funzamama.org')
         self.sender_password = current_app.config.get('MAIL_PASSWORD', '')
         
@@ -21,18 +23,45 @@ class EmailService:
         """Send email verification link"""
         try:
             # Check if email credentials are configured
-            if not self.sender_password:
-                print(f"Email not configured. Verification URL for {user_email}: {url_for('auth.verify_email', token=verification_token, _external=True)}")
+            if not self.sender_password or self.sender_password == '':
+                print(f"⚠️ Email password not configured. Please set MAIL_PASSWORD in config.py or environment variable.")
+                # Generate URL without request context
+                try:
+                    url = url_for('signup.verify_email', token=verification_token, _external=True)
+                except RuntimeError:
+                    base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
+                    scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
+                    if not base_url or not base_url.startswith('http'):
+                        base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                    url = f"{base_url}/verify-email/{verification_token}"
+                print(f"Verification URL for {user_email}: {url}")
+                return False
+            
+            # Validate email configuration
+            if not self.sender_email or '@' not in self.sender_email:
+                print(f"⚠️ Email username not configured properly: {self.sender_email}")
                 return False
                 
-            # Create verification URL
-            verification_url = url_for('auth.verify_email', token=verification_token, _external=True)
+            # Create verification URL (using signup blueprint)
+            # Handle URL generation with or without request context
+            try:
+                verification_url = url_for('signup.verify_email', token=verification_token, _external=True)
+            except RuntimeError:
+                # Fallback if url_for fails (outside request context)
+                # Use the base URL from config or construct manually
+                base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
+                scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
+                if not base_url or not base_url.startswith('http'):
+                    base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                verification_url = f"{base_url}/verify-email/{verification_token}"
             
-            # Create message
+            # Create message with UTF-8 encoding for Unicode characters
             message = MIMEMultipart("alternative")
             message["Subject"] = "Verify Your Funza Mama Account"
             message["From"] = self.sender_email
             message["To"] = user_email
+            # Set charset to UTF-8 to handle Unicode characters
+            message.set_charset('utf-8')
             
             # Create HTML content
             html_content = f"""
@@ -139,21 +168,48 @@ class EmailService:
             © 2024 Funza Mama. All rights reserved.
             """
             
-            # Attach parts
-            text_part = MIMEText(text_content, "plain")
-            html_part = MIMEText(html_content, "html")
+            # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
+            text_part = MIMEText(text_content, "plain", "utf-8")
+            html_part = MIMEText(html_content, "html", "utf-8")
             
             message.attach(text_part)
             message.attach(html_part)
             
             # Send email
             context = ssl.create_default_context()
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls(context=context)
-                server.login(self.sender_email, self.sender_password)
-                server.sendmail(self.sender_email, user_email, message.as_string())
-            
-            return True
+            try:
+                print(f"📧 Attempting to send verification email...")
+                print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
+                print(f"   From: {self.sender_email}")
+                print(f"   To: {user_email}")
+                print(f"   Password configured: {'Yes' if self.sender_password else 'No'}")
+                
+                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                    if self.use_tls:
+                        server.starttls(context=context)
+                    server.login(self.sender_email, self.sender_password)
+                    # Use as_bytes() to handle Unicode characters properly (like © symbol)
+                    server.sendmail(self.sender_email, user_email, message.as_bytes())
+                
+                print(f"✅ Verification email sent successfully to {user_email}")
+                return True
+            except smtplib.SMTPAuthenticationError as e:
+                print(f"❌ SMTP Authentication Error: {e}")
+                print(f"   Please check your email credentials:")
+                print(f"   - Username: {self.sender_email}")
+                print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
+                print(f"   - SMTP Server: {self.smtp_server}")
+                print(f"   - For Office 365, make sure you're using your full email and correct password")
+                return False
+            except smtplib.SMTPException as e:
+                print(f"❌ SMTP Error: {e}")
+                print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
+                return False
+            except Exception as e:
+                print(f"❌ Unexpected error sending email: {e}")
+                import traceback
+                traceback.print_exc()
+                return False
             
         except Exception as e:
             print(f"Error sending verification email: {e}")
@@ -163,12 +219,37 @@ class EmailService:
         """Send password reset email"""
         try:
             # Check if email credentials are configured
-            if not self.sender_password:
-                print(f"Email not configured. Reset URL for {user_email}: {url_for('auth.reset_password', token=reset_token, _external=True)}")
+            if not self.sender_password or self.sender_password == '':
+                print(f"⚠️ Email password not configured. Please set MAIL_PASSWORD in config.py or environment variable.")
+                # Generate URL without request context
+                try:
+                    url = url_for('signup.reset_password', token=reset_token, _external=True)
+                except RuntimeError:
+                    base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
+                    scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
+                    if not base_url or not base_url.startswith('http'):
+                        base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                    url = f"{base_url}/reset-password/{reset_token}"
+                print(f"Reset URL for {user_email}: {url}")
+                return False
+            
+            # Validate email configuration
+            if not self.sender_email or '@' not in self.sender_email:
+                print(f"⚠️ Email username not configured properly: {self.sender_email}")
                 return False
                 
-            # Create reset URL
-            reset_url = url_for('auth.reset_password', token=reset_token, _external=True)
+            # Create reset URL (using signup blueprint)
+            # Handle URL generation with or without request context
+            try:
+                reset_url = url_for('signup.reset_password', token=reset_token, _external=True)
+            except RuntimeError:
+                # Fallback if url_for fails (outside request context)
+                # Use the base URL from config or construct manually
+                base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
+                scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
+                if not base_url.startswith('http'):
+                    base_url = f"{scheme}://{base_url}"
+                reset_url = f"{base_url}/reset-password/{reset_token}"
             
             # Create message
             message = MIMEMultipart("alternative")
@@ -290,21 +371,46 @@ class EmailService:
             © 2024 Funza Mama. All rights reserved.
             """
             
-            # Attach parts
-            text_part = MIMEText(text_content, "plain")
-            html_part = MIMEText(html_content, "html")
+            # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
+            text_part = MIMEText(text_content, "plain", "utf-8")
+            html_part = MIMEText(html_content, "html", "utf-8")
             
             message.attach(text_part)
             message.attach(html_part)
             
             # Send email
             context = ssl.create_default_context()
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls(context=context)
-                server.login(self.sender_email, self.sender_password)
-                server.sendmail(self.sender_email, user_email, message.as_string())
-            
-            return True
+            try:
+                print(f"📧 Attempting to send password reset email...")
+                print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
+                print(f"   From: {self.sender_email}")
+                print(f"   To: {user_email}")
+                
+                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                    if self.use_tls:
+                        server.starttls(context=context)
+                    server.login(self.sender_email, self.sender_password)
+                    # Use as_bytes() to handle Unicode characters properly (like © symbol)
+                    server.sendmail(self.sender_email, user_email, message.as_bytes())
+                
+                print(f"✅ Password reset email sent successfully to {user_email}")
+                return True
+            except smtplib.SMTPAuthenticationError as e:
+                print(f"❌ SMTP Authentication Error: {e}")
+                print(f"   Please check your email credentials:")
+                print(f"   - Username: {self.sender_email}")
+                print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
+                print(f"   - SMTP Server: {self.smtp_server}")
+                return False
+            except smtplib.SMTPException as e:
+                print(f"❌ SMTP Error: {e}")
+                print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
+                return False
+            except Exception as e:
+                print(f"❌ Unexpected error sending email: {e}")
+                import traceback
+                traceback.print_exc()
+                return False
             
         except Exception as e:
             print(f"Error sending password reset email: {e}")

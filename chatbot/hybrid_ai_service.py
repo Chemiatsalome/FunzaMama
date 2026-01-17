@@ -29,12 +29,14 @@ class HybridAIService:
         self.preferred_provider = preferred_provider
         self.together_available = False
         self.hf_available = False
+        self.hf_model = None  # Lazy-loaded, not initialized here
         
-        # Initialize providers
+        # Initialize providers (only Together, HF is lazy-loaded)
         self._setup_together()
-        self._setup_huggingface()
+        # NOTE: Hugging Face is NOT initialized here to avoid 3-minute delay
+        # It will be loaded only when needed (when Together API fails)
         
-        logger.info(f"Hybrid AI Service initialized. Together: {self.together_available}, HF: {self.hf_available}")
+        logger.info(f"Hybrid AI Service initialized. Together: {self.together_available}, HF: Lazy-loaded")
     
     def _setup_together(self):
         """Setup Together API client"""
@@ -49,15 +51,25 @@ class HybridAIService:
             self.together_available = False
     
     def _setup_huggingface(self):
-        """Setup Hugging Face local model"""
+        """Lazy-load Hugging Face local model (only when needed)"""
+        # Skip if already loaded or marked as unavailable
+        if self.hf_model is not None:
+            return True
+        if hasattr(self, '_hf_load_failed') and self._hf_load_failed:
+            return False
+        
         try:
+            logger.info("Loading Hugging Face model (this may take a few minutes on first use)...")
             from .huggingface_integration import get_hf_model
             self.hf_model = get_hf_model()
             self.hf_available = True
-            logger.info("✅ Hugging Face local model configured")
+            logger.info("✅ Hugging Face local model loaded")
+            return True
         except Exception as e:
             logger.warning(f"❌ Hugging Face model not available: {e}")
             self.hf_available = False
+            self._hf_load_failed = True
+            return False
     
     def _get_provider_priority(self) -> List[AIProvider]:
         """Get provider priority based on preference"""
@@ -87,8 +99,13 @@ class HybridAIService:
             try:
                 if provider == AIProvider.TOGETHER and self.together_available:
                     return self._generate_with_together(stage, user_id)
-                elif provider == AIProvider.HUGGINGFACE and self.hf_available:
-                    return self._generate_with_huggingface(stage, user_id)
+                elif provider == AIProvider.HUGGINGFACE:
+                    # Lazy-load Hugging Face only when Together API fails
+                    if self._setup_huggingface() and self.hf_available:
+                        return self._generate_with_huggingface(stage, user_id)
+                    else:
+                        # Skip to next provider if HF load failed
+                        continue
                 elif provider == AIProvider.FALLBACK:
                     return self._generate_fallback_questions(stage)
             except Exception as e:
@@ -192,8 +209,12 @@ class HybridAIService:
                 if provider == AIProvider.TOGETHER and self.together_available:
                     from .modelintergration import get_teaching_facts_by_stage
                     return get_teaching_facts_by_stage(stage)
-                elif provider == AIProvider.HUGGINGFACE and self.hf_available:
-                    return self.hf_model.generate_teaching_facts(stage)
+                elif provider == AIProvider.HUGGINGFACE:
+                    # Lazy-load Hugging Face only when Together API fails
+                    if self._setup_huggingface() and self.hf_available:
+                        return self.hf_model.generate_teaching_facts(stage)
+                    else:
+                        continue
                 elif provider == AIProvider.FALLBACK:
                     return self._get_fallback_facts(stage)
             except Exception as e:
@@ -220,8 +241,12 @@ class HybridAIService:
             try:
                 if provider == AIProvider.TOGETHER and self.together_available:
                     return self._generate_chat_with_together(message, stage, context)
-                elif provider == AIProvider.HUGGINGFACE and self.hf_available:
-                    return self._generate_chat_with_huggingface(message, stage, context)
+                elif provider == AIProvider.HUGGINGFACE:
+                    # Lazy-load Hugging Face only when Together API fails
+                    if self._setup_huggingface() and self.hf_available:
+                        return self._generate_chat_with_huggingface(message, stage, context)
+                    else:
+                        continue
                 elif provider == AIProvider.FALLBACK:
                     return self._generate_fallback_chat_response(message, stage, context)
             except Exception as e:
@@ -281,7 +306,55 @@ Please provide a helpful, supportive response about maternal health. Keep it con
             raise
     
     def _generate_fallback_chat_response(self, message: str, stage: str, context: Dict[str, Any]) -> str:
-        """Generate fallback chat response"""
+        """Generate fallback chat response with context support for failed questions"""
+        
+        # Check if this is about a failed question (has context)
+        current_question = context.get('current_question', '') if context else ''
+        current_answer = context.get('current_answer', '') if context else ''
+        current_options = context.get('current_options', []) if context else []
+        
+        # If user is asking about a failed question, provide helpful explanation
+        if current_question and current_answer:
+            response = f"I can help you understand '{current_question}'!\n\n"
+            response += f"**The correct answer is: {current_answer}**\n\n"
+            
+            # Provide context-specific help
+            question_lower = current_question.lower()
+            if any(word in question_lower for word in ['nutrition', 'diet', 'food', 'vitamin', 'supplement']):
+                response += "**Key points about nutrition:**\n"
+                response += "• Eat a balanced diet with fruits, vegetables, whole grains, and lean proteins\n"
+                response += "• Take prenatal vitamins as recommended by your healthcare provider\n"
+                response += "• Stay hydrated by drinking plenty of water\n"
+                response += "• Avoid certain foods like raw fish, unpasteurized dairy, and excessive caffeine\n\n"
+            elif any(word in question_lower for word in ['exercise', 'activity', 'workout', 'fitness']):
+                response += "**Key points about exercise:**\n"
+                response += "• Regular moderate exercise is generally safe and beneficial during pregnancy\n"
+                response += "• Activities like walking, swimming, and prenatal yoga are excellent choices\n"
+                response += "• Listen to your body and stop if you feel pain or discomfort\n"
+                response += "• Consult your healthcare provider before starting any new exercise routine\n\n"
+            elif any(word in question_lower for word in ['prenatal', 'visit', 'checkup', 'appointment']):
+                response += "**Key points about prenatal care:**\n"
+                response += "• Regular prenatal visits are essential for monitoring your health and baby's development\n"
+                response += "• These visits allow your healthcare provider to detect and address any issues early\n"
+                response += "• Bring questions and concerns to each appointment\n"
+                response += "• Follow your healthcare provider's recommendations for tests and screenings\n\n"
+            elif any(word in question_lower for word in ['labor', 'birth', 'delivery', 'contraction']):
+                response += "**Key points about labor and birth:**\n"
+                response += "• Know the signs of labor: regular contractions, water breaking, or bloody show\n"
+                response += "• Create a birth plan but remain flexible\n"
+                response += "• Have a support person ready to accompany you\n"
+                response += "• Trust your healthcare team during delivery\n\n"
+            else:
+                response += "**General guidance:**\n"
+                response += "• Always consult your healthcare provider for personalized medical advice\n"
+                response += "• Trust reliable sources for maternal health information\n"
+                response += "• Every pregnancy is unique - what works for others may not work for you\n"
+                response += "• Don't hesitate to ask questions - knowledge empowers you\n\n"
+            
+            response += "Would you like me to explain any specific aspect of this topic in more detail?"
+            return response
+        
+        # Default stage-specific responses
         stage_responses = {
             "preconception": "I can help with preconception planning, nutrition, and preparing for a healthy pregnancy.",
             "prenatal": "I can assist with prenatal care, nutrition, exercise, and monitoring your pregnancy.",

@@ -1,5 +1,5 @@
 from app import app
 
-if __name__ == "__main__":
-    app.run()  # This should be removed for Gunicorn to manage the port.
+# Gunicorn will use this as the WSGI application
+# No need for if __name__ == "__main__" block
 

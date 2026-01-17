@@ -72,11 +72,28 @@
                     <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
                     <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">
                         <i class="fas fa-home mr-2"></i>Home
                     </a>
                     <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-4 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-deep-plum hover:text-deep-rose focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+                <div class="flex flex-col space-y-4 pt-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="{{ url_for('signup.signup') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">
                         <i class="fas fa-user-plus mr-2"></i>Sign Up
                     </a>
                 </div>
@@ -156,7 +173,7 @@
                             </label>
                         </div>
                         <div class="text-sm">
-                            <a href="#" class="font-medium text-deep-rose hover:text-deep-plum transition-colors">
+                            <a href="{{ url_for('signup.forgot_password') }}" class="font-medium text-deep-rose hover:text-deep-plum transition-colors">
                                 Forgot password?
                             </a>
                         </div>
@@ -245,5 +262,27 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle hamburger icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

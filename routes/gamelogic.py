@@ -15,23 +15,26 @@ def get_quiz_preconception():
     print(f"User ID (or guest): {user_id}")
 
     try:
-        # Use hybrid AI service with correct fallback order: Together API -> Hugging Face -> Fallback
-        from chatbot.hybrid_ai_service import get_hybrid_service
-        hybrid_service = get_hybrid_service("together")  # Together API first for reliability
+        # Clear session if starting a new round (last attempt has 10+ questions)
+        if user_id != "guest_user":
+            existing_responses = UserResponse.query.filter_by(user_id=user_id, stage="preconception").all()
+            if existing_responses:
+                max_attempt = max(r.attempt_number for r in existing_responses)
+                current_attempt_responses = [r for r in existing_responses if r.attempt_number == max_attempt]
+                if len(current_attempt_responses) >= 10:
+                    from chatbot.optimized_modelintegration import clear_stage_session
+                    clear_stage_session("preconception", user_id)
+                    print(f"Debug - Cleared session for new round (attempt {max_attempt + 1})")
         
-        # Generate quiz questions using hybrid service
-        quiz_result = hybrid_service.generate_quiz_questions("preconception", user_id)
+        # Use optimized hybrid questions - returns instant questions first (0ms), then cached, then AI-generated
+        # This is much faster than hybrid_ai_service which uses the slow 405B model
+        quiz = get_hybrid_questions("preconception", user_id, difficulty_level=1)
         
-        if isinstance(quiz_result, list) and len(quiz_result) > 0:
-            quiz = quiz_result
-        else:
-            # Fallback to instant questions if hybrid service fails
+        # Ensure we have a list of questions
+        if not isinstance(quiz, list) or len(quiz) == 0:
+            # Fallback to instant questions if hybrid fails
             from chatbot.optimized_modelintegration import get_instant_questions
             quiz = get_instant_questions("preconception", 10)
-        
-        # Track questions in session to prevent repetition
-        for question in quiz:
-            track_session_question("preconception", user_id, question.get('question', ''))
         
         return jsonify({
             "success": True,
@@ -49,23 +52,26 @@ def get_quiz_prenatal():
     print(f"User ID (or guest): {user_id}")
 
     try:
-        # Use hybrid AI service with correct fallback order: Together API -> Hugging Face -> Fallback
-        from chatbot.hybrid_ai_service import get_hybrid_service
-        hybrid_service = get_hybrid_service("together")  # Together API first for reliability
+        # Clear session if starting a new round (last attempt has 10+ questions)
+        if user_id != "guest_user":
+            existing_responses = UserResponse.query.filter_by(user_id=user_id, stage="prenatal").all()
+            if existing_responses:
+                max_attempt = max(r.attempt_number for r in existing_responses)
+                current_attempt_responses = [r for r in existing_responses if r.attempt_number == max_attempt]
+                if len(current_attempt_responses) >= 10:
+                    from chatbot.optimized_modelintegration import clear_stage_session
+                    clear_stage_session("prenatal", user_id)
+                    print(f"Debug - Cleared session for new round (attempt {max_attempt + 1})")
         
-        # Generate quiz questions using hybrid service
-        quiz_result = hybrid_service.generate_quiz_questions("prenatal", user_id)
+        # Use optimized hybrid questions - returns instant questions first (0ms), then cached, then AI-generated
+        # This is much faster than hybrid_ai_service which uses the slow 405B model
+        quiz = get_hybrid_questions("prenatal", user_id, difficulty_level=1)
         
-        if isinstance(quiz_result, list) and len(quiz_result) > 0:
-            quiz = quiz_result
-        else:
-            # Fallback to instant questions if hybrid service fails
+        # Ensure we have a list of questions
+        if not isinstance(quiz, list) or len(quiz) == 0:
+            # Fallback to instant questions if hybrid fails
             from chatbot.optimized_modelintegration import get_instant_questions
             quiz = get_instant_questions("prenatal", 10)
-        
-        # Track questions in session to prevent repetition
-        for question in quiz:
-            track_session_question("prenatal", user_id, question.get('question', ''))
         
         return jsonify({
             "success": True,
@@ -83,23 +89,28 @@ def get_quiz_birth():
     print(f"User ID (or guest): {user_id}")
 
     try:
-        # Use hybrid AI service with correct fallback order: Together API -> Hugging Face -> Fallback
-        from chatbot.hybrid_ai_service import get_hybrid_service
-        hybrid_service = get_hybrid_service("together")  # Together API first for reliability
+        # Clear session if starting a new round (last attempt has 10+ questions)
+        # Check database using normalized stage name, but clear session using route stage name
+        if user_id != "guest_user":
+            existing_responses = UserResponse.query.filter_by(user_id=user_id, stage="birth_and_delivery").all()
+            if existing_responses:
+                max_attempt = max(r.attempt_number for r in existing_responses)
+                current_attempt_responses = [r for r in existing_responses if r.attempt_number == max_attempt]
+                if len(current_attempt_responses) >= 10:
+                    from chatbot.optimized_modelintegration import clear_stage_session
+                    # Clear session using "birth" (what get_hybrid_questions uses)
+                    clear_stage_session("birth", user_id)
+                    print(f"Debug - Cleared session for new round (attempt {max_attempt + 1})")
         
-        # Generate quiz questions using hybrid service
-        quiz_result = hybrid_service.generate_quiz_questions("birth", user_id)
+        # Use optimized hybrid questions - returns instant questions first (0ms), then cached, then AI-generated
+        # This is much faster than hybrid_ai_service which uses the slow 405B model
+        quiz = get_hybrid_questions("birth", user_id, difficulty_level=1)
         
-        if isinstance(quiz_result, list) and len(quiz_result) > 0:
-            quiz = quiz_result
-        else:
-            # Fallback to instant questions if hybrid service fails
+        # Ensure we have a list of questions
+        if not isinstance(quiz, list) or len(quiz) == 0:
+            # Fallback to instant questions if hybrid fails
             from chatbot.optimized_modelintegration import get_instant_questions
             quiz = get_instant_questions("birth", 10)
-        
-        # Track questions in session to prevent repetition
-        for question in quiz:
-            track_session_question("birth", user_id, question.get('question', ''))
         
         return jsonify({
             "success": True,
@@ -116,23 +127,26 @@ def get_quiz_postnatal():
     print(f"User ID (or guest): {user_id}")
 
     try:
-        # Use hybrid AI service with correct fallback order: Together API -> Hugging Face -> Fallback
-        from chatbot.hybrid_ai_service import get_hybrid_service
-        hybrid_service = get_hybrid_service("together")  # Together API first for reliability
+        # Clear session if starting a new round (last attempt has 10+ questions)
+        if user_id != "guest_user":
+            existing_responses = UserResponse.query.filter_by(user_id=user_id, stage="postnatal").all()
+            if existing_responses:
+                max_attempt = max(r.attempt_number for r in existing_responses)
+                current_attempt_responses = [r for r in existing_responses if r.attempt_number == max_attempt]
+                if len(current_attempt_responses) >= 10:
+                    from chatbot.optimized_modelintegration import clear_stage_session
+                    clear_stage_session("postnatal", user_id)
+                    print(f"Debug - Cleared session for new round (attempt {max_attempt + 1})")
         
-        # Generate quiz questions using hybrid service
-        quiz_result = hybrid_service.generate_quiz_questions("postnatal", user_id)
+        # Use optimized hybrid questions - returns instant questions first (0ms), then cached, then AI-generated
+        # This is much faster than hybrid_ai_service which uses the slow 405B model
+        quiz = get_hybrid_questions("postnatal", user_id, difficulty_level=1)
         
-        if isinstance(quiz_result, list) and len(quiz_result) > 0:
-            quiz = quiz_result
-        else:
-            # Fallback to instant questions if hybrid service fails
+        # Ensure we have a list of questions
+        if not isinstance(quiz, list) or len(quiz) == 0:
+            # Fallback to instant questions if hybrid fails
             from chatbot.optimized_modelintegration import get_instant_questions
             quiz = get_instant_questions("postnatal", 10)
-        
-        # Track questions in session to prevent repetition
-        for question in quiz:
-            track_session_question("postnatal", user_id, question.get('question', ''))
         
         return jsonify({
             "success": True,
@@ -164,8 +178,8 @@ def select_avatar():
     return redirect(url_for('gamestages.game'))  # update this if your route name is different
 
 def check_and_award_badge(user_id, stage_name):
-    MIN_ATTEMPTS_REQUIRED = 3  # Changed from 30 questions to 3 attempts
-    REQUIRED_ACCURACY = 0.8
+    MIN_ATTEMPTS_REQUIRED = 3  # Require 3 complete rounds
+    REQUIRED_ACCURACY_PER_ROUND = 0.9  # Each round must have 90% accuracy
 
     # Debug print BEFORE normalization
     print(f"Raw stage name received: '{stage_name}'")
@@ -191,55 +205,72 @@ def check_and_award_badge(user_id, stage_name):
     responses = UserResponse.query.filter_by(user_id=user_id, stage=normalized_stage).all()
     total_questions_attempted = len(responses)
     
-    # Calculate correct answers
+    # Calculate correct answers (overall)
     correct_answers = sum(1 for r in responses if r.is_correct)
     
-    # Calculate accuracy
-    accuracy = correct_answers / total_questions_attempted if total_questions_attempted else 0
+    # Calculate overall accuracy
+    overall_accuracy = correct_answers / total_questions_attempted if total_questions_attempted else 0
 
-    # Progress toward badge (based on BOTH attempts AND accuracy)
     # Count unique attempts for this stage
     unique_attempts = len(set(r.attempt_number for r in responses))
+    
+    # NEW LOGIC: Check each round separately for 90% accuracy
+    # Group responses by attempt_number
+    attempts_data = {}
+    for r in responses:
+        if r.attempt_number not in attempts_data:
+            attempts_data[r.attempt_number] = {'total': 0, 'correct': 0}
+        attempts_data[r.attempt_number]['total'] += 1
+        if r.is_correct:
+            attempts_data[r.attempt_number]['correct'] += 1
+    
+    # Calculate accuracy per attempt
+    rounds_with_90_percent = 0
+    round_details = []
+    for attempt_num, data in sorted(attempts_data.items()):
+        attempt_accuracy = data['correct'] / data['total'] if data['total'] > 0 else 0
+        round_details.append({
+            'attempt': attempt_num,
+            'accuracy': attempt_accuracy,
+            'total': data['total'],
+            'correct': data['correct']
+        })
+        # A round qualifies if it has at least 90% accuracy AND at least 10 questions (complete round)
+        if attempt_accuracy >= REQUIRED_ACCURACY_PER_ROUND and data['total'] >= 10:
+            rounds_with_90_percent += 1
     
     # More debugging output
     print(f"Debug - check_and_award_badge: user_id={user_id}, stage={normalized_stage}")
     print(f"Debug - Total Questions Attempted: {total_questions_attempted}")
     print(f"Debug - Correct Answers: {correct_answers}")
-    print(f"Debug - Accuracy: {accuracy*100:.2f}%")
+    print(f"Debug - Overall Accuracy: {overall_accuracy*100:.2f}%")
     print(f"Debug - Unique Attempts: {unique_attempts}")
+    print(f"Debug - Rounds with 90%+: {rounds_with_90_percent}/{MIN_ATTEMPTS_REQUIRED}")
     print(f"Debug - MIN_ATTEMPTS_REQUIRED: {MIN_ATTEMPTS_REQUIRED}")
-    print(f"Debug - REQUIRED_ACCURACY: {REQUIRED_ACCURACY}")
+    print(f"Debug - REQUIRED_ACCURACY_PER_ROUND: {REQUIRED_ACCURACY_PER_ROUND*100:.0f}%")
     
-    # Calculate progress more logically:
+    # Debug each round
+    for rd in round_details:
+        print(f"Debug - Round {rd['attempt']}: {rd['correct']}/{rd['total']} = {rd['accuracy']*100:.1f}%")
+    
+    # Calculate progress based on rounds with 90%+ accuracy
     # - If both requirements are met: 100%
-    # - If only attempts met: 50% + (accuracy/required_accuracy) * 25%
-    # - If only accuracy met: (attempts/required_attempts) * 25% + 50%
-    # - If neither met: (attempts/required_attempts) * 25% + (accuracy/required_accuracy) * 25%
+    # - If only rounds met: 50% + (rounds/min_rounds) * 25%
+    # - If neither met: (rounds/min_rounds) * 50%
     
-    attempts_met = unique_attempts >= MIN_ATTEMPTS_REQUIRED
-    accuracy_met = accuracy >= REQUIRED_ACCURACY
+    rounds_met = rounds_with_90_percent >= MIN_ATTEMPTS_REQUIRED
     
-    if attempts_met and accuracy_met:
-        progress = 100.0  # Both requirements met
-    elif attempts_met and not accuracy_met:
-        # Attempts met, but accuracy not met
-        accuracy_ratio = accuracy / REQUIRED_ACCURACY
-        progress = 50.0 + (accuracy_ratio * 25.0)  # 50% + up to 25% for accuracy
-    elif not attempts_met and accuracy_met:
-        # Accuracy met, but attempts not met
-        attempts_ratio = unique_attempts / MIN_ATTEMPTS_REQUIRED
-        progress = (attempts_ratio * 25.0) + 50.0  # up to 25% for attempts + 50% for accuracy
+    if rounds_met:
+        progress = 100.0  # All requirements met
     else:
-        # Neither requirement met
-        attempts_ratio = unique_attempts / MIN_ATTEMPTS_REQUIRED
-        accuracy_ratio = accuracy / REQUIRED_ACCURACY
-        progress = (attempts_ratio * 25.0) + (accuracy_ratio * 25.0)  # up to 50% total
+        # Calculate progress based on number of qualifying rounds
+        rounds_ratio = min(rounds_with_90_percent / MIN_ATTEMPTS_REQUIRED, 1.0)
+        progress = rounds_ratio * 100.0
     
     progress = round(progress, 1)
     
     # Debug progress calculation
-    print(f"Debug - Attempts Met: {attempts_met} ({unique_attempts}/{MIN_ATTEMPTS_REQUIRED})")
-    print(f"Debug - Accuracy Met: {accuracy_met} ({accuracy*100:.1f}%/{REQUIRED_ACCURACY*100:.1f}%)")
+    print(f"Debug - Rounds Met: {rounds_met} ({rounds_with_90_percent}/{MIN_ATTEMPTS_REQUIRED})")
     print(f"Debug - Final Progress: {progress:.1f}%")
 
     # Fetch or create badge
@@ -257,21 +288,24 @@ def check_and_award_badge(user_id, stage_name):
     badge.progress = progress
     db.session.commit()
 
-    # Check eligibility
-    if unique_attempts < MIN_ATTEMPTS_REQUIRED:
-        attempts_needed = MIN_ATTEMPTS_REQUIRED - unique_attempts
-        return {
-            "badge_claimable": False,
-            "reason": f"Complete {attempts_needed} more attempts to earn this badge! You've completed {unique_attempts} out of {MIN_ATTEMPTS_REQUIRED} required attempts."
-        }
-
-    if accuracy < REQUIRED_ACCURACY:
-        current_accuracy = round(accuracy * 100, 1)
-        required_accuracy = int(REQUIRED_ACCURACY * 100)
-        return {
-            "badge_claimable": False,
-            "reason": f"Improve your accuracy to earn this badge! Your current accuracy is {current_accuracy}%, but you need at least {required_accuracy}%. Keep practicing to improve your score!"
-        }
+    # Check eligibility - NEW LOGIC: Each round must have 90% accuracy
+    if rounds_with_90_percent < MIN_ATTEMPTS_REQUIRED:
+        rounds_needed = MIN_ATTEMPTS_REQUIRED - rounds_with_90_percent
+        
+        # Find which rounds don't meet 90% requirement
+        failing_rounds = [rd for rd in round_details if rd['accuracy'] < REQUIRED_ACCURACY_PER_ROUND or rd['total'] < 10]
+        
+        if failing_rounds:
+            failing_info = ", ".join([f"Round {rd['attempt']} ({rd['accuracy']*100:.0f}%)" for rd in failing_rounds])
+            return {
+                "badge_claimable": False,
+                "reason": f"You need {rounds_needed} more round(s) with at least 90% accuracy. Currently, you have {rounds_with_90_percent} qualifying rounds. Rounds that need improvement: {failing_info}. Each round requires 90% accuracy to count toward the badge."
+            }
+        else:
+            return {
+                "badge_claimable": False,
+                "reason": f"Complete {rounds_needed} more round(s) with at least 90% accuracy to earn this badge! You've completed {rounds_with_90_percent} out of {MIN_ATTEMPTS_REQUIRED} required rounds. Each round must have at least 90% accuracy."
+            }
 
     # Check if badge is already claimed to avoid repetitive messages
     if badge.claimed:
@@ -302,6 +336,20 @@ def submit_response():
     options = json.dumps(data.get("options", []))  # Convert list to JSON string
     correct_reason = data.get("correct_reason", "")
     incorrect_reason = data.get("incorrect_reason", "")
+    
+    # Normalize stage name to match badge checking logic
+    stage = stage.strip().lower()
+    stage_normalization = {
+        "preconception care": "preconception",
+        "preconception": "preconception",
+        "antenatal care": "prenatal",
+        "prenatal": "prenatal",
+        "birth and delivery": "birth_and_delivery",
+        "birth": "birth_and_delivery",
+        "postnatal care": "postnatal",
+        "postnatal": "postnatal"
+    }
+    stage = stage_normalization.get(stage, stage)
 
     try:
         # Step 1: Check if the question already exists
@@ -327,7 +375,25 @@ def submit_response():
 
         # Step 2: Calculate attempt number for this stage
         existing_responses = UserResponse.query.filter_by(user_id=user_id, stage=stage).all()
-        attempt_number = len(set(r.attempt_number for r in existing_responses)) + 1
+        if existing_responses:
+            # Get the highest attempt number and check if we need to clear session for new round
+            max_attempt = max(r.attempt_number for r in existing_responses)
+            # Count responses for the current attempt (last attempt)
+            current_attempt_responses = [r for r in existing_responses if r.attempt_number == max_attempt]
+            
+            # If the last attempt has 10 responses (this will be the 11th question), start new round
+            # Note: When submitting the 10th question, current_attempt_responses has 9 (not yet saved)
+            # So questions 1-10 are in attempt 1, question 11+ starts attempt 2
+            if len(current_attempt_responses) >= 10:
+                # This is the 11th+ question in this round, start new round and clear session
+                from chatbot.optimized_modelintegration import clear_stage_session
+                clear_stage_session(stage, user_id)
+                attempt_number = max_attempt + 1
+                print(f"Debug - Starting new round {attempt_number}, cleared session for {stage}")
+            else:
+                attempt_number = max_attempt  # Continue in current round
+        else:
+            attempt_number = 1  # First question ever
         
         # Step 3: Save the user response
         user_response = UserResponse(
@@ -509,31 +575,27 @@ def get_fresh_questions(stage):
     """Get completely fresh questions for a stage (force new generation)"""
     user_id = session.get("user_ID", "guest_user")
     
+    # Normalize stage name - frontend may send "birth_and_delivery" but get_hybrid_questions expects "birth"
+    # This matches the normalization in other routes (get_quiz_birth uses "birth", not "birth_and_delivery")
+    stage_normalization = {
+        "birth_and_delivery": "birth",  # Convert frontend format to backend format
+        "birth": "birth",  # Already correct
+        "preconception": "preconception",
+        "prenatal": "prenatal",
+        "postnatal": "postnatal"
+    }
+    normalized_stage = stage_normalization.get(stage.lower(), stage)
+    
     try:
-        # Use hybrid AI service with correct fallback order: Together API -> Hugging Face -> Fallback
-        from chatbot.hybrid_ai_service import get_hybrid_service
-        hybrid_service = get_hybrid_service("together")  # Together API first for reliability
+        # Use optimized hybrid questions with force_new=True to reset session and get fresh questions
+        # This is much faster than hybrid_ai_service which uses the slow 405B model
+        questions = get_hybrid_questions(normalized_stage, user_id, difficulty_level=1, force_new=True)
         
-        # Generate fresh quiz questions using hybrid service
-        quiz_result = hybrid_service.generate_quiz_questions(stage, user_id)
-        
-        if isinstance(quiz_result, list) and len(quiz_result) > 0:
-            questions = quiz_result
-            
-            # Track questions in session to prevent repetition
-            for question in questions:
-                track_session_question(stage, user_id, question.get('question', ''))
-            
-            return jsonify({
-                "success": True,
-                "questions": questions,
-                "count": len(questions),
-                "stage": stage
-            })
-        else:
-            # Fallback to instant questions if hybrid service fails
+        # Ensure we have a list of questions
+        if not isinstance(questions, list) or len(questions) == 0:
+            # Fallback to instant questions if hybrid fails
             from chatbot.optimized_modelintegration import get_instant_questions
-            questions = get_instant_questions(stage, 10)
+            questions = get_instant_questions(normalized_stage, 10)
             
             if isinstance(questions, list) and len(questions) > 0:
                 return jsonify({
@@ -548,6 +610,13 @@ def get_fresh_questions(stage):
                     "error": "No questions available",
                     "stage": stage
                 }), 404
+        
+        return jsonify({
+            "success": True,
+            "questions": questions,
+            "count": len(questions),
+            "stage": stage
+        })
             
     except Exception as e:
         return jsonify({

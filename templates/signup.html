@@ -60,7 +60,61 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
+        }
+        
+        /* Error message styling */
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .error-message::before {
+            content: "⚠️";
+            font-size: 0.875rem;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Input error state */
+        .form-input.border-red-500:focus {
+            border-color: #ef4444;
+            ring-color: #ef4444;
+        }
+        
+        /* Password toggle button styling */
+        .password-toggle-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: #6b7280;
+            transition: color 0.2s ease;
+        }
+        
+        .password-toggle-btn:hover {
+            color: #6B46C1;
+        }
+        
+        .password-toggle-btn:focus {
+            outline: 2px solid #D63384;
+            outline-offset: 2px;
+            border-radius: 0.25rem;
+        }
 
 .avatar-option {
             transition: all 0.3s ease;
@@ -113,11 +167,28 @@
                     <img src="{{ url_for('static', filename='images/favicon.jpg') }}" alt="Funza Mama" class="h-12 w-12 rounded-full object-cover">
                     <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium">
                         <i class="fas fa-home mr-2"></i>Home
                     </a>
                     <a href="{{ url_for('login.login') }}" class="bg-deep-plum text-white px-4 py-2 rounded-full hover:bg-deep-rose transition-all font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-deep-plum hover:text-deep-rose focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+                <div class="flex flex-col space-y-4 pt-4">
+                    <a href="{{ url_for('home.home') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="{{ url_for('login.login') }}" class="bg-deep-plum text-white px-6 py-3 rounded-full hover:bg-deep-rose transition-all font-medium text-center mx-4">
                         <i class="fas fa-sign-in-alt mr-2"></i>Login
                     </a>
                 </div>
@@ -170,6 +241,7 @@
                                 class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                                 placeholder="Enter your first name"
                             >
+                            <div id="first_name_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
 
                         <div>
@@ -181,9 +253,11 @@
                                 id="last_name" 
                                 name="lname" 
                                 required 
+                                value="{{ form_data.lname if form_data else '' }}"
                                 class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                                 placeholder="Enter your last name"
                             >
+                            <div id="last_name_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
                     </div>
 
@@ -196,9 +270,11 @@
                             id="email" 
                             name="email" 
                             required 
+                            value="{{ form_data.email if form_data else '' }}"
                             class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                             placeholder="Enter your email"
                         >
+                        <div id="email_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                     </div>
 
                     <div>
@@ -210,9 +286,11 @@
                             id="username" 
                             name="Uname" 
                             required 
+                            value="{{ form_data.Uname if form_data else '' }}"
                             class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                             placeholder="Choose a username"
                         >
+                        <div id="username_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,28 +298,53 @@
                             <label for="password" class="block text-sm font-medium text-deep-plum mb-2">
                                 <i class="fas fa-lock mr-2"></i>Password
                             </label>
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
-                                required 
-                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
-                                placeholder="Create a password"
-                            >
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    required 
+                                    class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                    placeholder="Create a password"
+                                >
+                                <button 
+                                    type="button"
+                                    id="togglePassword"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-deep-plum focus:outline-none transition-colors"
+                                    onclick="togglePasswordVisibility('password', 'togglePassword')"
+                                    aria-label="Toggle password visibility"
+                                >
+                                    <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div id="password_strength" class="hidden"></div>
+                            <div id="password_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
 
                         <div>
                             <label for="confirm_password" class="block text-sm font-medium text-deep-plum mb-2">
                                 <i class="fas fa-lock mr-2"></i>Confirm Password
                             </label>
-                            <input 
-                                type="password" 
-                                id="confirm_password" 
-                                name="confirm_password" 
-                                required 
-                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
-                                placeholder="Confirm your password"
-                            >
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    id="confirm_password" 
+                                    name="confirm_password" 
+                                    required 
+                                    class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
+                                    placeholder="Confirm your password"
+                                >
+                                <button 
+                                    type="button"
+                                    id="toggleConfirmPassword"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-deep-plum focus:outline-none transition-colors"
+                                    onclick="togglePasswordVisibility('confirm_password', 'toggleConfirmPassword')"
+                                    aria-label="Toggle password visibility"
+                                >
+                                    <i class="fas fa-eye" id="toggleConfirmPasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div id="confirm_password_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
                     </div>
 
@@ -258,9 +361,11 @@
                                 required 
                                 min="13" 
                                 max="100"
+                                value="{{ form_data.age if form_data else '' }}"
                                 class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                                 placeholder="Enter your age"
                             >
+                            <div id="age_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
 
                         <div>
@@ -274,19 +379,41 @@
                                 class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-warm-gray/30"
                             >
                                 <option value="">Select your gender</option>
-                                <option value="female">Female</option>
-                                <option value="male">Male</option>
-                                <option value="other">Other</option>
-                                <option value="prefer_not_to_say">Prefer not to say</option>
+                                <option value="female" {% if form_data and form_data.gender == 'female' %}selected{% endif %}>Female</option>
+                                <option value="male" {% if form_data and form_data.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option value="other" {% if form_data and form_data.gender == 'other' %}selected{% endif %}>Other</option>
+                                <option value="prefer_not_to_say" {% if form_data and form_data.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
                             </select>
+                            <div id="gender_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
                     </div>
 
                     <!-- Avatar Selection -->
                     <div>
                         <label class="block text-sm font-medium text-deep-plum mb-4">
-                            <i class="fas fa-user-circle mr-2"></i>Choose Your Avatar
+                            <i class="fas fa-user-circle mr-2"></i>Choose Your Avatar (Profile Picture)
                         </label>
+                        
+                        <!-- Upload Your Own Avatar -->
+                        <div class="mb-4 p-4 bg-warm-gray/30 rounded-xl border-2 border-dashed border-deep-rose/50">
+                            <label class="block text-sm font-medium text-deep-plum mb-2">
+                                <i class="fas fa-upload mr-2"></i>Or Upload Your Own Picture
+                            </label>
+                            <input 
+                                type="file" 
+                                id="avatar_file" 
+                                name="avatar_file" 
+                                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-deep-rose focus:border-transparent bg-white text-sm"
+                                onchange="previewAvatar(this)"
+                            >
+                            <p class="text-xs text-warm-brown mt-2">Accepted formats: PNG, JPG, JPEG, GIF, WEBP (Max 5MB)</p>
+                            <div id="avatarPreview" class="mt-3 hidden">
+                                <img id="avatarPreviewImg" src="" alt="Preview" class="w-20 h-20 rounded-full border-2 border-deep-rose mx-auto object-cover">
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-warm-brown mb-4 text-center">OR select from predefined avatars below:</p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <div class="avatar-option cursor-pointer p-4 rounded-xl border-2 border-transparent hover:border-deep-rose bg-warm-gray/30" onclick="selectAvatar('images/avatars/diverse-1.png', this)">
                                 <div class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-transparent">
@@ -400,18 +527,20 @@
                         </div>
                         <div class="ml-3 text-sm">
                             <label for="terms" class="text-warm-brown">
-                                I agree to the <a href="#" class="text-deep-rose hover:text-deep-plum font-medium">Terms of Service</a> 
-                                and <a href="#" class="text-deep-rose hover:text-deep-plum font-medium">Privacy Policy</a>
+                                I agree to the <a href="#" onclick="event.preventDefault(); showTermsModal(); return false;" class="text-deep-rose hover:text-deep-plum font-medium underline">Terms of Service</a> 
+                                and <a href="#" onclick="event.preventDefault(); showPrivacyModal(); return false;" class="text-deep-rose hover:text-deep-plum font-medium underline">Privacy Policy</a>
                             </label>
+                            <div id="terms_error" class="error-message hidden text-red-600 text-sm mt-1"></div>
                         </div>
             </div>
 
                     <button 
                         type="submit" 
-                        class="btn-primary w-full bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-4 rounded-xl hover:from-warm-mauve hover:to-deep-rose font-semibold"
+                        id="submitBtn"
+                        class="btn-primary w-full bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-4 rounded-xl hover:from-warm-mauve hover:to-deep-rose font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <i class="fas fa-user-plus mr-2"></i>
-                        Create Account
+                        <span id="submitBtnText">Create Account</span>
                     </button>
         </form>
         
@@ -496,6 +625,14 @@
             playClickSound();
             vibrate([50]);
             
+            // Clear file input if predefined avatar is selected
+            const fileInput = document.getElementById('avatar_file');
+            if (fileInput) {
+                fileInput.value = '';
+                const preview = document.getElementById('avatarPreview');
+                if (preview) preview.classList.add('hidden');
+            }
+            
             // Remove selected class from all options
             document.querySelectorAll('.avatar-option').forEach(option => {
                 option.classList.remove('selected');
@@ -511,6 +648,32 @@
             // Check the radio button
             const radio = element.querySelector('input[type="radio"]');
             radio.checked = true;
+        }
+        
+        function previewAvatar(input) {
+            // Clear predefined avatar selection
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.classList.remove('selected');
+                option.classList.remove('bg-deep-rose/20');
+                option.classList.add('bg-warm-gray/30');
+            });
+            document.querySelectorAll('input[type="radio"][name="avatar"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Show preview
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('avatarPreview');
+                    const previewImg = document.getElementById('avatarPreviewImg');
+                    if (preview && previewImg) {
+                        previewImg.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
         
         // Sound System for signup
@@ -559,21 +722,777 @@
                 navigator.vibrate(pattern);
             }
         }
+        
+        // Password visibility toggle (defined globally for onclick handlers)
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            const toggleIcon = document.getElementById(buttonId + 'Icon');
+            
+            if (passwordInput && toggleIcon) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                    if (toggleButton) {
+                        toggleButton.setAttribute('aria-label', 'Hide password');
+                    }
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                    if (toggleButton) {
+                        toggleButton.setAttribute('aria-label', 'Show password');
+                    }
+                }
+            }
+        }
 
-        // Form validation
+        // Form data persistence (preserve form data on page reload)
+        function saveFormData() {
+            const formData = {
+                fname: document.getElementById('first_name')?.value || '',
+                lname: document.getElementById('last_name')?.value || '',
+                email: document.getElementById('email')?.value || '',
+                username: document.getElementById('username')?.value || '',
+                age: document.getElementById('age')?.value || '',
+                gender: document.getElementById('gender')?.value || '',
+                avatar: document.querySelector('input[name="avatar"]:checked')?.value || ''
+            };
+            // Don't save passwords for security
+            sessionStorage.setItem('signup_form_data', JSON.stringify(formData));
+        }
+        
+        function restoreFormData() {
+            let serverFormData = null;
+            
+            // First, restore from server-side form_data (if available from backend)
+            {% if form_data %}
+            serverFormData = {
+                fname: '{{ form_data.fname|safe }}',
+                lname: '{{ form_data.lname|safe }}',
+                email: '{{ form_data.email|safe }}',
+                Uname: '{{ form_data.Uname|safe }}',
+                age: '{{ form_data.age|safe }}',
+                gender: '{{ form_data.gender|safe }}',
+                avatar: '{{ form_data.avatar|safe }}'
+            };
+            
+            if (serverFormData.fname) document.getElementById('first_name').value = serverFormData.fname;
+            if (serverFormData.lname) document.getElementById('last_name').value = serverFormData.lname;
+            if (serverFormData.email) document.getElementById('email').value = serverFormData.email;
+            if (serverFormData.Uname) document.getElementById('username').value = serverFormData.Uname;
+            if (serverFormData.age) document.getElementById('age').value = serverFormData.age;
+            if (serverFormData.gender) document.getElementById('gender').value = serverFormData.gender;
+            if (serverFormData.avatar) {
+                const avatarRadio = document.querySelector(`input[name="avatar"][value="${serverFormData.avatar}"]`);
+                if (avatarRadio) {
+                    avatarRadio.checked = true;
+                    // Also update visual selection
+                    const avatarOption = avatarRadio.closest('.avatar-option');
+                    if (avatarOption) {
+                        document.querySelectorAll('.avatar-option').forEach(opt => {
+                            opt.classList.remove('selected', 'bg-deep-rose/20');
+                            opt.classList.add('bg-warm-gray/30');
+                        });
+                        avatarOption.classList.add('selected', 'bg-deep-rose/20');
+                        avatarOption.classList.remove('bg-warm-gray/30');
+                    }
+                }
+            }
+            {% endif %}
+            
+            // Also restore from sessionStorage as backup (only if server didn't provide data)
+            if (!serverFormData || !serverFormData.fname) {
+                const savedData = sessionStorage.getItem('signup_form_data');
+                if (savedData) {
+                    try {
+                        const formData = JSON.parse(savedData);
+                        if (formData.fname) document.getElementById('first_name').value = formData.fname;
+                        if (formData.lname) document.getElementById('last_name').value = formData.lname;
+                        if (formData.email) document.getElementById('email').value = formData.email;
+                        if (formData.username) document.getElementById('username').value = formData.username;
+                        if (formData.age) document.getElementById('age').value = formData.age;
+                        if (formData.gender) document.getElementById('gender').value = formData.gender;
+                        if (formData.avatar) {
+                            const avatarRadio = document.querySelector(`input[name="avatar"][value="${formData.avatar}"]`);
+                            if (avatarRadio) {
+                                avatarRadio.checked = true;
+                                const avatarOption = avatarRadio.closest('.avatar-option');
+                                if (avatarOption) {
+                                    document.querySelectorAll('.avatar-option').forEach(opt => {
+                                        opt.classList.remove('selected', 'bg-deep-rose/20');
+                                        opt.classList.add('bg-warm-gray/30');
+                                    });
+                                    avatarOption.classList.add('selected', 'bg-deep-rose/20');
+                                    avatarOption.classList.remove('bg-warm-gray/30');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error restoring form data:', e);
+                    }
+                }
+            }
+            
+            // Update submit button state after restoring data
+            if (typeof updateSubmitButtonState === 'function') {
+                setTimeout(updateSubmitButtonState, 100);
+            }
+        }
+        
+        function clearFormData() {
+            sessionStorage.removeItem('signup_form_data');
+        }
+        
+        // Mobile menu functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Restore form data if available
+            restoreFormData();
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle hamburger icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+            }
+            
+            // Save form data on input changes
+            const formInputs = ['first_name', 'last_name', 'email', 'username', 'age', 'gender'];
+            formInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('input', saveFormData);
+                    input.addEventListener('change', saveFormData);
+                }
+            });
+            
+            // Save avatar selection
+            document.querySelectorAll('input[name="avatar"]').forEach(radio => {
+                radio.addEventListener('change', saveFormData);
+            });
+            
+            // Field-level validation functions
+            function showFieldError(fieldId, message) {
+                const errorDiv = document.getElementById(fieldId + '_error');
+                const field = document.getElementById(fieldId);
+                if (errorDiv && field) {
+                    errorDiv.textContent = message;
+                    errorDiv.classList.remove('hidden');
+                    field.classList.add('border-red-500');
+                    field.classList.remove('border-gray-300');
+                }
+            }
+            
+            function clearFieldError(fieldId) {
+                const errorDiv = document.getElementById(fieldId + '_error');
+                const field = document.getElementById(fieldId);
+                if (errorDiv && field) {
+                    errorDiv.classList.add('hidden');
+                    errorDiv.textContent = '';
+                    field.classList.remove('border-red-500');
+                    field.classList.add('border-gray-300');
+                }
+            }
+            
+            function validateField(fieldId, validator) {
+                const field = document.getElementById(fieldId);
+                if (!field) return true;
+                
+                const value = field.value.trim();
+                const isValid = validator(value);
+                
+                if (!isValid) {
+                    return false;
+                } else {
+                    clearFieldError(fieldId);
+                    return true;
+                }
+            }
+            
+            // Real-time validation
+            document.getElementById('first_name')?.addEventListener('blur', function() {
+                validateField('first_name', (val) => {
+                    if (!val) {
+                        showFieldError('first_name', 'First name is required');
+                        return false;
+                    }
+                    if (val.length < 2) {
+                        showFieldError('first_name', 'First name must be at least 2 characters');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            document.getElementById('last_name')?.addEventListener('blur', function() {
+                validateField('last_name', (val) => {
+                    if (!val) {
+                        showFieldError('last_name', 'Last name is required');
+                        return false;
+                    }
+                    if (val.length < 2) {
+                        showFieldError('last_name', 'Last name must be at least 2 characters');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            document.getElementById('email')?.addEventListener('blur', function() {
+                validateField('email', (val) => {
+                    if (!val) {
+                        showFieldError('email', 'Email is required');
+                        return false;
+                    }
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(val)) {
+                        showFieldError('email', 'Please enter a valid email address');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            document.getElementById('username')?.addEventListener('blur', function() {
+                validateField('username', (val) => {
+                    if (!val) {
+                        showFieldError('username', 'Username is required');
+                        return false;
+                    }
+                    if (val.length < 3) {
+                        showFieldError('username', 'Username must be at least 3 characters');
+                        return false;
+                    }
+                    if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+                        showFieldError('username', 'Username can only contain letters, numbers, and underscores');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            // Password strength validation
+            function validatePasswordStrength(password) {
+                if (!password) {
+                    return { valid: false, message: 'Password is required' };
+                }
+                if (password.length < 8) {
+                    return { valid: false, message: 'Password must be at least 8 characters long' };
+                }
+                if (!/[A-Z]/.test(password)) {
+                    return { valid: false, message: 'Password must contain at least one uppercase letter' };
+                }
+                if (!/[a-z]/.test(password)) {
+                    return { valid: false, message: 'Password must contain at least one lowercase letter' };
+                }
+                if (!/[0-9]/.test(password)) {
+                    return { valid: false, message: 'Password must contain at least one number' };
+                }
+                if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                    return { valid: false, message: 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)' };
+                }
+                return { valid: true, message: '' };
+            }
+            
+            // Real-time password strength indicator
+            document.getElementById('password')?.addEventListener('input', function() {
+                const password = this.value;
+                const strengthDiv = document.getElementById('password_strength');
+                
+                if (!strengthDiv) return;
+                
+                if (password.length === 0) {
+                    strengthDiv.classList.add('hidden');
+                    updateSubmitButtonState();
+                    return;
+                }
+                
+                strengthDiv.classList.remove('hidden');
+                const strength = validatePasswordStrength(password);
+                
+                // Update strength indicator
+                const requirements = [
+                    { test: password.length >= 8, text: 'At least 8 characters' },
+                    { test: /[A-Z]/.test(password), text: 'One uppercase letter' },
+                    { test: /[a-z]/.test(password), text: 'One lowercase letter' },
+                    { test: /[0-9]/.test(password), text: 'One number' },
+                    { test: /[!@#$%^&*(),.?":{}|<>]/.test(password), text: 'One special character' }
+                ];
+                
+                let html = '<div class="text-xs mt-2 space-y-1">';
+                requirements.forEach(req => {
+                    const icon = req.test ? '✓' : '○';
+                    const color = req.test ? 'text-green-600' : 'text-gray-400';
+                    html += `<div class="${color}">${icon} ${req.text}</div>`;
+                });
+                html += '</div>';
+                strengthDiv.innerHTML = html;
+                
+                // Update submit button state
+                updateSubmitButtonState();
+            });
+            
+            // Function to check if form is valid and update submit button
+            function updateSubmitButtonState() {
+                const submitBtn = document.getElementById('submitBtn');
+                if (!submitBtn) return;
+                
+                // Check all required fields
+                const firstName = document.getElementById('first_name')?.value.trim() || '';
+                const lastName = document.getElementById('last_name')?.value.trim() || '';
+                const email = document.getElementById('email')?.value.trim() || '';
+                const username = document.getElementById('username')?.value.trim() || '';
+                const password = document.getElementById('password')?.value || '';
+                const confirmPassword = document.getElementById('confirm_password')?.value || '';
+                const age = document.getElementById('age')?.value || '';
+                const gender = document.getElementById('gender')?.value || '';
+                const terms = document.getElementById('terms')?.checked || false;
+                
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const emailValid = emailRegex.test(email);
+                
+                // Validate username format
+                const usernameValid = username.length >= 3 && /^[a-zA-Z0-9_]+$/.test(username);
+                
+                // Validate password strength
+                const passwordValidation = validatePasswordStrength(password);
+                const passwordValid = passwordValidation.valid;
+                
+                // Check password match
+                const passwordsMatch = password && confirmPassword && password === confirmPassword;
+                
+                // Validate age
+                const ageNum = parseInt(age);
+                const ageValid = !isNaN(ageNum) && ageNum >= 13 && ageNum <= 100;
+                
+                // Check if all fields are valid
+                const isFormValid = firstName.length >= 2 &&
+                                  lastName.length >= 2 &&
+                                  emailValid &&
+                                  usernameValid &&
+                                  passwordValid &&
+                                  passwordsMatch &&
+                                  ageValid &&
+                                  gender &&
+                                  terms;
+                
+                // Update button state
+                if (isFormValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            
+            // Add event listeners to update submit button state
+            ['first_name', 'last_name', 'email', 'username', 'password', 'confirm_password', 'age', 'gender', 'terms'].forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', updateSubmitButtonState);
+                    field.addEventListener('change', updateSubmitButtonState);
+                    field.addEventListener('blur', updateSubmitButtonState);
+                }
+            });
+            
+            // Initial state check
+            updateSubmitButtonState();
+            
+            document.getElementById('password')?.addEventListener('blur', function() {
+                const validation = validatePasswordStrength(this.value);
+                if (!validation.valid) {
+                    showFieldError('password', validation.message);
+                } else {
+                    clearFieldError('password');
+                }
+            });
+            
+            document.getElementById('confirm_password')?.addEventListener('blur', function() {
+                const password = document.getElementById('password')?.value;
+                const confirmPassword = document.getElementById('confirm_password')?.value;
+                validateField('confirm_password', (val) => {
+                    if (!val) {
+                        showFieldError('confirm_password', 'Please confirm your password');
+                        return false;
+                    }
+                    if (val !== password) {
+                        showFieldError('confirm_password', 'Passwords do not match');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            document.getElementById('age')?.addEventListener('blur', function() {
+                validateField('age', (val) => {
+                    if (!val) {
+                        showFieldError('age', 'Age is required');
+                        return false;
+                    }
+                    const age = parseInt(val);
+                    if (isNaN(age) || age < 13 || age > 100) {
+                        showFieldError('age', 'Age must be between 13 and 100');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            document.getElementById('gender')?.addEventListener('change', function() {
+                validateField('gender', (val) => {
+                    if (!val) {
+                        showFieldError('gender', 'Please select your gender');
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            
+            // Form validation on submit
             const form = document.querySelector('form');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm_password');
+            const termsCheckbox = document.getElementById('terms');
             
-            form.addEventListener('submit', function(e) {
-                if (password.value !== confirmPassword.value) {
-                    e.preventDefault();
-                    alert('Passwords do not match!');
-                    return false;
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    
+                    // Validate all fields
+                    isValid = validateField('first_name', (val) => {
+                        if (!val || val.length < 2) {
+                            showFieldError('first_name', val ? 'First name must be at least 2 characters' : 'First name is required');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    isValid = validateField('last_name', (val) => {
+                        if (!val || val.length < 2) {
+                            showFieldError('last_name', val ? 'Last name must be at least 2 characters' : 'Last name is required');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    isValid = validateField('email', (val) => {
+                        if (!val) {
+                            showFieldError('email', 'Email is required');
+                            return false;
+                        }
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(val)) {
+                            showFieldError('email', 'Please enter a valid email address');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    isValid = validateField('username', (val) => {
+                        if (!val || val.length < 3) {
+                            showFieldError('username', val ? 'Username must be at least 3 characters' : 'Username is required');
+                            return false;
+                        }
+                        if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+                            showFieldError('username', 'Username can only contain letters, numbers, and underscores');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    if (password && confirmPassword) {
+                        isValid = validateField('password', (val) => {
+                            const validation = validatePasswordStrength(val);
+                            if (!validation.valid) {
+                                showFieldError('password', validation.message);
+                                return false;
+                            }
+                            return true;
+                        }) && isValid;
+                        
+                        isValid = validateField('confirm_password', (val) => {
+                            if (!val) {
+                                showFieldError('confirm_password', 'Please confirm your password');
+                                return false;
+                            }
+                            if (val !== password.value) {
+                                showFieldError('confirm_password', 'Passwords do not match');
+                                return false;
+                            }
+                            return true;
+                        }) && isValid;
+                    }
+                    
+                    isValid = validateField('age', (val) => {
+                        if (!val) {
+                            showFieldError('age', 'Age is required');
+                            return false;
+                        }
+                        const age = parseInt(val);
+                        if (isNaN(age) || age < 13 || age > 100) {
+                            showFieldError('age', 'Age must be between 13 and 100');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    isValid = validateField('gender', (val) => {
+                        if (!val) {
+                            showFieldError('gender', 'Please select your gender');
+                            return false;
+                        }
+                        return true;
+                    }) && isValid;
+                    
+                    // Validate terms checkbox
+                    if (termsCheckbox && !termsCheckbox.checked) {
+                        showFieldError('terms', 'You must agree to the Terms of Service and Privacy Policy');
+                        isValid = false;
+                    } else if (termsCheckbox) {
+                        clearFieldError('terms');
+                    }
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        // Save form data before showing errors (in case of page reload)
+                        saveFormData();
+                        // Scroll to first error
+                        const firstError = document.querySelector('.error-message:not(.hidden)');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        return false;
+                    } else {
+                        // Clear saved form data on successful submission
+                        clearFormData();
+                    }
+                });
+            }
+        });
+        
+        // Terms of Service and Privacy Policy Modals
+        function showTermsModal() {
+            document.getElementById('termsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
-    });
-});
+        
+        function closeTermsModal() {
+            document.getElementById('termsModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function showPrivacyModal() {
+            document.getElementById('privacyModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modals when clicking outside
+        document.getElementById('termsModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTermsModal();
+            }
+        });
+        
+        document.getElementById('privacyModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePrivacyModal();
+            }
+        });
+        
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTermsModal();
+                closePrivacyModal();
+            }
+        });
     </script>
+    
+    <!-- Terms of Service Modal -->
+    <div id="termsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-deep-plum font-poppins">Terms of Service</h2>
+                <button onclick="closeTermsModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6 text-warm-brown leading-relaxed">
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">1. Acceptance of Terms</h3>
+                    <p>By accessing and using Funza Mama, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">2. AI Technology Disclosure</h3>
+                    <p class="mb-2">Funza Mama uses artificial intelligence (AI) to provide personalized learning experiences and generate educational content. We are transparent about our AI usage:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li><strong>Primary AI Model:</strong> Meta-Llama-3.1-8B-Instruct-Turbo (8 billion parameter language model developed by Meta)</li>
+                        <li><strong>Fallback AI Model:</strong> zai-org/GLM-4.7 (alternative model for reliability)</li>
+                        <li><strong>AI Platform:</strong> Together AI (cloud-based AI inference platform)</li>
+                        <li><strong>Purpose:</strong> AI is used to generate quiz questions, provide educational explanations, and offer personalized learning recommendations</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">3. AI Limitations and Ethical Considerations</h3>
+                    <p class="mb-2">While we strive for accuracy, please be aware that:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>AI-generated content may occasionally contain errors or inaccuracies</li>
+                        <li>AI responses are generated based on training data and may not always reflect the most current medical guidelines</li>
+                        <li>This platform is for educational purposes only and does not replace professional medical advice</li>
+                        <li>Always consult qualified healthcare professionals for medical decisions</li>
+                        <li>We continuously monitor and improve AI outputs for accuracy and safety</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">4. Educational Purpose Only</h3>
+                    <p>Funza Mama is designed for educational purposes only. The information provided should not be considered as medical advice, diagnosis, or treatment. Always seek the advice of qualified healthcare providers with any questions you may have regarding a medical condition.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">5. User Responsibilities</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>Provide accurate and truthful information during registration</li>
+                        <li>Maintain the confidentiality of your account credentials</li>
+                        <li>Use the platform responsibly and in accordance with these terms</li>
+                        <li>Not use the platform for any illegal or unauthorized purpose</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">6. Data Processing</h3>
+                    <p>By using Funza Mama, you acknowledge that your interactions with the AI system may be processed by Together AI's infrastructure. We take data privacy seriously and handle your information in accordance with our Privacy Policy.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">7. Modifications to Terms</h3>
+                    <p>We reserve the right to modify these terms at any time. Continued use of the platform after changes constitutes acceptance of the new terms.</p>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-end">
+                <button onclick="closeTermsModal()" class="bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-8 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-deep-plum font-poppins">Privacy Policy</h2>
+                <button onclick="closePrivacyModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6 text-warm-brown leading-relaxed">
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">1. Information We Collect</h3>
+                    <p class="mb-2">We collect the following information:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li><strong>Account Information:</strong> Name, email, username, age, gender</li>
+                        <li><strong>Learning Data:</strong> Quiz responses, progress, performance metrics, learning history</li>
+                        <li><strong>Usage Data:</strong> Interactions with AI features, time spent on platform, features used</li>
+                        <li><strong>Technical Data:</strong> IP address, browser type, device information</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">2. How We Use Your Information</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>To provide personalized learning experiences</li>
+                        <li>To generate AI-powered educational content tailored to your needs</li>
+                        <li>To track your progress and provide feedback</li>
+                        <li>To improve our AI models and platform functionality</li>
+                        <li>To communicate with you about your account and platform updates</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">3. AI Data Processing</h3>
+                    <p class="mb-2">When you interact with AI features:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>Your questions and responses may be processed by Together AI's infrastructure</li>
+                        <li>AI models (Meta-Llama-3.1-8B-Instruct-Turbo and GLM-4.7) process your data to generate responses</li>
+                        <li>We do not share your personal information with third parties for marketing purposes</li>
+                        <li>Together AI processes data in accordance with their privacy policies and security standards</li>
+                        <li>We implement measures to minimize data exposure and protect your privacy</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">4. Data Security</h3>
+                    <p>We implement industry-standard security measures to protect your data, including encryption, secure authentication, and regular security audits. However, no method of transmission over the internet is 100% secure.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">5. Data Retention</h3>
+                    <p>We retain your data for as long as your account is active or as needed to provide services. You can request deletion of your account and associated data at any time.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">6. Your Rights</h3>
+                    <p class="mb-2">You have the right to:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>Access your personal data</li>
+                        <li>Correct inaccurate data</li>
+                        <li>Request deletion of your data</li>
+                        <li>Opt-out of certain data processing activities</li>
+                        <li>Export your learning data</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">7. Third-Party Services</h3>
+                    <p>We use Together AI as our AI service provider. Your interactions with AI features are processed through their infrastructure. Please review Together AI's privacy policy for information about their data handling practices.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">8. Children's Privacy</h3>
+                    <p>Funza Mama is intended for users aged 13 and above. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">9. Changes to Privacy Policy</h3>
+                    <p>We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-deep-plum mb-3">10. Contact Us</h3>
+                    <p>If you have questions about this Privacy Policy or our data practices, please contact us through the platform's feedback system.</p>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-end">
+                <button onclick="closePrivacyModal()" class="bg-gradient-to-r from-deep-rose to-warm-mauve text-white py-3 px-8 rounded-xl hover:from-warm-mauve hover:to-deep-rose transition-all font-semibold">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

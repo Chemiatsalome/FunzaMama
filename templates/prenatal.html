@@ -76,6 +76,49 @@
             75% { transform: translateX(5px); }
         }
         
+        /* Adaptive Emoji Animations */
+        .emoji-jump {
+            animation: emojiJump 0.8s ease-in-out;
+        }
+        
+        @keyframes emojiJump {
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-15px) scale(1.1); }
+            50% { transform: translateY(-20px) scale(1.15); }
+            75% { transform: translateY(-15px) scale(1.1); }
+        }
+        
+        .emoji-shake {
+            animation: emojiShake 0.6s ease-in-out;
+        }
+        
+        @keyframes emojiShake {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            10% { transform: translateX(-8px) translateY(5px) rotate(-5deg); }
+            20% { transform: translateX(8px) translateY(5px) rotate(5deg); }
+            30% { transform: translateX(-8px) translateY(5px) rotate(-5deg); }
+            40% { transform: translateX(8px) translateY(5px) rotate(5deg); }
+            50% { transform: translateX(-5px) translateY(8px) rotate(-3deg); }
+            60% { transform: translateX(5px) translateY(8px) rotate(3deg); }
+            70% { transform: translateX(-3px) translateY(5px) rotate(-2deg); }
+            80% { transform: translateX(3px) translateY(5px) rotate(2deg); }
+        }
+        
+        .emoji-container {
+            font-size: 3rem;
+            line-height: 1;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .emoji-excited {
+            filter: drop-shadow(0 4px 8px rgba(34, 197, 94, 0.3));
+        }
+        
+        .emoji-sad {
+            filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
+        }
+        
         .progress-bar-animated {
             background: linear-gradient(90deg, #D63384, #C77DFF, #D63384);
             background-size: 200% 100%;
@@ -224,6 +267,10 @@
                     <span class="text-2xl font-bold text-deep-plum font-poppins">Funza Mama</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Avatar in Navigation -->
+                    <div id="navAvatar" class="w-10 h-10 rounded-full border-2 border-deep-rose shadow-md flex-shrink-0">
+                        <!-- Avatar will be rendered here by JavaScript -->
+                    </div>
                     <span class="text-deep-plum font-medium">Welcome, {{username}}</span>
                     <a href="{{ url_for('gamestages.game') }}" class="bg-warm-gray text-deep-plum px-4 py-2 rounded-full hover:bg-deep-plum hover:text-white transition-all font-medium">
                         <i class="fas fa-arrow-left mr-2"></i>Back
@@ -242,7 +289,13 @@
             <!-- Mobile menu -->
             <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
                 <div class="flex flex-col space-y-4 pt-4">
-                    <div class="px-4 py-2 text-deep-plum font-medium">Welcome, {{username}}</div>
+                    <div class="flex items-center space-x-3 px-4 py-2">
+                        <!-- Avatar in Mobile Menu -->
+                        <div id="navAvatarMobile" class="w-10 h-10 rounded-full border-2 border-deep-rose shadow-md flex-shrink-0">
+                            <!-- Avatar will be rendered here by JavaScript -->
+                        </div>
+                        <span class="text-deep-plum font-medium">Welcome, {{username}}</span>
+                    </div>
                     <a href="{{ url_for('gamestages.game') }}" class="text-deep-plum hover:text-deep-rose transition-colors font-medium px-4 py-2 rounded-lg hover:bg-warm-gray/50">
                         <i class="fas fa-arrow-left mr-2"></i>Back to Stages
                     </a>
@@ -300,18 +353,16 @@
 
         <!-- Quiz Card -->
         <div id="quizCard" class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg fade-in">
-            <!-- Avatar Section -->
-            <div class="flex justify-center mb-8">
-                <div class="relative">
-                    <div id="avatar" class="w-24 h-24 rounded-full border-4 border-deep-rose shadow-lg">
-                        <!-- Avatar will be rendered here by JavaScript -->
-                    </div>
+            <!-- Adaptive Emoji Display (Avatar moved to navigation) -->
+            <div class="flex flex-col items-center justify-center mb-8">
+                <div id="emojiContainer" class="emoji-container min-h-[4rem] flex items-center justify-center">
+                    <span id="emojiDisplay" class="text-6xl">😊</span>
                 </div>
             </div>
 
             <!-- Question Section -->
             <div class="text-center mb-8">
-                <h3 id="scenario" class="text-2xl font-bold text-deep-plum mb-6 leading-relaxed">
+                <h3 id="scenario" class="text-lg sm:text-xl md:text-2xl font-bold text-deep-plum mb-6 leading-relaxed">
                     <i class="fas fa-heart text-warm-mauve mr-3"></i>
                     Funza AI Loading Scenarios...
                 </h3>
@@ -382,7 +433,7 @@
     let correctAnswers = 0;
     let attempts = 0;
         let scenarios = null;
-        const baseAvatarPath = "{{ user.avatar if user and user.avatar else '' }}";
+        // Avatar path is now only used for navigation display
         
         // Sound System
         let soundEnabled = true;
@@ -672,6 +723,9 @@
     }
 
     function loadScenario() {
+        // Reset emoji to neutral when loading new question
+        resetEmoji();
+        
         if (!scenarios || currentIndex >= scenarios.length) {
             displayCompletionMessage();
             return;
@@ -731,7 +785,6 @@
             
     let feedback = document.getElementById("feedback");
     let reasoning = document.getElementById("reasoning");
-    let avatar = document.getElementById("avatar");
     let nextButton = document.getElementById("nextBtn");  
     let askFunzaButton = document.getElementById("askFunza");
             let options = document.querySelectorAll(".option-button");
@@ -751,8 +804,6 @@
                 }
             });
 
-    let newAvatarPath = baseAvatarPath;
-
     if (selected === scenario.answer) {
                 // Play correct sound and vibrate
                 playCorrectSound();
@@ -761,8 +812,11 @@
                 feedback.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-2"></i>Correct! Great job!';
                 feedback.className = "text-green-600 text-lg font-semibold mb-4";
         reasoning.textContent = scenario.correctReason;
-        newAvatarPath = baseAvatarPath.replace(/happy|sad|grumpy|proud/, "proud");
         correctAnswers++;
+        
+        // Show excited emoji with jumping animation
+        showAdaptiveEmoji('excited');
+        
                 updateProgressDisplay();
                 askFunzaButton.classList.add("d-none");
     } else {
@@ -774,22 +828,18 @@
                 feedback.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i>Not quite right. Let\'s learn together!';
                 feedback.className = "text-red-600 text-lg font-semibold mb-4";
         reasoning.textContent = scenario.incorrectReason;
+        // Store failed question context for chatbot
         window.lastFailedQuestion = scenario.question;
-
-        if (attempts === 1) {
-            newAvatarPath = baseAvatarPath.replace(/happy|sad|grumpy|proud/, "sad");
-        } else {
-            newAvatarPath = baseAvatarPath.replace(/happy|sad|grumpy|proud/, "grumpy");
-        }
+        window.lastQuestionText = scenario.question;
+        window.lastOptions = scenario.options || [];
+        window.lastAnswer = scenario.answer || "";
+        window.lastIncorrectReason = scenario.incorrectReason || "";
+        
+        // Show sad emoji with shaking animation
+        showAdaptiveEmoji('sad');
 
                 askFunzaButton.classList.remove("d-none");
     }
-
-            if (avatar && newAvatarPath) {
-                renderAvatar(avatar, newAvatarPath);
-                avatar.classList.add("avatar-bounce");
-                setTimeout(() => avatar.classList.remove("avatar-bounce"), 600);
-}
 
             nextButton.classList.remove("d-none");
         }
@@ -1179,48 +1229,115 @@ function getRandomResponse(responses) {
             renderInitialAvatar();
         });
         
-        // Function to render avatar based on avatar path
+        // Function to render avatar based on avatar path (for navigation - smaller size)
         function renderAvatar(avatarElement, avatarPath) {
             if (!avatarElement || !avatarPath) return;
             
             if (avatarMap[avatarPath]) {
                 const avatarData = avatarMap[avatarPath];
                 
-                // Create the avatar HTML
+                // Create the avatar HTML (smaller size for navigation)
                 const avatarHTML = `
                     <div class="avatar-container w-full h-full rounded-full bg-gradient-to-br ${avatarData.colors} flex items-center justify-center">
-                        <div class="avatar-face w-20 h-20 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
-                            <div class="avatar-eyes flex space-x-1">
-                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink"></div>
-                                <div class="w-2 h-2 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
+                        <div class="avatar-face w-8 h-8 rounded-full bg-gradient-to-br ${avatarData.faceColors} flex items-center justify-center relative">
+                            <div class="avatar-eyes flex space-x-0.5">
+                                <div class="w-1 h-1 ${avatarData.eyeColor} rounded-full animate-blink"></div>
+                                <div class="w-1 h-1 ${avatarData.eyeColor} rounded-full animate-blink" style="animation-delay: 0.1s"></div>
                             </div>
-                            <div class="avatar-smile absolute bottom-3 w-6 h-3 border-2 ${avatarData.smileColor} border-t-0 rounded-b-full"></div>
-                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-2 w-12 h-4 border-2 ${avatarData.eyeColor} rounded-full"></div>` : ''}
+                            <div class="avatar-smile absolute bottom-1.5 w-4 h-1.5 border border-${avatarData.smileColor.replace('border-', '')} border-t-0 rounded-b-full"></div>
+                            ${avatarData.glasses ? `<div class="avatar-glasses absolute top-0.5 w-6 h-2 border ${avatarData.eyeColor} rounded-full"></div>` : ''}
                         </div>
                     </div>
                 `;
                 
                 avatarElement.innerHTML = avatarHTML;
             } else {
-                // Fallback for old image-based avatars or no avatar
-                if (avatarPath && avatarPath.includes('images/')) {
-                    avatarElement.innerHTML = `<img src="/static/${avatarPath}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                // Handle uploaded images or old image-based avatars
+                if (avatarPath) {
+                    if (avatarPath.includes('uploads/avatars/') || avatarPath.includes('images/')) {
+                        // Uploaded custom avatar or predefined image avatar
+                        avatarElement.innerHTML = `<img src="/static/${avatarPath}" class="w-full h-full rounded-full object-cover" alt="Avatar">`;
+                    } else {
+                        // Fallback for invalid paths
+                        avatarElement.innerHTML = `
+                            <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                <i class="fas fa-user text-gray-500 text-xs"></i>
+                            </div>
+                        `;
+                    }
                 } else {
+                    // No avatar selected
                     avatarElement.innerHTML = `
                         <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                            <i class="fas fa-user text-gray-500 text-3xl"></i>
+                            <i class="fas fa-user text-gray-500 text-xs"></i>
                         </div>
                     `;
                 }
             }
         }
         
-        // Function to render initial avatar
+        // Function to render initial avatar in navigation
         function renderInitialAvatar() {
-            const avatarElement = document.getElementById('avatar');
-            if (avatarElement) {
-                const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
-                renderAvatar(avatarElement, userAvatar);
+            const navAvatar = document.getElementById('navAvatar');
+            const navAvatarMobile = document.getElementById('navAvatarMobile');
+            const userAvatar = '{{ user.avatar if user and user.avatar else "" }}';
+            
+            if (navAvatar) {
+                renderAvatar(navAvatar, userAvatar);
+            }
+            if (navAvatarMobile) {
+                renderAvatar(navAvatarMobile, userAvatar);
+            }
+        }
+        
+        // Adaptive Emoji Function
+        function showAdaptiveEmoji(mood) {
+            const emojiDisplay = document.getElementById('emojiDisplay');
+            const emojiContainer = document.getElementById('emojiContainer');
+            
+            if (!emojiDisplay || !emojiContainer) return;
+            
+            // Remove previous animation classes
+            emojiDisplay.classList.remove('emoji-jump', 'emoji-shake', 'emoji-excited', 'emoji-sad');
+            emojiContainer.classList.remove('emoji-excited', 'emoji-sad');
+            
+            if (mood === 'excited') {
+                // Excited emojis - jumping animation
+                const excitedEmojis = ['😃', '🎉', '✨', '🌟', '💪', '🔥', '⭐', '🎊'];
+                const randomEmoji = excitedEmojis[Math.floor(Math.random() * excitedEmojis.length)];
+                emojiDisplay.textContent = randomEmoji;
+                emojiDisplay.classList.add('emoji-jump', 'emoji-excited');
+                emojiContainer.classList.add('emoji-excited');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    emojiDisplay.classList.remove('emoji-jump');
+                }, 800);
+            } else if (mood === 'sad') {
+                // Sad emojis - shaking animation
+                const sadEmojis = ['😞', '😢', '😔', '😟', '😕', '🙁', '😣', '😖'];
+                const randomEmoji = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
+                emojiDisplay.textContent = randomEmoji;
+                emojiDisplay.classList.add('emoji-shake', 'emoji-sad');
+                emojiContainer.classList.add('emoji-sad');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    emojiDisplay.classList.remove('emoji-shake');
+                }, 600);
+            }
+        }
+        
+        // Reset emoji to neutral when loading new question
+        function resetEmoji() {
+            const emojiDisplay = document.getElementById('emojiDisplay');
+            if (emojiDisplay) {
+                emojiDisplay.textContent = '😊';
+                emojiDisplay.classList.remove('emoji-jump', 'emoji-shake', 'emoji-excited', 'emoji-sad');
+                const emojiContainer = document.getElementById('emojiContainer');
+                if (emojiContainer) {
+                    emojiContainer.classList.remove('emoji-excited', 'emoji-sad');
+                }
             }
         }
     </script>
