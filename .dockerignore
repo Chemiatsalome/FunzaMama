@@ -1,0 +1,63 @@
+# Virtual environments
+venv/
+funzaenv/
+myenv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+*.log
+*.pid
+*.sock
+
+# Documentation files (not needed in Docker)
+*.md
+!README.md
+
+# Test files
+test_*.py
+*_test.py
+
+# Large data files (if not needed in production)
+faiss_grounded_data.index
+grounded_outputs.json
+maternal_health.jsonl
+
+# User uploads (should be in volume/storage, not image)
+static/uploads/avatars/*.jpeg
+static/uploads/avatars/*.jpg
+static/uploads/avatars/*.png
+
+# Git files
+.git/
+.gitignore
+
+# Build artifacts
+*.zip
+*.dll
+*.lib
+
+# Railway specific
+railway.json
+render.yaml
+
+# Migration files (keep migrations folder but exclude if too large)
+# migrations/
