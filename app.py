@@ -117,6 +117,35 @@ def create_admin():
             else:
                 print("ℹ️ Admin user already exists with admin role.")
 
+# CLI command to run migrations (alternative to flask db upgrade)
+@app.cli.command("migrate")
+def migrate_db():
+    """Run database migrations - run: flask migrate"""
+    from flask_migrate import upgrade, migrate
+    import sys
+    
+    with app.app_context():
+        try:
+            print("📦 Running database migrations...")
+            upgrade()
+            print("✅ Migrations completed successfully!")
+            
+            # List tables
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            if tables:
+                print(f"\n📋 Database tables ({len(tables)}):")
+                for table in tables:
+                    print(f"   - {table}")
+            else:
+                print("\n⚠️ No tables found. Run 'flask db migrate' first.")
+        except Exception as e:
+            print(f"❌ Migration error: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+
 
 # if __name__ == "__main__":
 #     port = int(os.environ.get("PORT", 5000))  # Get the port from environment variables, default to 5000
