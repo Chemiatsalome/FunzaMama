@@ -111,5 +111,8 @@ if admin_available:
 
 import os
 
+# This block is for local development only
+# On Render, Gunicorn will start the app using: gunicorn app:app --bind 0.0.0.0:$PORT
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)  # debug=False for production
