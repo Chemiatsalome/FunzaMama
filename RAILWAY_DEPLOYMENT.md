@@ -112,16 +112,10 @@ Railway usually auto-detects, but you can verify:
    ```
 4. Under **"Start Command"**, it should be:
    ```
-   gunicorn app:app --bind 0.0.0.0:$PORT
+   gunicorn app:app
    ```
 
 If these aren't set, add them manually.
-
-**⚠️ IMPORTANT: Clear Build Cache**
-If you're having deployment issues, clear the build cache:
-1. Go to **Settings** → **Build & Deploy**
-2. Click **"Clear Build Cache"** or **"Redeploy"** → **"Clear cache and redeploy"**
-3. This ensures Railway uses your latest configuration files
 
 ### Step 8: Deploy!
 
