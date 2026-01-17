@@ -1,25 +1,22 @@
 import os
 
 class Config:
-    # Check for the environment variable for the production URI
+    # Database configuration
+    # Railway automatically provides DATABASE_URL when PostgreSQL service is connected
+    # For production, use Railway's DATABASE_URL (automatically provided)
+    # For local development, use MySQL
     if os.environ.get('FLASK_ENV') == 'production':
-        # Railway provides DATABASE_URL automatically when database is connected
-        # Format: postgresql://postgres:password@host:port/railway
-        database_url = os.environ.get('DATABASE_URL')
-        
-        if not database_url:
+        # Railway automatically provides DATABASE_URL when PostgreSQL is connected
+        # Get it from: Railway Dashboard → Database Service → Variables tab → DATABASE_URL
+        DATABASE_URL = os.environ.get('DATABASE_URL')
+        if not DATABASE_URL:
             raise ValueError(
                 "DATABASE_URL not found! "
-                "Make sure your PostgreSQL database is connected to your web service in Railway. "
-                "Go to Railway Dashboard → Web Service → Variables → Connect Database"
+                "Railway should automatically provide this when PostgreSQL is connected. "
+                "Check: Railway Dashboard → Database Service → Variables tab"
             )
-        
-        # Railway sometimes provides postgres:// instead of postgresql://
-        # SQLAlchemy requires postgresql://
-        if database_url.startswith('postgres://'):
-            database_url = database_url.replace('postgres://', 'postgresql://', 1)
-        
-        SQLALCHEMY_DATABASE_URI = database_url
+        # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
     else:
         # Use MySQL locally with XAMPP
         SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root@localhost/funzamama_db'
