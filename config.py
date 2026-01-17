@@ -9,18 +9,33 @@ class Config:
         # Railway automatically provides DATABASE_URL when PostgreSQL is connected
         # Get it from: Railway Dashboard → Database Service → Variables tab → DATABASE_URL
         DATABASE_URL = os.environ.get('DATABASE_URL')
-        if not DATABASE_URL:
-            # Don't crash at import time - use a placeholder that will fail gracefully on first DB access
-            # This allows the app to start so we can see other errors
+        
+        # Debug: Check if DATABASE_URL is loaded (don't print the full URL for security)
+        if DATABASE_URL:
+            # Mask password in logs for security
+            masked_url = DATABASE_URL.split('@')[1] if '@' in DATABASE_URL else '***'
+            print(f"✅ DATABASE_URL loaded: postgresql://***@{masked_url}")
+        else:
             print("⚠️ WARNING: DATABASE_URL not found!")
             print("⚠️ Railway should automatically provide this when PostgreSQL is connected.")
             print("⚠️ Check: Railway Dashboard → Database Service → Variables tab")
             print("⚠️ App will start but database operations will fail until DATABASE_URL is set.")
+        
+        if not DATABASE_URL:
+            # Don't crash at import time - use a placeholder that will fail gracefully on first DB access
+            # This allows the app to start so we can see other errors
             # Use a placeholder that will fail on connection attempt (not at import time)
             SQLALCHEMY_DATABASE_URI = 'postgresql://placeholder:placeholder@localhost/placeholder'
         else:
             # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
-            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+            # Also ensure it's postgresql:// (not postgres://)
+            if DATABASE_URL.startswith('postgres://'):
+                SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+            elif DATABASE_URL.startswith('postgresql://'):
+                SQLALCHEMY_DATABASE_URI = DATABASE_URL
+            else:
+                # If it doesn't start with postgres/postgresql, assume it needs the prefix
+                SQLALCHEMY_DATABASE_URI = f'postgresql://{DATABASE_URL}' if not DATABASE_URL.startswith('postgresql://') else DATABASE_URL
     else:
         # Use MySQL locally with XAMPP
         SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root@localhost/funzamama_db'
