@@ -2,52 +2,48 @@ import os
 
 class Config:
     # Database configuration
-    # Railway automatically provides DATABASE_URL when PostgreSQL service is connected
-    # For production, use Railway's DATABASE_URL (automatically provided)
-    # For local development, use MySQL
-    if os.environ.get('FLASK_ENV') == 'production':
-        # Railway automatically provides DATABASE_URL when PostgreSQL is connected
-        # OR MySQL variables (MYSQLHOST, MYSQLUSER, etc.) when MySQL is connected
-        DATABASE_URL = os.environ.get('DATABASE_URL')
+    # Railway automatically provides either:
+    # - DATABASE_URL (for PostgreSQL)
+    # - MYSQLHOST, MYSQLUSER, etc. (for MySQL)
+    # For local development, use MySQL with XAMPP
+    
+    # BEST PRACTICE: Check for database variables directly (not FLASK_ENV)
+    # Railway doesn't set FLASK_ENV=production by default
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    
+    if DATABASE_URL:
+        # PostgreSQL detected - Railway provides DATABASE_URL
+        # Mask password in logs for security
+        masked_url = DATABASE_URL.split('@')[1] if '@' in DATABASE_URL else '***'
+        print(f"✅ DATABASE_URL loaded: postgresql://***@{masked_url}")
         
-        # If DATABASE_URL not found, try to build from MySQL variables (Railway MySQL)
-        if not DATABASE_URL:
-            mysql_host = os.environ.get('MYSQLHOST')
-            mysql_user = os.environ.get('MYSQLUSER')
-            mysql_password = os.environ.get('MYSQLPASSWORD')
-            mysql_database = os.environ.get('MYSQLDATABASE')
-            mysql_port = os.environ.get('MYSQLPORT', '3306')
-            
-            if mysql_host and mysql_user and mysql_database:
-                # Build MySQL connection string from Railway MySQL variables
-                SQLALCHEMY_DATABASE_URI = (
-                    f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@"
-                    f"{mysql_host}:{mysql_port}/{mysql_database}"
-                )
-                print(f"✅ Using MySQL from Railway variables: {mysql_host}:{mysql_port}/{mysql_database}")
-            else:
-                # No database connection available
-                print("⚠️ WARNING: No database connection found!")
-                print("⚠️ Neither DATABASE_URL (PostgreSQL) nor MySQL variables found.")
-                print("⚠️ App will start but database operations will fail.")
-                SQLALCHEMY_DATABASE_URI = 'postgresql://placeholder:placeholder@localhost/placeholder'
+        # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
+        if DATABASE_URL.startswith('postgres://'):
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+        elif DATABASE_URL.startswith('postgresql://'):
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL
         else:
-            # PostgreSQL DATABASE_URL found
-            # Mask password in logs for security
-            masked_url = DATABASE_URL.split('@')[1] if '@' in DATABASE_URL else '***'
-            print(f"✅ DATABASE_URL loaded: postgresql://***@{masked_url}")
-            
-            # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
-            if DATABASE_URL.startswith('postgres://'):
-                SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-            elif DATABASE_URL.startswith('postgresql://'):
-                SQLALCHEMY_DATABASE_URI = DATABASE_URL
-            else:
-                # If it doesn't start with postgres/postgresql, assume it needs the prefix
-                SQLALCHEMY_DATABASE_URI = f'postgresql://{DATABASE_URL}' if not DATABASE_URL.startswith('postgresql://') else DATABASE_URL
+            # If it doesn't start with postgres/postgresql, assume it needs the prefix
+            SQLALCHEMY_DATABASE_URI = f'postgresql://{DATABASE_URL}' if not DATABASE_URL.startswith('postgresql://') else DATABASE_URL
     else:
-        # Use MySQL locally with XAMPP
-        SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root@localhost/funzamama_db'
+        # Check for MySQL variables (Railway MySQL)
+        mysql_host = os.environ.get('MYSQLHOST')
+        mysql_user = os.environ.get('MYSQLUSER')
+        mysql_password = os.environ.get('MYSQLPASSWORD')
+        mysql_database = os.environ.get('MYSQLDATABASE')
+        mysql_port = os.environ.get('MYSQLPORT', '3306')
+        
+        if mysql_host and mysql_user and mysql_database:
+            # Build MySQL connection string from Railway MySQL variables
+            SQLALCHEMY_DATABASE_URI = (
+                f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@"
+                f"{mysql_host}:{mysql_port}/{mysql_database}"
+            )
+            print(f"✅ Using MySQL from Railway variables: {mysql_host}:{mysql_port}/{mysql_database}")
+        else:
+            # Local development - use MySQL with XAMPP
+            SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root@localhost/funzamama_db'
+            print("ℹ️ Using local MySQL (XAMPP) for development")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'my_secret_key'
@@ -105,10 +101,17 @@ class Config:
     # 2. Enable 2-Step Verification
     # 3. Go to App passwords > Generate password for "Mail"
     # 4. Use that 16-character password here
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'chemiatsalome@gmail.com'
-    # IMPORTANT: Use your Gmail APP PASSWORD (not your regular password)
+    # Email Credentials - MUST be set via environment variables for security
+    # Set these in Railway Dashboard → Variables:
+    #   MAIL_USERNAME = chemiatsalome@gmail.com
+    #   MAIL_PASSWORD = wloqvskriwrlzcrp (your Gmail app password)
+    # 
+    # SECURITY: Never hardcode passwords in code!
     # The app password should be 16 characters with NO SPACES
-    # From your screenshot: "wloq vskr iwrl zcrp" → use "wloqvskriwrlzcrp" (remove spaces)
-    # If you have a different app password, paste it here WITHOUT spaces
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'wloqvskriwrlzcrp'  # Gmail app password (no spaces)
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'chemiatsalome@gmail.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # REQUIRED: Set in Railway Variables
+    
+    if not MAIL_PASSWORD:
+        print("⚠️ WARNING: MAIL_PASSWORD not set! Email features will not work.")
+        print("⚠️ Set MAIL_PASSWORD in Railway Dashboard → Variables")
 
