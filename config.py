@@ -10,13 +10,17 @@ class Config:
         # Get it from: Railway Dashboard → Database Service → Variables tab → DATABASE_URL
         DATABASE_URL = os.environ.get('DATABASE_URL')
         if not DATABASE_URL:
-            raise ValueError(
-                "DATABASE_URL not found! "
-                "Railway should automatically provide this when PostgreSQL is connected. "
-                "Check: Railway Dashboard → Database Service → Variables tab"
-            )
-        # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+            # Don't crash at import time - use a placeholder that will fail gracefully on first DB access
+            # This allows the app to start so we can see other errors
+            print("⚠️ WARNING: DATABASE_URL not found!")
+            print("⚠️ Railway should automatically provide this when PostgreSQL is connected.")
+            print("⚠️ Check: Railway Dashboard → Database Service → Variables tab")
+            print("⚠️ App will start but database operations will fail until DATABASE_URL is set.")
+            # Use a placeholder that will fail on connection attempt (not at import time)
+            SQLALCHEMY_DATABASE_URI = 'postgresql://placeholder:placeholder@localhost/placeholder'
+        else:
+            # Railway's DATABASE_URL might use 'postgres://' but SQLAlchemy needs 'postgresql://'
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
     else:
         # Use MySQL locally with XAMPP
         SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root@localhost/funzamama_db'
