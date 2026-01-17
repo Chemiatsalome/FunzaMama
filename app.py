@@ -35,40 +35,20 @@ else:
     mail = None
 
 
-# Import models to register them
-with app.app_context():
-    from models.models import *
-    
-    try:
-        # Try to create tables first
-        db.create_all()
-        
-        # Create admin user if it doesn't exist
-        admin_user = User.query.filter_by(email='admin@funzamama.org').first()
-        if not admin_user:
-            admin_user = User(
-                first_name='Admin',
-                second_name='User',
-                username='admin',
-                email='admin@funzamama.org',
-                email_verified=True,
-                avatar='images/avatars/admin.png',
-                role='admin'
-            )
-            admin_user.set_password('Admin123!')  # Change this password in production
-            db.session.add(admin_user)
-            db.session.commit()
-            print("Admin user created successfully!")
-        else:
-            # Update existing admin user to have admin role
-            if admin_user.role != 'admin':
-                admin_user.role = 'admin'
-                db.session.commit()
-                print("Admin user role updated!")
-    except Exception as e:
-        print(f"Database initialization warning: {e}")
-        print("Please run the migration script (migrate_database.sql) to update your database schema.")
-        print("The application will still work for guest users, but some features may be limited.")
+# Import models to register them (but don't run DB operations at import time!)
+# Database operations should be done via Flask-Migrate or CLI commands, not at import time
+# This prevents blocking Gunicorn from starting on Render
+from models.models import *
+
+# NOTE: Database initialization (db.create_all(), admin creation, etc.) has been removed
+# from import time to prevent blocking Gunicorn startup on Render.
+# 
+# To initialize the database:
+# 1. Use Flask-Migrate: flask db upgrade
+# 2. Create admin user via CLI command (see below)
+#
+# For local development, you can still run: python app.py
+# For production (Render), Gunicorn will start the app without blocking
 
 
 from routes.auth_routes import Login_bp, signup_bp
@@ -103,6 +83,35 @@ app.register_blueprint(feedback_bp)
 if admin_available:
     app.register_blueprint(admin_bp)
     print("Admin routes registered successfully!")
+
+# CLI command to create admin user (run once: flask create-admin)
+@app.cli.command("create-admin")
+def create_admin():
+    """Create admin user - run once: flask create-admin"""
+    with app.app_context():
+        admin_user = User.query.filter_by(email='admin@funzamama.org').first()
+        if not admin_user:
+            admin_user = User(
+                first_name='Admin',
+                second_name='User',
+                username='admin',
+                email='admin@funzamama.org',
+                email_verified=True,
+                avatar='images/avatars/admin.png',
+                role='admin'
+            )
+            admin_user.set_password('Admin123!')  # Change this password in production
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✅ Admin user created successfully!")
+        else:
+            # Update existing admin user to have admin role
+            if admin_user.role != 'admin':
+                admin_user.role = 'admin'
+                db.session.commit()
+                print("✅ Admin user role updated!")
+            else:
+                print("ℹ️ Admin user already exists with admin role.")
 
 
 # if __name__ == "__main__":
