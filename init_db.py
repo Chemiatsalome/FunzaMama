@@ -12,11 +12,29 @@ def init_database():
     """Run migrations and create admin user"""
     with app.app_context():
         try:
-            # Step 1: Run migrations
-            print("📦 Running database migrations...")
-            from flask_migrate import upgrade
-            upgrade()
-            print("✅ Migrations completed successfully!")
+            # Step 1: Run migrations or create tables
+            print("📦 Initializing database...")
+            
+            # Check if migrations/versions exists and has migration files
+            import os
+            migrations_versions_dir = os.path.join('migrations', 'versions')
+            has_migrations = False
+            if os.path.exists(migrations_versions_dir):
+                # Check for .py migration files (ignore __pycache__)
+                migration_files = [f for f in os.listdir(migrations_versions_dir) if f.endswith('.py') and not f.startswith('__')]
+                has_migrations = len(migration_files) > 0
+            
+            if has_migrations:
+                # Migrations exist, use Flask-Migrate
+                print("   Using Flask-Migrate...")
+                from flask_migrate import upgrade
+                upgrade()
+                print("✅ Migrations completed successfully!")
+            else:
+                # No migrations exist, create tables directly
+                print("   No migration files found. Creating tables directly...")
+                db.create_all()
+                print("✅ Tables created successfully!")
             
             # Step 2: Create admin user (if doesn't exist)
             print("\n👤 Checking for admin user...")
