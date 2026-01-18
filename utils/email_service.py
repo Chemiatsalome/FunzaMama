@@ -47,11 +47,11 @@ class EmailService:
             pass
         
         # Default fallback - check if we're in production environment
-        # Railway typically sets PORT and we're on HTTPS
+        # Railway typically sets PORT (not set in local development)
         port = os.environ.get('PORT')
-        if port and os.environ.get('RAILWAY_ENVIRONMENT'):
+        if port:
             # In Railway production, use the Railway domain
-            # This is a best-guess fallback
+            # This is a best-guess fallback if SERVER_NAME is not set
             return 'https://funzamama-app-production.up.railway.app'
         
         # Development fallback
@@ -263,10 +263,8 @@ class EmailService:
                 try:
                     url = url_for('signup.reset_password', token=reset_token, _external=True)
                 except RuntimeError:
-                    base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
-                    scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
-                    if not base_url or not base_url.startswith('http'):
-                        base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                    # Fallback if url_for fails (outside request context)
+                    base_url = self._get_base_url()
                     url = f"{base_url}/reset-password/{reset_token}"
                 print(f"Reset URL for {user_email}: {url}")
                 return False
