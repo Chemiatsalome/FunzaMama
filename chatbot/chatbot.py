@@ -136,8 +136,10 @@ Remember: You are having a real conversation. Each response should be unique and
             if current_options:
                 system_prompt += f"Options: {', '.join(current_options) if isinstance(current_options, list) else current_options}\n"
             system_prompt += f"Correct Answer: {current_answer}\n"
-            system_prompt += f"\nProvide a helpful, encouraging explanation of why '{current_answer}' is correct. Be supportive and educational. "
-            system_prompt += f"However, if the user asks a NEW question (not about this question), answer their NEW question instead."
+            system_prompt += f"\nCRITICAL: The user's current message is asking about this question. "
+            system_prompt += f"Provide a helpful, encouraging explanation of why '{current_answer}' is correct. "
+            system_prompt += f"Be specific, educational, and supportive. Explain the reasoning behind the answer. "
+            system_prompt += f"DO NOT repeat the question or answer verbatim - explain WHY it's correct and provide helpful context."
         
         if grounded_info:
             system_prompt += f"\nUse this verified data:\n{grounded_info}"

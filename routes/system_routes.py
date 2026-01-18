@@ -58,52 +58,78 @@ def get_intelligent_fallback_response(user_message, current_question="", current
     elif any(word in input_lower for word in ['postpartum', 'after', 'recovery', 'newborn']):
         return maternal_responses['postpartum'][0]
     
-    # If there's a current question context, provide specific help for FAILED QUESTIONS
+    # If there's a current question context, check if user is asking ABOUT it or asking a NEW question
     if current_question:
-        # Check if this is about a failed question (user is asking about the question they just got wrong)
-        if current_answer and current_options:
-            # This is a failed question - provide helpful explanation
-            response = f"I can help you understand '{current_question}'!\n\n"
-            response += f"**The correct answer is: {current_answer}**\n\n"
-            
-            # Provide context-specific help based on question content
+        # Detect if user is asking about the failed question vs a new question
+        # Keywords that indicate user wants to know about the failed question:
+        question_about_keywords = [
+            'why', 'how', 'explain', 'tell me', 'what does', 'what is', 'what are',
+            'help me understand', 'i don\'t understand', 'can you explain',
+            'more about', 'about that', 'about this', 'the answer', 'that answer',
+            'correct answer', 'why is', 'how is', 'what about'
+        ]
+        
+        # Check if message is very short (likely asking "why" about the question)
+        is_very_short = len(user_message.split()) <= 3
+        
+        # Check if message contains keywords about the question
+        is_about_question = any(keyword in input_lower for keyword in question_about_keywords)
+        
+        # Check if message is clearly a NEW question (has question words + new topic)
+        new_question_indicators = [
+            'what is', 'what are', 'when', 'where', 'who', 'how much', 'how many',
+            'can i', 'should i', 'do i need', 'is it safe', 'is it normal'
+        ]
+        is_new_question = any(indicator in input_lower for indicator in new_question_indicators) and \
+                         not any(word in input_lower for word in ['that', 'this', 'the answer', 'correct'])
+        
+        # Only use failed question context if user is clearly asking about it
+        # AND not asking a completely new question
+        if (is_about_question or is_very_short) and not is_new_question and current_answer and current_options:
+            # User is asking about the failed question - provide helpful explanation
             question_lower = current_question.lower()
-            if any(word in question_lower for word in ['nutrition', 'diet', 'food', 'vitamin', 'supplement']):
-                response += "**Key points about nutrition:**\n"
-                response += "• Eat a balanced diet with fruits, vegetables, whole grains, and lean proteins\n"
-                response += "• Take prenatal vitamins as recommended by your healthcare provider\n"
-                response += "• Stay hydrated by drinking plenty of water\n"
-                response += "• Avoid certain foods like raw fish, unpasteurized dairy, and excessive caffeine\n\n"
-            elif any(word in question_lower for word in ['exercise', 'activity', 'workout', 'fitness']):
-                response += "**Key points about exercise:**\n"
-                response += "• Regular moderate exercise is generally safe and beneficial during pregnancy\n"
-                response += "• Activities like walking, swimming, and prenatal yoga are excellent choices\n"
-                response += "• Listen to your body and stop if you feel pain or discomfort\n"
-                response += "• Consult your healthcare provider before starting any new exercise routine\n\n"
-            elif any(word in question_lower for word in ['prenatal', 'visit', 'checkup', 'appointment']):
-                response += "**Key points about prenatal care:**\n"
-                response += "• Regular prenatal visits are essential for monitoring your health and baby's development\n"
-                response += "• These visits allow your healthcare provider to detect and address any issues early\n"
-                response += "• Bring questions and concerns to each appointment\n"
-                response += "• Follow your healthcare provider's recommendations for tests and screenings\n\n"
-            elif any(word in question_lower for word in ['labor', 'birth', 'delivery', 'contraction']):
-                response += "**Key points about labor and birth:**\n"
-                response += "• Know the signs of labor: regular contractions, water breaking, or bloody show\n"
-                response += "• Create a birth plan but remain flexible\n"
-                response += "• Have a support person ready to accompany you\n"
-                response += "• Trust your healthcare team during delivery\n\n"
-            else:
-                response += "**General guidance:**\n"
-                response += "• Always consult your healthcare provider for personalized medical advice\n"
-                response += "• Trust reliable sources for maternal health information\n"
-                response += "• Every pregnancy is unique - what works for others may not work for you\n"
-                response += "• Don't hesitate to ask questions - knowledge empowers you\n\n"
             
-            response += "Would you like me to explain any specific aspect of this topic in more detail?"
+            # Build contextual explanation based on the question topic
+            if 'folic acid' in question_lower or 'folate' in question_lower:
+                response = f"""<p><strong>Why is {current_answer} the recommended dosage of folic acid?</strong></p>
+                <p>Folic acid is crucial for preventing neural tube defects (serious birth defects of the brain and spine) in developing babies. Here's why <strong>{current_answer}</strong> is recommended:</p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>Prevention of birth defects:</strong> Taking folic acid before and during early pregnancy significantly reduces the risk of neural tube defects</li>
+                    <li><strong>Optimal absorption:</strong> {current_answer} is the standard recommended amount that your body can effectively use</li>
+                    <li><strong>Timing matters:</strong> Neural tube defects occur in the first 28 days of pregnancy, often before you know you're pregnant, so starting before conception is important</li>
+                    <li><strong>Safe and effective:</strong> This dosage has been proven safe and effective through extensive research</li>
+                </ul>
+                <p><strong>Important:</strong> Some women may need higher doses (like 4,000 mcg) if they have certain risk factors. Always consult your healthcare provider for personalized recommendations.</p>
+                <p>Would you like to know more about folic acid or other prenatal vitamins?</p>"""
+            elif any(word in question_lower for word in ['nutrition', 'diet', 'food', 'vitamin', 'supplement']):
+                response = f"""<p><strong>About the question: "{current_question}"</strong></p>
+                <p><strong>The correct answer is: {current_answer}</strong></p>
+                <p><strong>Why this matters:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Good nutrition during pregnancy is crucial for both you and your baby's development</li>
+                    <li>Prenatal vitamins supplement your diet but don't replace healthy eating</li>
+                    <li>Always follow your healthcare provider's specific recommendations</li>
+                </ul>
+                <p>Would you like more information about nutrition during pregnancy?</p>"""
+            elif any(word in question_lower for word in ['exercise', 'activity', 'workout', 'fitness']):
+                response = f"""<p><strong>About the question: "{current_question}"</strong></p>
+                <p><strong>The correct answer is: {current_answer}</strong></p>
+                <p><strong>Why this matters:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Regular moderate exercise is generally safe and beneficial during pregnancy</li>
+                    <li>Activities like walking, swimming, and prenatal yoga are excellent choices</li>
+                    <li>Always consult your healthcare provider before starting any new exercise routine</li>
+                </ul>
+                <p>Would you like more information about exercise during pregnancy?</p>"""
+            else:
+                # Generic explanation for other questions
+                response = f"""<p><strong>About the question: "{current_question}"</strong></p>
+                <p><strong>The correct answer is: {current_answer}</strong></p>
+                <p>This is an important topic for maternal health. Always consult your healthcare provider for personalized medical advice tailored to your specific situation.</p>
+                <p>Would you like me to explain any specific aspect of this topic in more detail?</p>"""
+            
             return response
-        else:
-            # General question context without answer
-            return f"Based on your question about '{current_question}', here are some key points to consider:\n\n• Regular prenatal care is essential\n• Balanced nutrition supports healthy development\n• Exercise and rest are both important\n• Stay connected with your healthcare provider\n• Trust your instincts and ask questions\n\nRemember, every pregnancy journey is unique. Always consult your healthcare provider for personalized advice."
+        # If user is asking a NEW question (not about the failed question), continue to normal flow below
     
     # Check for emergency contact questions (Kenya-specific)
     if any(word in input_lower for word in ['emergency', 'contact', 'number', 'phone', 'kenya']) and any(word in input_lower for word in ['contact', 'number', 'phone', 'call', 'emergency']):
@@ -273,10 +299,27 @@ def home():
                 
                 print(f"🤖 Using Together AI for chat response (user: {user_id})")
                 
-                # Determine if this is about a failed/current question:
-                # - If current_question is provided, user is asking about a failed question → use context
-                # - If current_question is NOT provided, user is asking a new question → don't use old context
-                is_about_failed_question = current_question is not None and current_question.strip() != ""
+                # Smart detection: Is user asking ABOUT the failed question or asking a NEW question?
+                # Only use failed question context if:
+                # 1. current_question exists AND
+                # 2. User message is clearly about the question (short, or has "why/explain" keywords)
+                input_lower = user_message.lower().strip()
+                is_very_short = len(user_message.split()) <= 3
+                question_about_keywords = ['why', 'how', 'explain', 'tell me', 'what does', 'help me understand', 'i don\'t understand', 'about that', 'about this', 'the answer', 'that answer']
+                is_about_question = any(keyword in input_lower for keyword in question_about_keywords)
+                
+                # Check if it's clearly a NEW question (has question words + doesn't reference the old question)
+                new_question_indicators = ['what is', 'what are', 'when', 'where', 'who', 'can i', 'should i', 'do i need', 'is it safe', 'is it normal']
+                is_new_question = any(indicator in input_lower for indicator in new_question_indicators) and \
+                                 not any(word in input_lower for word in ['that', 'this', 'the answer', 'correct'])
+                
+                # Determine if this is about the failed question
+                is_about_failed_question = (
+                    current_question is not None and 
+                    current_question.strip() != "" and
+                    (is_about_question or is_very_short) and
+                    not is_new_question
+                )
                 
                 if is_about_failed_question:
                     print(f"📝 User asking about failed question: {current_question[:50]}...")
