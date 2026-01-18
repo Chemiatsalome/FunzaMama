@@ -20,7 +20,8 @@ class Config:
         pg_user = os.environ.get('PGUSER', 'postgres')
         # Safely handle PGPASSWORD - split and take first word if present, otherwise use empty string
         pg_password_raw = os.environ.get('PGPASSWORD', '')
-        pg_password = pg_password_raw.split()[0] if pg_password_raw.split() else ''
+        pg_password_split = pg_password_raw.split()
+        pg_password = pg_password_split[0] if pg_password_split else ''
         pg_database = os.environ.get('PGDATABASE', 'railway')
         
         if pg_host:
