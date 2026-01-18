@@ -7,7 +7,10 @@ import os
 import sys
 from app import app, db
 # Import ALL models so db.create_all() can create all tables
-from models.models import User, Badge, GameStage, UserResponse, QuizQuestion, UserScenarioProgress
+from models.models import (
+    User, Badge, GameStage, UserResponse, QuizQuestion, 
+    UserScenarioProgress, UserQuestionHistory, Feedback
+)
 
 def init_database():
     """Run migrations and create admin user"""
