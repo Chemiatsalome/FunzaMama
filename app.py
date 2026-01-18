@@ -54,6 +54,64 @@ from models.models import *
 # For local development, you can still run: python app.py
 # For production (Render), Gunicorn will start the app without blocking
 
+# Fallback: Create tables on first request if they don't exist (only runs once)
+# This ensures tables are created even if releaseCommand fails
+_tables_created = False
+import threading
+
+def create_tables_if_not_exist():
+    """Create database tables if they don't exist - fallback for when releaseCommand fails"""
+    global _tables_created
+    if _tables_created:
+        return
+    
+    lock = threading.Lock()
+    with lock:
+        if _tables_created:  # Double-check pattern
+            return
+        
+        try:
+            with app.app_context():
+                # Check if users table exists
+                from sqlalchemy import inspect
+                inspector = inspect(db.engine)
+                existing_tables = inspector.get_table_names()
+                
+                # Only create if tables don't exist
+                if 'users' not in existing_tables:
+                    print("⚠️ Tables not found. Creating them now...")
+                    db.create_all()
+                    print("✅ Tables created successfully!")
+                    
+                    # Create admin user if it doesn't exist
+                    admin_user = User.query.filter_by(email='admin@funzamama.org').first()
+                    if not admin_user:
+                        admin_user = User(
+                            first_name='Admin',
+                            second_name='User',
+                            username='admin',
+                            email='admin@funzamama.org',
+                            email_verified=True,
+                            avatar='images/avatars/admin.png',
+                            role='admin'
+                        )
+                        import os
+                        admin_user.set_password(os.environ.get('ADMIN_PASSWORD', 'Admin123!'))
+                        db.session.add(admin_user)
+                        db.session.commit()
+                        print("✅ Admin user created!")
+                else:
+                    print("✅ Database tables already exist.")
+                _tables_created = True
+        except Exception as e:
+            print(f"⚠️ Warning: Could not create tables on startup: {e}")
+            # Don't fail the app, just log the warning
+
+@app.before_request
+def ensure_tables_exist():
+    """Ensure tables exist before handling requests"""
+    create_tables_if_not_exist()
+
 
 from routes.auth_routes import Login_bp, signup_bp
 from routes.system_routes import home_bp, gamestages_bp, profile_bp
