@@ -222,12 +222,23 @@ class EmailService:
                 print(f"   Password configured: {'Yes' if self.sender_password else 'No'}")
                 
                 # Set timeout to prevent hanging (10 seconds)
-                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
-                    if self.use_tls:
-                        server.starttls(context=context)
-                    server.login(self.sender_email, self.sender_password)
-                    # Use as_bytes() to handle Unicode characters properly (like © symbol)
-                    server.sendmail(self.sender_email, user_email, message.as_bytes())
+                # Use SMTP_SSL for port 465, regular SMTP with STARTTLS for port 587
+                if self.smtp_port == 465:
+                    # Port 465 uses direct SSL (not STARTTLS)
+                    server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10)
+                    try:
+                        server.login(self.sender_email, self.sender_password)
+                        server.sendmail(self.sender_email, user_email, message.as_bytes())
+                    finally:
+                        server.quit()
+                else:
+                    # Port 587 uses STARTTLS
+                    with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                        if self.use_tls:
+                            server.starttls(context=context)
+                        server.login(self.sender_email, self.sender_password)
+                        # Use as_bytes() to handle Unicode characters properly (like © symbol)
+                        server.sendmail(self.sender_email, user_email, message.as_bytes())
                 
                 print(f"✅ Verification email sent successfully to {user_email}")
                 return True
@@ -420,12 +431,23 @@ class EmailService:
                 print(f"   To: {user_email}")
                 
                 # Set timeout to prevent hanging (10 seconds)
-                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
-                    if self.use_tls:
-                        server.starttls(context=context)
-                    server.login(self.sender_email, self.sender_password)
-                    # Use as_bytes() to handle Unicode characters properly (like © symbol)
-                    server.sendmail(self.sender_email, user_email, message.as_bytes())
+                # Use SMTP_SSL for port 465, regular SMTP with STARTTLS for port 587
+                if self.smtp_port == 465:
+                    # Port 465 uses direct SSL (not STARTTLS)
+                    server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10)
+                    try:
+                        server.login(self.sender_email, self.sender_password)
+                        server.sendmail(self.sender_email, user_email, message.as_bytes())
+                    finally:
+                        server.quit()
+                else:
+                    # Port 587 uses STARTTLS
+                    with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                        if self.use_tls:
+                            server.starttls(context=context)
+                        server.login(self.sender_email, self.sender_password)
+                        # Use as_bytes() to handle Unicode characters properly (like © symbol)
+                        server.sendmail(self.sender_email, user_email, message.as_bytes())
                 
                 print(f"✅ Password reset email sent successfully to {user_email}")
                 return True
