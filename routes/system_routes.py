@@ -105,14 +105,53 @@ def get_intelligent_fallback_response(user_message, current_question="", current
             # General question context without answer
             return f"Based on your question about '{current_question}', here are some key points to consider:\n\n• Regular prenatal care is essential\n• Balanced nutrition supports healthy development\n• Exercise and rest are both important\n• Stay connected with your healthcare provider\n• Trust your instincts and ask questions\n\nRemember, every pregnancy journey is unique. Always consult your healthcare provider for personalized advice."
     
+    # Check for emergency contact questions (Kenya-specific)
+    if any(word in input_lower for word in ['emergency', 'contact', 'number', 'phone', 'kenya']) and any(word in input_lower for word in ['contact', 'number', 'phone', 'call', 'emergency']):
+        return """<div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 10px 0; border-radius: 5px;">
+            <p><strong>📞 Emergency Contacts in Kenya:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Emergency Services: 999 or 112</strong> (Free, works from any phone)</li>
+                <li><strong>Red Cross: 020-3957000</strong></li>
+                <li><strong>Police: 999 or 112</strong></li>
+                <li><strong>Fire: 999 or 112</strong></li>
+            </ul>
+            <p><strong>For maternal health emergencies:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Contact your healthcare provider immediately</li>
+                <li>Go to the nearest hospital emergency department</li>
+                <li>If severe, call <strong>999</strong> for ambulance</li>
+            </ul>
+            <p><strong>Remember:</strong> Always keep your healthcare provider's contact information handy during pregnancy.</p>
+        </div>"""
+    
     # Check for urgent medical concerns
     urgent_keywords = ['bleeding', 'blood', 'losing blood', 'hemorrhage', 'severe pain', 'emergency', 'urgent', 'help', 'danger']
     if any(word in input_lower for word in urgent_keywords):
+        # Check if also asking for emergency contacts
+        if any(word in input_lower for word in ['contact', 'number', 'phone', 'kenya', 'call']):
+            return """<div style="background-color: #fee; border-left: 4px solid #f00; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                <p><strong>⚠️ URGENT: Emergency Contacts in Kenya</strong></p>
+                <p>If you are experiencing bleeding or any emergency symptoms:</p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>Emergency Services: 999 or 112</strong> (Free, works from any phone)</li>
+                    <li><strong>Red Cross: 020-3957000</strong></li>
+                    <li><strong>Go to nearest hospital immediately</strong> - Don't delay!</li>
+                </ul>
+                <p><strong>For maternal health emergencies:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Contact your healthcare provider immediately</li>
+                    <li>Go to the nearest hospital emergency department</li>
+                    <li>If severe, call 999 for ambulance</li>
+                </ul>
+                <p><strong>Remember:</strong> Bleeding during pregnancy can be serious. Seek medical care immediately.</p>
+            </div>"""
+        
         return """<div style="background-color: #fee; border-left: 4px solid #f00; padding: 15px; margin: 10px 0; border-radius: 5px;">
             <p><strong>⚠️ Important: This sounds like it may need immediate medical attention.</strong></p>
             <p>If you are experiencing bleeding, severe pain, or any emergency symptoms:</p>
-            <ul>
+            <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Seek immediate medical care</strong> - Contact your healthcare provider right away or go to the nearest emergency room</li>
+                <li><strong>In Kenya: Call 999 or 112</strong> for emergency services</li>
                 <li>Do not delay - some symptoms require urgent medical evaluation</li>
                 <li>If it's a true emergency, call emergency services immediately</li>
             </ul>
@@ -120,12 +159,32 @@ def get_intelligent_fallback_response(user_message, current_question="", current
             <p>Is there anything else I can help you with about maternal health?</p>
         </div>"""
     
+    # Check for medical/therapy questions
+    if any(word in input_lower for word in ['therapy', 'treatment', 'therapeutic', 'hynphography', 'lymphography']):
+        if 'hynphography' in input_lower or 'lymphography' in input_lower:
+            return """<p>I understand you're asking about <strong>lymphography</strong> (imaging of the lymphatic system).</p>
+            <p><strong>What it is:</strong> Lymphography is a medical imaging technique used to visualize the lymphatic system, which is part of your immune system.</p>
+            <p><strong>During pregnancy:</strong> This procedure is rarely needed during pregnancy. If your healthcare provider recommends it, they will discuss the risks and benefits with you.</p>
+            <p><strong>Important:</strong> Always consult your healthcare provider about any medical procedures during pregnancy.</p>
+            <p>Is there something specific about this procedure you'd like to know more about?</p>"""
+        
+        return """<p>I can help with information about various therapies and treatments related to maternal health.</p>
+        <p>Common therapies during pregnancy include:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Physical therapy for back pain</li>
+            <li>Prenatal massage (with provider approval)</li>
+            <li>Breathing techniques for labor</li>
+            <li>Relaxation techniques</li>
+        </ul>
+        <p><strong>Important:</strong> Always consult your healthcare provider before starting any new therapy during pregnancy.</p>
+        <p>What specific therapy or treatment are you interested in?</p>"""
+    
     # Check for casual greetings
     greeting_keywords = ['hey', 'hi', 'hello', 'good morning', 'good afternoon', 'good evening']
     if any(word in input_lower for word in greeting_keywords) and len(user_message.split()) <= 3:
         return """<p>Hello! 👋 I'm Funza Mama, your AI health companion.</p>
         <p>I'm here to help you with questions about:</p>
-        <ul>
+        <ul style="margin: 10px 0; padding-left: 20px;">
             <li>Pregnancy and prenatal care</li>
             <li>Childbirth and labor</li>
             <li>Newborn and postnatal care</li>
@@ -134,17 +193,32 @@ def get_intelligent_fallback_response(user_message, current_question="", current
         </ul>
         <p>What would you like to know about maternal health today?</p>"""
     
-    # Default helpful response
-    return """<p>I'm here to help with your maternal health questions!</p>
+    # Check for simple acknowledgments
+    if input_lower in ['ok', 'okay', 'okat', 'alright', 'sure', 'yes', 'yeah']:
+        return """<p>Great! How can I help you today?</p>
+        <p>You can ask me about:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Pregnancy stages and what to expect</li>
+            <li>Nutrition and exercise</li>
+            <li>Labor and delivery</li>
+            <li>Newborn care</li>
+            <li>Or any other maternal health topic!</li>
+        </ul>
+        <p>What would you like to know?</p>"""
+    
+    # Default helpful response - try to be more helpful
+    return f"""<p>I understand you're asking about: <strong>"{user_message}"</strong></p>
+    <p>I'm currently experiencing some technical difficulties with my AI system, but I can still help!</p>
     <p>I can provide information about:</p>
-    <ul>
+    <ul style="margin: 10px 0; padding-left: 20px;">
         <li>Preconception planning and preparation</li>
         <li>Prenatal care and nutrition</li>
         <li>Labor and delivery</li>
         <li>Postnatal care and newborn health</li>
+        <li>Emergency contacts and resources</li>
     </ul>
     <p><strong>Important:</strong> For specific medical concerns, always consult your healthcare provider.</p>
-    <p>What specific topic would you like to learn about?</p>"""
+    <p>Could you rephrase your question, or would you like information about a specific maternal health topic?</p>"""
 
 home_bp = Blueprint("home", __name__)
 gamestages_bp = Blueprint("gamestages", __name__)

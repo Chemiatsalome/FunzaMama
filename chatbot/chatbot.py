@@ -1,5 +1,6 @@
 # chatbot.py
 import json
+import os
 from together import Together
 
 # Optional imports for FAISS grounding (can be disabled to reduce image size)
@@ -32,8 +33,18 @@ except ImportError:
     faiss_index = None
     grounded_outputs = None
 
-# Initialize Together AI client
-together_client = Together(api_key="e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e")
+# Initialize Together AI client - use environment variable
+together_api_key = os.getenv('TOGETHER_API_KEY')
+if not together_api_key:
+    print("⚠️ WARNING: TOGETHER_API_KEY not set. Chatbot will use fallback responses only.")
+    together_client = None
+else:
+    try:
+        together_client = Together(api_key=together_api_key)
+        print("✅ Together AI client initialized")
+    except Exception as e:
+        print(f"⚠️ WARNING: Failed to initialize Together AI client: {e}")
+        together_client = None
 
 # Function to retrieve relevant data using FAISS (optional)
 def get_relevant_data_faiss(user_message):
@@ -81,6 +92,10 @@ def clear_chat_history(user_id="guest_user", session_id=None):
 def get_chatbot_response(user_message, language, user_role, current_question=None, current_options=None, current_answer=None, user_id="guest_user", session_id=None, clear_history=False):
     import logging
     logger = logging.getLogger(__name__)
+    
+    # Check if Together AI is available
+    if together_client is None:
+        raise ValueError("Together AI not configured - TOGETHER_API_KEY not set")
     
     try:
         grounded_info = get_relevant_data_faiss(user_message)
