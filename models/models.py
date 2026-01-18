@@ -20,20 +20,20 @@ class User(db.Model):
     user_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.String(100), nullable=False)
     second_name = db.Column(db.String(100), nullable=False)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     avatar = db.Column(db.String(255), nullable=True)
     # New columns for email verification - with nullable=True for backward compatibility
     email_verified = db.Column(db.Boolean, default=False, nullable=True)
     email_verification_token = db.Column(db.String(255), nullable=True)
-    last_login = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True, index=True)  # Indexed for admin active users query
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True, index=True)  # Indexed for admin sorting
     # User role: 'user' for regular users, 'admin' for administrators
-    role = db.Column(db.String(20), default='user', nullable=True)
+    role = db.Column(db.String(20), default='user', nullable=True, index=True)  # Indexed for admin filtering
     # Demographics for analytics
-    age = db.Column(db.Integer, nullable=True)
-    gender = db.Column(db.String(10), nullable=True)
+    age = db.Column(db.Integer, nullable=True, index=True)  # Indexed for admin demographics analytics
+    gender = db.Column(db.String(10), nullable=True, index=True)  # Indexed for admin demographics analytics
 
     # Relationships
     responses = db.relationship('UserResponse', backref='user', lazy=True)
