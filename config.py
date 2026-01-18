@@ -68,8 +68,16 @@ class Config:
     # Server configuration for URL generation
     # For local development, use localhost
     # For production, set this to your domain (e.g., 'funzamama.org')
+    # Railway: Set SERVER_NAME in Railway Dashboard → Variables to override
     SERVER_NAME = os.environ.get('SERVER_NAME') or None  # None allows Flask to auto-detect
-    PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME') or 'http'  # Use 'https' in production
+    
+    # Prefer HTTPS in production (Railway uses HTTPS)
+    # Detect production by checking if PORT is set (Railway sets this)
+    if os.environ.get('PORT') and not os.environ.get('FLASK_ENV') == 'development':
+        PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME') or 'https'
+    else:
+        PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME') or 'http'
+    
     APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT') or '/'
     
     # Email configuration
@@ -129,7 +137,7 @@ class Config:
     # For local development: Set in .env file (already in .gitignore)
     # For Railway production: Set in Railway Dashboard → Variables
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'chemiatsalome@gmail.com'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # REQUIRED: Set in .env (local) or Railway Variables (production)
+    MAIL_PASSWORD = (os.environ.get('MAIL_PASSWORD') or '').strip()  # REQUIRED: Set in .env (local) or Railway Variables (production)
     
     if not MAIL_PASSWORD:
         print("⚠️ WARNING: MAIL_PASSWORD not set! Email features will not work.")

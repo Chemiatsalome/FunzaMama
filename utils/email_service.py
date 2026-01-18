@@ -7,6 +7,7 @@ import secrets
 import string
 import threading
 import socket
+import os
 
 class EmailService:
     def __init__(self):
@@ -18,6 +19,43 @@ class EmailService:
         # Strip whitespace from password (Railway sometimes adds spaces)
         password = current_app.config.get('MAIL_PASSWORD', '') or ''
         self.sender_password = password.strip() if isinstance(password, str) else ''
+    
+    def _get_base_url(self):
+        """Get base URL for email links - handles production and development"""
+        # Try to get from config first
+        server_name = current_app.config.get('SERVER_NAME')
+        scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'https')
+        
+        # If SERVER_NAME is set in config, use it
+        if server_name:
+            if not server_name.startswith('http'):
+                return f"{scheme}://{server_name}"
+            return server_name
+        
+        # Check for Railway environment variable (if available)
+        railway_url = os.environ.get('RAILWAY_STATIC_URL') or os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+        if railway_url:
+            if not railway_url.startswith('http'):
+                return f"https://{railway_url}"
+            return railway_url
+        
+        # Try to detect from current request (if in request context)
+        try:
+            if has_request_context() and request:
+                return f"{request.scheme}://{request.host}"
+        except RuntimeError:
+            pass
+        
+        # Default fallback - check if we're in production environment
+        # Railway typically sets PORT and we're on HTTPS
+        port = os.environ.get('PORT')
+        if port and os.environ.get('RAILWAY_ENVIRONMENT'):
+            # In Railway production, use the Railway domain
+            # This is a best-guess fallback
+            return 'https://funzamama-app-production.up.railway.app'
+        
+        # Development fallback
+        return 'http://localhost:10000'
         
     def generate_verification_token(self):
         """Generate a secure verification token"""
@@ -33,10 +71,8 @@ class EmailService:
                 try:
                     url = url_for('signup.verify_email', token=verification_token, _external=True)
                 except RuntimeError:
-                    base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
-                    scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
-                    if not base_url or not base_url.startswith('http'):
-                        base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                    # Fallback if url_for fails (outside request context)
+                    base_url = self._get_base_url()
                     url = f"{base_url}/verify-email/{verification_token}"
                 print(f"Verification URL for {user_email}: {url}")
                 return False
@@ -51,12 +87,9 @@ class EmailService:
             try:
                 verification_url = url_for('signup.verify_email', token=verification_token, _external=True)
             except RuntimeError:
-                # Fallback if url_for fails (outside request context)
-                # Use the base URL from config or construct manually
-                base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
-                scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
-                if not base_url or not base_url.startswith('http'):
-                    base_url = f"{scheme}://{base_url}" if base_url else f"{scheme}://localhost:10000"
+                # Fallback if url_for fails (outside request context, e.g., in background thread)
+                # Use the base URL helper method which detects production domain
+                base_url = self._get_base_url()
                 verification_url = f"{base_url}/verify-email/{verification_token}"
             
             # Create message with UTF-8 encoding for Unicode characters
@@ -248,12 +281,9 @@ class EmailService:
             try:
                 reset_url = url_for('signup.reset_password', token=reset_token, _external=True)
             except RuntimeError:
-                # Fallback if url_for fails (outside request context)
-                # Use the base URL from config or construct manually
-                base_url = current_app.config.get('SERVER_NAME', 'localhost:10000')
-                scheme = current_app.config.get('PREFERRED_URL_SCHEME', 'http')
-                if not base_url.startswith('http'):
-                    base_url = f"{scheme}://{base_url}"
+                # Fallback if url_for fails (outside request context, e.g., in background thread)
+                # Use the base URL helper method which detects production domain
+                base_url = self._get_base_url()
                 reset_url = f"{base_url}/reset-password/{reset_token}"
             
             # Create message
