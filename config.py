@@ -11,6 +11,23 @@ class Config:
     # Railway doesn't set FLASK_ENV=production by default
     DATABASE_URL = os.environ.get('DATABASE_URL')
     
+    # Check if DATABASE_URL has internal hostname (won't work locally)
+    # If so, try to build from PostgreSQL environment variables (PGHOST, PGPORT, etc.)
+    if DATABASE_URL and 'postgres.railway.internal' in DATABASE_URL:
+        # Internal hostname detected - try to use public hostname from PGHOST
+        pg_host = os.environ.get('PGHOST')
+        pg_port = os.environ.get('PGPORT', '5432')
+        pg_user = os.environ.get('PGUSER', 'postgres')
+        pg_password = os.environ.get('PGPASSWORD', '').split()[0]  # Take first word if command was accidentally included
+        pg_database = os.environ.get('PGDATABASE', 'railway')
+        
+        if pg_host:
+            # Build DATABASE_URL from PostgreSQL variables
+            DATABASE_URL = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+            print(f"🌐 Using public PostgreSQL hostname from PGHOST: {pg_host}:{pg_port}")
+        else:
+            print("⚠️ DATABASE_URL has internal hostname. Set PGHOST for local access.")
+    
     if DATABASE_URL:
         # PostgreSQL detected - Railway provides DATABASE_URL
         # Mask password in logs for security
@@ -108,10 +125,14 @@ class Config:
     # 
     # SECURITY: Never hardcode passwords in code!
     # The app password should be 16 characters with NO SPACES
+    # Email Credentials - MUST be set via environment variables for security
+    # For local development: Set in .env file (already in .gitignore)
+    # For Railway production: Set in Railway Dashboard → Variables
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'chemiatsalome@gmail.com'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # REQUIRED: Set in Railway Variables
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # REQUIRED: Set in .env (local) or Railway Variables (production)
     
     if not MAIL_PASSWORD:
         print("⚠️ WARNING: MAIL_PASSWORD not set! Email features will not work.")
-        print("⚠️ Set MAIL_PASSWORD in Railway Dashboard → Variables")
+        print("⚠️ For local: Set MAIL_PASSWORD in .env file")
+        print("⚠️ For Railway: Set MAIL_PASSWORD in Railway Dashboard → Variables")
 
