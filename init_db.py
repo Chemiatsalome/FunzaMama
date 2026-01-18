@@ -40,7 +40,7 @@ def init_database():
                 print(f"   Database URI: {db.engine.url}")
                 print("   Creating all tables from models...")
                 # Ensure all models are imported and registered
-                db.create_all(bind=None)
+                db.create_all()  # No bind parameter needed in newer Flask-SQLAlchemy
                 db.session.commit()  # Ensure tables are committed
                 print("✅ Tables created successfully!")
             
