@@ -1,5 +1,6 @@
 import re  # Import regular expressions for password validation
 import os
+import threading
 from werkzeug.utils import secure_filename
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash
@@ -147,15 +148,24 @@ def signup():
         # Clear form data from session on successful registration
         session.pop('signup_form_data', None)
         
-        # Send verification email
-        if email_service.send_verification_email(email, f"{fname} {lname}", verification_token):
-            flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
-        else:
-            # For development: auto-verify users if email is not configured
-            new_user.email_verified = True
-            new_user.email_verification_token = None
-            db.session.commit()
-            flash('Registration successful! Email verification is not configured, so your account has been automatically verified. You can now log in.', 'success')
+        # Send verification email in background (non-blocking)
+        # This prevents worker timeout if SMTP is slow
+        def send_email_background():
+            """Send email in background thread"""
+            try:
+                from flask import current_app
+                with current_app.app_context():
+                    email_service_bg = EmailService()
+                    email_service_bg.send_verification_email(email, f"{fname} {lname}", verification_token)
+            except Exception as e:
+                print(f"Error sending email in background: {e}")
+        
+        # Start email sending in background thread
+        email_thread = threading.Thread(target=send_email_background, daemon=True)
+        email_thread.start()
+        
+        # Flash success message and redirect immediately (don't wait for email)
+        flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
         
         return redirect(url_for('login.login'))
 
@@ -274,11 +284,22 @@ def resend_verification():
         user.created_at = datetime.utcnow()  # Reset the expiration time
         db.session.commit()
         
-        # Send verification email
-        if email_service.send_verification_email(user.email, f"{user.first_name} {user.second_name}", new_token):
-            return jsonify({"success": True, "message": "Verification email sent successfully"})
-        else:
-            return jsonify({"success": False, "error": "Failed to send verification email"}), 500
+        # Send verification email in background (non-blocking)
+        def send_verification_background():
+            """Send verification email in background thread"""
+            try:
+                from flask import current_app
+                with current_app.app_context():
+                    email_service_bg = EmailService()
+                    email_service_bg.send_verification_email(user.email, f"{user.first_name} {user.second_name}", new_token)
+            except Exception as e:
+                print(f"Error sending verification email in background: {e}")
+        
+        email_thread = threading.Thread(target=send_verification_background, daemon=True)
+        email_thread.start()
+        
+        # Return success immediately (don't wait for email)
+        return jsonify({"success": True, "message": "Verification email sent successfully"})
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -309,17 +330,22 @@ def forgot_password():
         user.created_at = datetime.utcnow()  # Reset expiration time
         db.session.commit()
         
-        # Send password reset email
-        email_sent = email_service.send_password_reset_email(user.email, f"{user.first_name} {user.second_name}", reset_token)
-        if email_sent:
-            return jsonify({"success": True, "message": "Password reset email sent successfully. Please check your inbox."})
-        else:
-            # Log the error for debugging
-            print(f"❌ Failed to send password reset email to {user.email}")
-            return jsonify({
-                "success": False, 
-                "error": "Failed to send password reset email. Please check the server logs for details or contact support."
-            }), 500
+        # Send password reset email in background (non-blocking)
+        def send_reset_email_background():
+            """Send password reset email in background thread"""
+            try:
+                from flask import current_app
+                with current_app.app_context():
+                    email_service_bg = EmailService()
+                    email_service_bg.send_password_reset_email(user.email, f"{user.first_name} {user.second_name}", reset_token)
+            except Exception as e:
+                print(f"Error sending password reset email in background: {e}")
+        
+        email_thread = threading.Thread(target=send_reset_email_background, daemon=True)
+        email_thread.start()
+        
+        # Return success immediately (don't wait for email)
+        return jsonify({"success": True, "message": "Password reset email sent successfully. Please check your inbox."})
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

@@ -5,6 +5,8 @@ from email.mime.multipart import MIMEMultipart
 from flask import current_app, url_for, request, has_request_context
 import secrets
 import string
+import threading
+import socket
 
 class EmailService:
     def __init__(self):
@@ -13,7 +15,9 @@ class EmailService:
         self.smtp_port = current_app.config.get('MAIL_PORT', 587)
         self.use_tls = current_app.config.get('MAIL_USE_TLS', True)
         self.sender_email = current_app.config.get('MAIL_USERNAME', 'noreply@funzamama.org')
-        self.sender_password = current_app.config.get('MAIL_PASSWORD', '')
+        # Strip whitespace from password (Railway sometimes adds spaces)
+        password = current_app.config.get('MAIL_PASSWORD', '') or ''
+        self.sender_password = password.strip() if isinstance(password, str) else ''
         
     def generate_verification_token(self):
         """Generate a secure verification token"""
@@ -184,7 +188,8 @@ class EmailService:
                 print(f"   To: {user_email}")
                 print(f"   Password configured: {'Yes' if self.sender_password else 'No'}")
                 
-                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                # Set timeout to prevent hanging (10 seconds)
+                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                     if self.use_tls:
                         server.starttls(context=context)
                     server.login(self.sender_email, self.sender_password)
@@ -386,7 +391,8 @@ class EmailService:
                 print(f"   From: {self.sender_email}")
                 print(f"   To: {user_email}")
                 
-                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                # Set timeout to prevent hanging (10 seconds)
+                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                     if self.use_tls:
                         server.starttls(context=context)
                     server.login(self.sender_email, self.sender_password)
