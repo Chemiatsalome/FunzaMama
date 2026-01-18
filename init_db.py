@@ -6,7 +6,8 @@ Runs migrations and creates admin user automatically
 import os
 import sys
 from app import app, db
-from models.models import User
+# Import ALL models so db.create_all() can create all tables
+from models.models import User, Badge, GameStage, UserResponse, QuizQuestion, UserScenarioProgress
 
 def init_database():
     """Run migrations and create admin user"""
@@ -33,7 +34,11 @@ def init_database():
             else:
                 # No migrations exist, create tables directly
                 print("   No migration files found. Creating tables directly...")
-                db.create_all()
+                print(f"   Database URI: {db.engine.url}")
+                print("   Creating all tables from models...")
+                # Ensure all models are imported and registered
+                db.create_all(bind=None)
+                db.session.commit()  # Ensure tables are committed
                 print("✅ Tables created successfully!")
             
             # Step 2: Create admin user (if doesn't exist)
