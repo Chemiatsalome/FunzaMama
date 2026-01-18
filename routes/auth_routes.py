@@ -2,7 +2,7 @@ import re  # Import regular expressions for password validation
 import os
 import threading
 from werkzeug.utils import secure_filename
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 from models import db
@@ -150,18 +150,24 @@ def signup():
         
         # Send verification email in background (non-blocking)
         # This prevents worker timeout if SMTP is slow
-        def send_email_background():
-            """Send email in background thread"""
-            try:
-                from flask import current_app
-                with current_app.app_context():
-                    email_service_bg = EmailService()
-                    email_service_bg.send_verification_email(email, f"{fname} {lname}", verification_token)
-            except Exception as e:
-                print(f"Error sending email in background: {e}")
+        # Capture the Flask app object explicitly for thread safety
+        app = current_app._get_current_object()
         
-        # Start email sending in background thread
-        email_thread = threading.Thread(target=send_email_background, daemon=True)
+        def send_email_background(app, email, name, token):
+            """Send email in background thread with explicit app context"""
+            with app.app_context():
+                try:
+                    email_service_bg = EmailService()
+                    email_service_bg.send_verification_email(email, name, token)
+                except Exception as e:
+                    app.logger.error(f"Error sending email in background: {e}")
+        
+        # Start email sending in background thread with app passed explicitly
+        email_thread = threading.Thread(
+            target=send_email_background,
+            args=(app, email, f"{fname} {lname}", verification_token),
+            daemon=True
+        )
         email_thread.start()
         
         # Flash success message and redirect immediately (don't wait for email)
@@ -285,17 +291,23 @@ def resend_verification():
         db.session.commit()
         
         # Send verification email in background (non-blocking)
-        def send_verification_background():
-            """Send verification email in background thread"""
-            try:
-                from flask import current_app
-                with current_app.app_context():
-                    email_service_bg = EmailService()
-                    email_service_bg.send_verification_email(user.email, f"{user.first_name} {user.second_name}", new_token)
-            except Exception as e:
-                print(f"Error sending verification email in background: {e}")
+        # Capture the Flask app object explicitly for thread safety
+        app = current_app._get_current_object()
         
-        email_thread = threading.Thread(target=send_verification_background, daemon=True)
+        def send_verification_background(app, email, name, token):
+            """Send verification email in background thread with explicit app context"""
+            with app.app_context():
+                try:
+                    email_service_bg = EmailService()
+                    email_service_bg.send_verification_email(email, name, token)
+                except Exception as e:
+                    app.logger.error(f"Error sending verification email in background: {e}")
+        
+        email_thread = threading.Thread(
+            target=send_verification_background,
+            args=(app, user.email, f"{user.first_name} {user.second_name}", new_token),
+            daemon=True
+        )
         email_thread.start()
         
         # Return success immediately (don't wait for email)
@@ -331,17 +343,23 @@ def forgot_password():
         db.session.commit()
         
         # Send password reset email in background (non-blocking)
-        def send_reset_email_background():
-            """Send password reset email in background thread"""
-            try:
-                from flask import current_app
-                with current_app.app_context():
-                    email_service_bg = EmailService()
-                    email_service_bg.send_password_reset_email(user.email, f"{user.first_name} {user.second_name}", reset_token)
-            except Exception as e:
-                print(f"Error sending password reset email in background: {e}")
+        # Capture the Flask app object explicitly for thread safety
+        app = current_app._get_current_object()
         
-        email_thread = threading.Thread(target=send_reset_email_background, daemon=True)
+        def send_reset_email_background(app, email, name, token):
+            """Send password reset email in background thread with explicit app context"""
+            with app.app_context():
+                try:
+                    email_service_bg = EmailService()
+                    email_service_bg.send_password_reset_email(email, name, token)
+                except Exception as e:
+                    app.logger.error(f"Error sending password reset email in background: {e}")
+        
+        email_thread = threading.Thread(
+            target=send_reset_email_background,
+            args=(app, user.email, f"{user.first_name} {user.second_name}", reset_token),
+            daemon=True
+        )
         email_thread.start()
         
         # Return success immediately (don't wait for email)
