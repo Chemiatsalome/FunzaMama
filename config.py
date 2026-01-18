@@ -18,18 +18,19 @@ class Config:
         pg_host = os.environ.get('PGHOST')
         pg_port = os.environ.get('PGPORT', '5432')
         pg_user = os.environ.get('PGUSER', 'postgres')
-        # Safely handle PGPASSWORD - split and take first word if present, otherwise use empty string
+        # Safely get password - handle empty string case
         pg_password_raw = os.environ.get('PGPASSWORD', '')
-        pg_password_split = pg_password_raw.split()
-        pg_password = pg_password_split[0] if pg_password_split else ''
+        pg_password = pg_password_raw.split()[0] if pg_password_raw.strip() else ''
         pg_database = os.environ.get('PGDATABASE', 'railway')
         
-        if pg_host:
+        if pg_host and pg_password:
             # Build DATABASE_URL from PostgreSQL variables
             DATABASE_URL = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
             print(f"🌐 Using public PostgreSQL hostname from PGHOST: {pg_host}:{pg_port}")
         else:
-            print("⚠️ DATABASE_URL has internal hostname. Set PGHOST for local access.")
+            # If PGHOST/PGPASSWORD not available, DATABASE_URL might still work
+            # Railway often provides both internal and public URLs
+            print("⚠️ DATABASE_URL has internal hostname. Will try to use as-is or set PGHOST/PGPASSWORD for local access.")
     
     if DATABASE_URL:
         # PostgreSQL detected - Railway provides DATABASE_URL
