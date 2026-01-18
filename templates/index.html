@@ -435,6 +435,27 @@
                 </button>
             </div>
             <div id="chatbot-body" class="p-3 sm:p-4 h-48 sm:h-64 overflow-y-auto">
+                <style>
+                    .chat-response-content {
+                        display: inline-block;
+                        width: 100%;
+                    }
+                    .chat-response-content p {
+                        margin: 8px 0;
+                        line-height: 1.6;
+                    }
+                    .chat-response-content ul, .chat-response-content ol {
+                        margin: 8px 0;
+                        padding-left: 20px;
+                    }
+                    .chat-response-content li {
+                        margin: 4px 0;
+                    }
+                    .chat-response-content strong, .chat-response-content b {
+                        font-weight: 600;
+                        color: #6B46C1;
+                    }
+                </style>
                 <div class="bg-warm-gray p-2 sm:p-3 rounded-lg mb-3">
                     <p class="text-xs sm:text-sm text-warm-brown">Hi there! I'm Funza Mama, your AI health companion. How can I help you today?</p>
                 </div>
@@ -747,7 +768,8 @@ async function sendMessage() {
                 </p>
             `;
         } else {
-            botMessage.innerHTML = `<p class="text-sm text-warm-brown">${data.response || "Sorry, I couldn't process your request."}</p>`;
+            // Render HTML response from AI (already formatted)
+            botMessage.innerHTML = `<div class="text-sm text-warm-brown">${data.response || "Sorry, I couldn't process your request."}</div>`;
         }
         
         chatBody.appendChild(botMessage);

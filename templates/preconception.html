@@ -901,7 +901,7 @@ async function sendMessage(userInput) {
 
         let botMessage = document.createElement("div");
         botMessage.classList.add("bot-message");
-        botMessage.innerHTML = `<i class="fas fa-robot text-warm-mauve mr-2"></i>${data.response}`;
+        botMessage.innerHTML = `<i class="fas fa-robot text-warm-mauve mr-2"></i><div class="chat-response-content">${data.response || "Sorry, I couldn't process your request."}</div>`;
         chatBody.appendChild(botMessage);
 
     } catch (error) {

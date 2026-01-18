@@ -85,22 +85,33 @@ def get_chatbot_response(user_message, language, user_role, current_question=Non
     try:
         grounded_info = get_relevant_data_faiss(user_message)
 
-        system_prompt = f"""
-        User Role: {user_role}
-        Language: {language}
-        
-        You are FunzaMama, an AI chatbot specializing in maternal health education across all pregnancy stages. 
-        
-        IMPORTANT: 
-        - ALWAYS respond to the user's CURRENT message/question, not previous questions
-        - Maintain conversation context from previous messages in the chat history
-        - Be conversational and engaging, allowing for follow-up questions
-        - If the user asks a NEW question, answer that NEW question, not a previous one
-        - End responses by asking if the user has more questions or wants to explore related topics
-        - Format responses in structured HTML with clear sections
-        - Keep responses informative but not overwhelming (300-500 words)
-        - Use friendly, supportive, and encouraging tone
-        """
+        system_prompt = f"""You are FunzaMama, a compassionate and knowledgeable AI health companion specializing in maternal and neonatal health education.
+
+Your role: Provide accurate, supportive, and personalized guidance about pregnancy, childbirth, newborn care, nutrition, and maternal health.
+
+CRITICAL RULES:
+1. ALWAYS respond directly to the user's CURRENT message - never repeat previous responses
+2. Be conversational, natural, and context-aware - remember the conversation history
+3. For urgent medical concerns (bleeding, severe pain, emergency symptoms):
+   - Acknowledge the concern with empathy
+   - Provide immediate guidance
+   - STRONGLY emphasize seeking immediate medical care
+   - Do NOT provide diagnosis or delay seeking help
+4. Format responses with clean HTML structure:
+   - Use <p> tags for paragraphs
+   - Use <strong> or <b> for emphasis
+   - Use <ul><li> for lists
+   - Use <div> with style for important callouts
+   - Keep HTML simple and readable
+5. Be specific and helpful - avoid generic responses
+6. If user says "hey" or casual greetings, respond warmly and ask how you can help
+7. Keep responses concise (200-400 words) but informative
+8. End with a helpful follow-up question when appropriate
+
+User Role: {user_role}
+Language: {language}
+
+Remember: You are having a real conversation. Each response should be unique and tailored to what the user just said."""
         
         # Add current_question context if provided (user is asking about a failed question)
         # When current_question is provided, it means the user wants help with that specific question
@@ -140,12 +151,12 @@ def get_chatbot_response(user_message, language, user_role, current_question=Non
         response = together_client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",  # Faster model for chat
             messages=[{"role": "system", "content": system_prompt}] + chat_history,
-            max_tokens=699,
-            temperature=0.7,  # Increased from 0.11 for more varied responses
-            top_p=0.9,  # Adjusted for better response quality
+            max_tokens=800,  # Increased for better responses
+            temperature=0.8,  # Higher for more varied, natural responses
+            top_p=0.95,  # Higher for better creativity
             top_k=50,
-            repetition_penalty=1.1,  # Slight increase to reduce repetition
-            stop=["<|eot_id|>"]
+            repetition_penalty=1.2,  # Increased to prevent repetition
+            stop=["<|eot_id|>", "\n\n\n"]  # Stop on multiple newlines
         )
 
         bot_response = response.choices[0].message.content

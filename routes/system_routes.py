@@ -105,8 +105,46 @@ def get_intelligent_fallback_response(user_message, current_question="", current
             # General question context without answer
             return f"Based on your question about '{current_question}', here are some key points to consider:\n\n• Regular prenatal care is essential\n• Balanced nutrition supports healthy development\n• Exercise and rest are both important\n• Stay connected with your healthcare provider\n• Trust your instincts and ask questions\n\nRemember, every pregnancy journey is unique. Always consult your healthcare provider for personalized advice."
     
+    # Check for urgent medical concerns
+    urgent_keywords = ['bleeding', 'blood', 'losing blood', 'hemorrhage', 'severe pain', 'emergency', 'urgent', 'help', 'danger']
+    if any(word in input_lower for word in urgent_keywords):
+        return """<div style="background-color: #fee; border-left: 4px solid #f00; padding: 15px; margin: 10px 0; border-radius: 5px;">
+            <p><strong>⚠️ Important: This sounds like it may need immediate medical attention.</strong></p>
+            <p>If you are experiencing bleeding, severe pain, or any emergency symptoms:</p>
+            <ul>
+                <li><strong>Seek immediate medical care</strong> - Contact your healthcare provider right away or go to the nearest emergency room</li>
+                <li>Do not delay - some symptoms require urgent medical evaluation</li>
+                <li>If it's a true emergency, call emergency services immediately</li>
+            </ul>
+            <p>I'm here to provide general education, but for urgent medical concerns, please consult with a healthcare professional immediately.</p>
+            <p>Is there anything else I can help you with about maternal health?</p>
+        </div>"""
+    
+    # Check for casual greetings
+    greeting_keywords = ['hey', 'hi', 'hello', 'good morning', 'good afternoon', 'good evening']
+    if any(word in input_lower for word in greeting_keywords) and len(user_message.split()) <= 3:
+        return """<p>Hello! 👋 I'm Funza Mama, your AI health companion.</p>
+        <p>I'm here to help you with questions about:</p>
+        <ul>
+            <li>Pregnancy and prenatal care</li>
+            <li>Childbirth and labor</li>
+            <li>Newborn and postnatal care</li>
+            <li>Nutrition and exercise during pregnancy</li>
+            <li>And much more!</li>
+        </ul>
+        <p>What would you like to know about maternal health today?</p>"""
+    
     # Default helpful response
-    return "I can help with preconception planning, nutrition, and preparing for a healthy pregnancy. For specific medical concerns, always consult your healthcare provider. What would you like to know more about?" "I'm here to help with your maternal health questions! While I'm experiencing some technical difficulties, I can still provide general guidance. For specific medical concerns, always consult your healthcare provider. What would you like to know about pregnancy, childbirth, or postnatal care?"
+    return """<p>I'm here to help with your maternal health questions!</p>
+    <p>I can provide information about:</p>
+    <ul>
+        <li>Preconception planning and preparation</li>
+        <li>Prenatal care and nutrition</li>
+        <li>Labor and delivery</li>
+        <li>Postnatal care and newborn health</li>
+    </ul>
+    <p><strong>Important:</strong> For specific medical concerns, always consult your healthcare provider.</p>
+    <p>What specific topic would you like to learn about?</p>"""
 
 home_bp = Blueprint("home", __name__)
 gamestages_bp = Blueprint("gamestages", __name__)
