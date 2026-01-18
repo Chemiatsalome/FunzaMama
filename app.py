@@ -56,9 +56,9 @@ from models.models import *
 
 # Fallback: Create tables on first request if they don't exist (only runs once)
 # This ensures tables are created even if releaseCommand fails
+import threading
 _tables_created = False
 _table_creation_lock = threading.Lock()
-import threading
 
 def create_tables_if_not_exist():
     """Create database tables if they don't exist - fallback for when releaseCommand fails"""
