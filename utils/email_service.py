@@ -9,16 +9,36 @@ import threading
 import socket
 import os
 
+# Try to import Resend - optional for Railway
+try:
+    import resend
+    RESEND_AVAILABLE = True
+except ImportError:
+    RESEND_AVAILABLE = False
+    print("ℹ️ Resend not available. Will use SMTP (may not work on Railway).")
+
 class EmailService:
     def __init__(self):
-        # Get SMTP settings from config (supports custom SMTP servers)
-        self.smtp_server = current_app.config.get('MAIL_SERVER', 'smtp.gmail.com')
-        self.smtp_port = current_app.config.get('MAIL_PORT', 587)
-        self.use_tls = current_app.config.get('MAIL_USE_TLS', True)
-        self.sender_email = current_app.config.get('MAIL_USERNAME', 'noreply@funzamama.org')
-        # Strip whitespace from password (Railway sometimes adds spaces)
-        password = current_app.config.get('MAIL_PASSWORD', '') or ''
-        self.sender_password = password.strip() if isinstance(password, str) else ''
+        # Check if we should use Resend (Railway) or SMTP (local)
+        resend_api_key = os.environ.get('RESEND_API_KEY')
+        
+        if RESEND_AVAILABLE and resend_api_key:
+            # Use Resend API for Railway (HTTPS, not blocked)
+            self.use_resend = True
+            resend.api_key = resend_api_key
+            self.from_email = os.environ.get('MAIL_FROM', 'FunzaMama <onboarding@resend.dev>')
+            print("📧 Using Resend API for email sending (Railway-compatible)")
+        else:
+            # Use SMTP for local development
+            self.use_resend = False
+            self.smtp_server = current_app.config.get('MAIL_SERVER', 'smtp.gmail.com')
+            self.smtp_port = current_app.config.get('MAIL_PORT', 587)
+            self.use_tls = current_app.config.get('MAIL_USE_TLS', True)
+            self.sender_email = current_app.config.get('MAIL_USERNAME', 'noreply@funzamama.org')
+            # Strip whitespace from password (Railway sometimes adds spaces)
+            password = current_app.config.get('MAIL_PASSWORD', '') or ''
+            self.sender_password = password.strip() if isinstance(password, str) else ''
+            print(f"📧 Using SMTP for email sending: {self.smtp_server}:{self.smtp_port}")
     
     def _get_base_url(self):
         """Get base URL for email links - handles production and development"""
@@ -64,8 +84,8 @@ class EmailService:
     def send_verification_email(self, user_email, user_name, verification_token):
         """Send email verification link"""
         try:
-            # Check if email credentials are configured
-            if not self.sender_password or self.sender_password == '':
+            # Check if email credentials are configured (only for SMTP, not Resend)
+            if not self.use_resend and (not self.sender_password or self.sender_password == ''):
                 print(f"⚠️ Email password not configured. Please set MAIL_PASSWORD in config.py or environment variable.")
                 # Generate URL without request context
                 try:
@@ -205,60 +225,73 @@ class EmailService:
             © 2024 Funza Mama. All rights reserved.
             """
             
-            # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
-            text_part = MIMEText(text_content, "plain", "utf-8")
-            html_part = MIMEText(html_content, "html", "utf-8")
-            
-            message.attach(text_part)
-            message.attach(html_part)
-            
-            # Send email
-            context = ssl.create_default_context()
-            try:
-                print(f"📧 Attempting to send verification email...")
-                print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
-                print(f"   From: {self.sender_email}")
-                print(f"   To: {user_email}")
-                print(f"   Password configured: {'Yes' if self.sender_password else 'No'}")
+            # Send email using Resend (Railway) or SMTP (local)
+            if self.use_resend:
+                # Use Resend API (works on Railway)
+                try:
+                    print(f"📧 Attempting to send verification email via Resend...")
+                    print(f"   From: {self.from_email}")
+                    print(f"   To: {user_email}")
+                    
+                    resend.Emails.send({
+                        "from": self.from_email,
+                        "to": [user_email],
+                        "subject": "Verify Your Funza Mama Account",
+                        "html": html_content,
+                        "text": text_content,
+                    })
+                    
+                    print(f"✅ Verification email sent successfully to {user_email} via Resend")
+                    return True
+                except Exception as e:
+                    print(f"❌ Resend API Error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return False
+            else:
+                # Use SMTP (local development)
+                # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
+                text_part = MIMEText(text_content, "plain", "utf-8")
+                html_part = MIMEText(html_content, "html", "utf-8")
                 
-                # Set timeout to prevent hanging (10 seconds)
-                # Use SMTP_SSL for port 465, regular SMTP with STARTTLS for port 587
-                if self.smtp_port == 465:
-                    # Port 465 uses direct SSL (not STARTTLS)
-                    server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10)
-                    try:
-                        server.login(self.sender_email, self.sender_password)
-                        server.sendmail(self.sender_email, user_email, message.as_bytes())
-                    finally:
-                        server.quit()
-                else:
-                    # Port 587 uses STARTTLS
+                message.attach(text_part)
+                message.attach(html_part)
+                
+                context = ssl.create_default_context()
+                try:
+                    print(f"📧 Attempting to send verification email via SMTP...")
+                    print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
+                    print(f"   From: {self.sender_email}")
+                    print(f"   To: {user_email}")
+                    print(f"   Password configured: {'Yes' if self.sender_password else 'No'}")
+                    
+                    # Set timeout to prevent hanging (10 seconds)
                     with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                         if self.use_tls:
                             server.starttls(context=context)
                         server.login(self.sender_email, self.sender_password)
                         # Use as_bytes() to handle Unicode characters properly (like © symbol)
                         server.sendmail(self.sender_email, user_email, message.as_bytes())
-                
-                print(f"✅ Verification email sent successfully to {user_email}")
-                return True
-            except smtplib.SMTPAuthenticationError as e:
-                print(f"❌ SMTP Authentication Error: {e}")
-                print(f"   Please check your email credentials:")
-                print(f"   - Username: {self.sender_email}")
-                print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
-                print(f"   - SMTP Server: {self.smtp_server}")
-                print(f"   - For Office 365, make sure you're using your full email and correct password")
-                return False
-            except smtplib.SMTPException as e:
-                print(f"❌ SMTP Error: {e}")
-                print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
-                return False
-            except Exception as e:
-                print(f"❌ Unexpected error sending email: {e}")
-                import traceback
-                traceback.print_exc()
-                return False
+                    
+                    print(f"✅ Verification email sent successfully to {user_email} via SMTP")
+                    return True
+                except smtplib.SMTPAuthenticationError as e:
+                    print(f"❌ SMTP Authentication Error: {e}")
+                    print(f"   Please check your email credentials:")
+                    print(f"   - Username: {self.sender_email}")
+                    print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
+                    print(f"   - SMTP Server: {self.smtp_server}")
+                    print(f"   - For Office 365, make sure you're using your full email and correct password")
+                    return False
+                except smtplib.SMTPException as e:
+                    print(f"❌ SMTP Error: {e}")
+                    print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
+                    return False
+                except Exception as e:
+                    print(f"❌ Unexpected error sending email: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return False
             
         except Exception as e:
             print(f"Error sending verification email: {e}")
@@ -267,8 +300,8 @@ class EmailService:
     def send_password_reset_email(self, user_email, user_name, reset_token):
         """Send password reset email"""
         try:
-            # Check if email credentials are configured
-            if not self.sender_password or self.sender_password == '':
+            # Check if email credentials are configured (only for SMTP, not Resend)
+            if not self.use_resend and (not self.sender_password or self.sender_password == ''):
                 print(f"⚠️ Email password not configured. Please set MAIL_PASSWORD in config.py or environment variable.")
                 # Generate URL without request context
                 try:
@@ -280,8 +313,8 @@ class EmailService:
                 print(f"Reset URL for {user_email}: {url}")
                 return False
             
-            # Validate email configuration
-            if not self.sender_email or '@' not in self.sender_email:
+            # Validate email configuration (only for SMTP)
+            if not self.use_resend and (not self.sender_email or '@' not in self.sender_email):
                 print(f"⚠️ Email username not configured properly: {self.sender_email}")
                 return False
                 
@@ -415,58 +448,71 @@ class EmailService:
             © 2024 Funza Mama. All rights reserved.
             """
             
-            # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
-            text_part = MIMEText(text_content, "plain", "utf-8")
-            html_part = MIMEText(html_content, "html", "utf-8")
-            
-            message.attach(text_part)
-            message.attach(html_part)
-            
-            # Send email
-            context = ssl.create_default_context()
-            try:
-                print(f"📧 Attempting to send password reset email...")
-                print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
-                print(f"   From: {self.sender_email}")
-                print(f"   To: {user_email}")
+            # Send email using Resend (Railway) or SMTP (local)
+            if self.use_resend:
+                # Use Resend API (works on Railway)
+                try:
+                    print(f"📧 Attempting to send password reset email via Resend...")
+                    print(f"   From: {self.from_email}")
+                    print(f"   To: {user_email}")
+                    
+                    resend.Emails.send({
+                        "from": self.from_email,
+                        "to": [user_email],
+                        "subject": "Reset Your Funza Mama Password",
+                        "html": html_content,
+                        "text": text_content,
+                    })
+                    
+                    print(f"✅ Password reset email sent successfully to {user_email} via Resend")
+                    return True
+                except Exception as e:
+                    print(f"❌ Resend API Error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return False
+            else:
+                # Use SMTP (local development)
+                # Attach parts with UTF-8 encoding to handle Unicode characters (like ©)
+                text_part = MIMEText(text_content, "plain", "utf-8")
+                html_part = MIMEText(html_content, "html", "utf-8")
                 
-                # Set timeout to prevent hanging (10 seconds)
-                # Use SMTP_SSL for port 465, regular SMTP with STARTTLS for port 587
-                if self.smtp_port == 465:
-                    # Port 465 uses direct SSL (not STARTTLS)
-                    server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10)
-                    try:
-                        server.login(self.sender_email, self.sender_password)
-                        server.sendmail(self.sender_email, user_email, message.as_bytes())
-                    finally:
-                        server.quit()
-                else:
-                    # Port 587 uses STARTTLS
+                message.attach(text_part)
+                message.attach(html_part)
+                
+                context = ssl.create_default_context()
+                try:
+                    print(f"📧 Attempting to send password reset email via SMTP...")
+                    print(f"   SMTP Server: {self.smtp_server}:{self.smtp_port}")
+                    print(f"   From: {self.sender_email}")
+                    print(f"   To: {user_email}")
+                    
+                    # Set timeout to prevent hanging (10 seconds)
                     with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                         if self.use_tls:
                             server.starttls(context=context)
                         server.login(self.sender_email, self.sender_password)
                         # Use as_bytes() to handle Unicode characters properly (like © symbol)
                         server.sendmail(self.sender_email, user_email, message.as_bytes())
-                
-                print(f"✅ Password reset email sent successfully to {user_email}")
-                return True
-            except smtplib.SMTPAuthenticationError as e:
-                print(f"❌ SMTP Authentication Error: {e}")
-                print(f"   Please check your email credentials:")
-                print(f"   - Username: {self.sender_email}")
-                print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
-                print(f"   - SMTP Server: {self.smtp_server}")
-                return False
-            except smtplib.SMTPException as e:
-                print(f"❌ SMTP Error: {e}")
-                print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
-                return False
-            except Exception as e:
-                print(f"❌ Unexpected error sending email: {e}")
-                import traceback
-                traceback.print_exc()
-                return False
+                    
+                    print(f"✅ Password reset email sent successfully to {user_email} via SMTP")
+                    return True
+                except smtplib.SMTPAuthenticationError as e:
+                    print(f"❌ SMTP Authentication Error: {e}")
+                    print(f"   Please check your email credentials:")
+                    print(f"   - Username: {self.sender_email}")
+                    print(f"   - Password: {'*' * len(self.sender_password) if self.sender_password else 'NOT SET'}")
+                    print(f"   - SMTP Server: {self.smtp_server}")
+                    return False
+                except smtplib.SMTPException as e:
+                    print(f"❌ SMTP Error: {e}")
+                    print(f"   Check your SMTP server settings: {self.smtp_server}:{self.smtp_port}")
+                    return False
+                except Exception as e:
+                    print(f"❌ Unexpected error sending email: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return False
             
         except Exception as e:
             print(f"Error sending password reset email: {e}")
