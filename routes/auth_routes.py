@@ -148,30 +148,13 @@ def signup():
         # Clear form data from session on successful registration
         session.pop('signup_form_data', None)
         
-        # Send verification email in background (non-blocking)
-        # This prevents worker timeout if SMTP is slow
-        # Capture the Flask app object explicitly for thread safety
-        app = current_app._get_current_object()
+        # Email configuration coming soon - auto-verify users for now
+        new_user.email_verified = True
+        new_user.email_verification_token = None
+        db.session.commit()
         
-        def send_email_background(app, email, name, token):
-            """Send email in background thread with explicit app context"""
-            with app.app_context():
-                try:
-                    email_service_bg = EmailService()
-                    email_service_bg.send_verification_email(email, name, token)
-                except Exception as e:
-                    app.logger.error(f"Error sending email in background: {e}")
-        
-        # Start email sending in background thread with app passed explicitly
-        email_thread = threading.Thread(
-            target=send_email_background,
-            args=(app, email, f"{fname} {lname}", verification_token),
-            daemon=True
-        )
-        email_thread.start()
-        
-        # Flash success message and redirect immediately (don't wait for email)
-        flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
+        # Flash success message - email coming soon
+        flash('Registration successful! 📧 Email verification will be available soon. You can now log in.', 'success')
         
         return redirect(url_for('login.login'))
 
@@ -342,28 +325,17 @@ def forgot_password():
         user.created_at = datetime.utcnow()  # Reset expiration time
         db.session.commit()
         
-        # Send password reset email in background (non-blocking)
-        # Capture the Flask app object explicitly for thread safety
-        app = current_app._get_current_object()
+        # Email configuration coming soon - return token for form-based reset
+        # Store token in session for form-based password reset
+        session['reset_token'] = reset_token
+        session['reset_email'] = email
         
-        def send_reset_email_background(app, email, name, token):
-            """Send password reset email in background thread with explicit app context"""
-            with app.app_context():
-                try:
-                    email_service_bg = EmailService()
-                    email_service_bg.send_password_reset_email(email, name, token)
-                except Exception as e:
-                    app.logger.error(f"Error sending password reset email in background: {e}")
-        
-        email_thread = threading.Thread(
-            target=send_reset_email_background,
-            args=(app, user.email, f"{user.first_name} {user.second_name}", reset_token),
-            daemon=True
-        )
-        email_thread.start()
-        
-        # Return success immediately (don't wait for email)
-        return jsonify({"success": True, "message": "Password reset email sent successfully. Please check your inbox."})
+        # Return message about email coming soon and provide reset form option
+        return jsonify({
+            "success": True, 
+            "message": "📧 Email configuration coming soon! Please use the password reset form below.",
+            "token": reset_token  # Include token for form-based reset
+        })
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
