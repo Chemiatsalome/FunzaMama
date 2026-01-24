@@ -129,34 +129,62 @@ def signup():
         # Use uploaded avatar if provided, otherwise use selected predefined avatar
         final_avatar = uploaded_avatar if uploaded_avatar else avatar_path
         
-        # Create new user and assign the selected/uploaded avatar
-        new_user = User(
-            first_name=fname, 
-            second_name=lname, 
-            username=Uname, 
-            email=email, 
-            password_hash=hashed_password, 
-            avatar=final_avatar,
-            age=age,
-            gender=gender,
-            email_verified=False,
-            email_verification_token=verification_token
-        )
-        db.session.add(new_user)
-        db.session.commit()
-
-        # Clear form data from session on successful registration
-        session.pop('signup_form_data', None)
-        
-        # Email configuration coming soon - auto-verify users for now
-        new_user.email_verified = True
-        new_user.email_verification_token = None
-        db.session.commit()
-        
-        # Flash success message - email coming soon
-        flash('Registration successful! 📧 Email verification will be available soon. You can now log in.', 'success')
-        
-        return redirect(url_for('login.login'))
+        try:
+            # Create new user and assign the selected/uploaded avatar
+            new_user = User(
+                first_name=fname, 
+                second_name=lname, 
+                username=Uname, 
+                email=email, 
+                password_hash=hashed_password, 
+                avatar=final_avatar,
+                age=age,
+                gender=gender,
+                email_verified=False,
+                email_verification_token=verification_token
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            
+            # Log successful user creation
+            print(f"✅ User created successfully: ID={new_user.user_ID}, username={Uname}, email={email}")
+            
+            # Clear form data from session on successful registration
+            session.pop('signup_form_data', None)
+            
+            # Email configuration coming soon - auto-verify users for now
+            new_user.email_verified = True
+            new_user.email_verification_token = None
+            db.session.commit()
+            
+            # Log user count after creation
+            total_users = User.query.count()
+            print(f"📊 Total users in database: {total_users}")
+            
+            # Flash success message - email coming soon
+            flash('Registration successful! 📧 Email verification will be available soon. You can now log in.', 'success')
+            
+            return redirect(url_for('login.login'))
+            
+        except Exception as e:
+            # Rollback on error
+            db.session.rollback()
+            error_msg = str(e)
+            print(f"❌ ERROR creating user: {error_msg}")
+            print(f"   Username: {Uname}, Email: {email}")
+            
+            # Check for specific database errors
+            if 'unique constraint' in error_msg.lower() or 'duplicate' in error_msg.lower():
+                if 'username' in error_msg.lower():
+                    flash('Username already registered. Please login.', 'warning')
+                elif 'email' in error_msg.lower():
+                    flash('Email already registered. Please login.', 'warning')
+                else:
+                    flash('This username or email is already registered. Please login.', 'warning')
+            else:
+                flash('An error occurred during registration. Please try again or contact support.', 'danger')
+            
+            return redirect(url_for('signup.signup'))
 
     # GET request - restore form data if available (from previous validation errors)
     # Use get() instead of pop() so data persists until successful registration

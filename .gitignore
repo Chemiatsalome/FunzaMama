@@ -20,6 +20,8 @@ __pycache__/
 # Virtual environment
 venv/
 funzaenv/
+myenv/
+.venv/
 
 # IDEs
 .idea/

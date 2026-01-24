@@ -1,10 +1,21 @@
 from together import Together
 import json
+import os
 from models import db
 from models.models import UserResponse, QuizQuestion
 
-# Initialize Together AI client
-together_client = Together(api_key="9075598f252c645841df758d606857135f2adf2111b3e73df7850d304a4380e1")
+# Initialize Together AI client - use environment variable
+together_api_key = os.getenv('TOGETHER_API_KEY')
+if not together_api_key:
+    print("⚠️ WARNING: TOGETHER_API_KEY not set. Question generation will fail.")
+    together_client = None
+else:
+    try:
+        together_client = Together(api_key=together_api_key)
+        print("✅ Together AI client initialized for question generation")
+    except Exception as e:
+        print(f"⚠️ WARNING: Failed to initialize Together AI client: {e}")
+        together_client = None
 
 maternal_health_prompt_preconception_stage = """
 You are an AI that generates **maternal health quizzes focused on the preconception stage (When preparing to get pregnant - Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness)** in JSON format.

@@ -42,7 +42,11 @@ class HybridAIService:
         """Setup Together API client"""
         try:
             from together import Together
-            together_key = os.getenv('TOGETHER_API_KEY', 'e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e')
+            together_key = os.getenv('TOGETHER_API_KEY')
+            if not together_key:
+                logger.warning("⚠️ TOGETHER_API_KEY not set. Together API will not be available.")
+                self.together_available = False
+                return
             self.together_client = Together(api_key=together_key)
             self.together_available = True
             logger.info("✅ Together API configured")
@@ -102,7 +106,7 @@ class HybridAIService:
                 elif provider == AIProvider.HUGGINGFACE:
                     # Lazy-load Hugging Face only when Together API fails
                     if self._setup_huggingface() and self.hf_available:
-                        return self._generate_with_huggingface(stage, user_id)
+                    return self._generate_with_huggingface(stage, user_id)
                     else:
                         # Skip to next provider if HF load failed
                         continue
@@ -212,7 +216,7 @@ class HybridAIService:
                 elif provider == AIProvider.HUGGINGFACE:
                     # Lazy-load Hugging Face only when Together API fails
                     if self._setup_huggingface() and self.hf_available:
-                        return self.hf_model.generate_teaching_facts(stage)
+                    return self.hf_model.generate_teaching_facts(stage)
                     else:
                         continue
                 elif provider == AIProvider.FALLBACK:
@@ -244,7 +248,7 @@ class HybridAIService:
                 elif provider == AIProvider.HUGGINGFACE:
                     # Lazy-load Hugging Face only when Together API fails
                     if self._setup_huggingface() and self.hf_available:
-                        return self._generate_chat_with_huggingface(message, stage, context)
+                    return self._generate_chat_with_huggingface(message, stage, context)
                     else:
                         continue
                 elif provider == AIProvider.FALLBACK:
