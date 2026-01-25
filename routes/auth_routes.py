@@ -149,9 +149,9 @@ def signup():
         session.pop('signup_form_data', None)
         
         # Email configuration coming soon - auto-verify users for now
-            new_user.email_verified = True
-            new_user.email_verification_token = None
-            db.session.commit()
+        new_user.email_verified = True
+        new_user.email_verification_token = None
+        db.session.commit()
         
         # Flash success message - email coming soon
         flash('Registration successful! 📧 Email verification will be available soon. You can now log in.', 'success')
@@ -294,7 +294,7 @@ def resend_verification():
         email_thread.start()
         
         # Return success immediately (don't wait for email)
-            return jsonify({"success": True, "message": "Verification email sent successfully"})
+        return jsonify({"success": True, "message": "Verification email sent successfully"})
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -331,7 +331,7 @@ def forgot_password():
         session['reset_email'] = email
         
         # Return message about email coming soon and provide reset form option
-            return jsonify({
+        return jsonify({
             "success": True, 
             "message": "📧 Email configuration coming soon! Please use the password reset form below.",
             "token": reset_token  # Include token for form-based reset
