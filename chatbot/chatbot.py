@@ -123,9 +123,9 @@ CRITICAL RULES:
 7. Keep responses concise (200-400 words) but informative
 8. End with a helpful follow-up question when appropriate
 
-User Role: {user_role}
-Language: {language}
-
+        User Role: {user_role}
+        Language: {language}
+        
 Remember: You are having a real conversation. Each response should be unique and tailored to what the user just said."""
         
         # Add current_question context if provided (user is asking about a failed question)

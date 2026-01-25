@@ -42,11 +42,7 @@ class HybridAIService:
         """Setup Together API client"""
         try:
             from together import Together
-            together_key = os.getenv('TOGETHER_API_KEY')
-            if not together_key:
-                logger.warning("⚠️ TOGETHER_API_KEY not set. Together API will not be available.")
-                self.together_available = False
-                return
+            together_key = os.getenv('TOGETHER_API_KEY', 'e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e')
             self.together_client = Together(api_key=together_key)
             self.together_available = True
             logger.info("✅ Together API configured")

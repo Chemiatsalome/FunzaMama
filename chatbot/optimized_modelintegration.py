@@ -16,19 +16,8 @@ from threading import Lock
 # Lazy import to avoid circular dependency - only import when needed
 # from chatbot.adaptive_learning import generate_question_hash
 
-# Initialize Together AI client - use environment variable
-import os
-together_api_key = os.getenv('TOGETHER_API_KEY')
-if not together_api_key:
-    print("⚠️ WARNING: TOGETHER_API_KEY not set. Question generation will fail.")
-    together_client = None
-else:
-    try:
-        together_client = Together(api_key=together_api_key)
-        print("✅ Together AI client initialized for question generation")
-    except Exception as e:
-        print(f"⚠️ WARNING: Failed to initialize Together AI client: {e}")
-        together_client = None
+# Initialize Together AI client
+together_client = Together(api_key="9075598f252c645841df758d606857135f2adf2111b3e73df7850d304a4380e1")
 
 # Cache for storing generated questions
 question_cache = {}

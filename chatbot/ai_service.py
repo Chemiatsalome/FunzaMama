@@ -17,17 +17,14 @@ class AIService:
         # Provider 1: Together AI (current provider - most reliable)
         try:
             from together import Together
-            together_key = os.getenv('TOGETHER_API_KEY')
-            if together_key:
-                self.providers.append({
-                    'name': 'together',
-                    'client': Together(api_key=together_key),
-                    'model': 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
-                    'max_tokens': 500
-                })
-                print("✅ Together AI provider configured")
-            else:
-                print("⚠️ TOGETHER_API_KEY not set. Together AI provider not available.")
+            together_key = os.getenv('TOGETHER_API_KEY', 'e3ab4476326269947afb85e9c0b0ed5fe9ae2949e27ed3a38ee4913d8f807b3e')
+            self.providers.append({
+                'name': 'together',
+                'client': Together(api_key=together_key),
+                'model': 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
+                'max_tokens': 500
+            })
+            print("✅ Together AI provider configured")
         except ImportError:
             print("❌ Together AI not available")
         

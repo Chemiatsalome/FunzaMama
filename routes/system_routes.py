@@ -251,23 +251,6 @@ gamestages_bp = Blueprint("gamestages", __name__)
 profile_bp = Blueprint("profile", __name__)
 
 
-@home_bp.route('/check-together-ai', methods=['GET'])
-def check_together_ai():
-    """Diagnostic endpoint to check Together AI configuration"""
-    from chatbot.chatbot import together_client
-    import os
-    
-    together_api_key = os.getenv('TOGETHER_API_KEY')
-    
-    status = {
-        'api_key_set': together_api_key is not None,
-        'api_key_length': len(together_api_key) if together_api_key else 0,
-        'client_initialized': together_client is not None,
-        'client_type': str(type(together_client)) if together_client else None
-    }
-    
-    return jsonify(status)
-
 @home_bp.route('/chat', methods=['GET', 'POST'])
 def home():
     username = "Guest"  # Default username
