@@ -839,6 +839,21 @@
                 <!-- Vertical path line -->
                 <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200 opacity-60"></div>
 
+                {% if user_logged_in %}
+                <!-- Avatar marker that moves to current level -->
+                <div id="journeyAvatarMarker" class="journey-avatar-marker hidden absolute -top-8 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-white shadow-xl border-2 border-deep-rose overflow-hidden flex items-center justify-center">
+                        {% if user and user.avatar %}
+                            <img src="/static/{{ user.avatar }}" alt="Your avatar" class="w-9 h-9 rounded-full object-cover">
+                        {% else %}
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-pink-300 to-rose-400 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-lg"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="relative flex flex-col gap-10 md:gap-16 pt-4 pb-4">
                     {# Preconception node - top center #}
                     {% set preconception_completed = preconception_progress >= 100 or ('preconception' in earned_stages if earned_stages is defined else False) %}
@@ -1810,13 +1825,12 @@
             // Render current avatar if user is logged in
             renderCurrentAvatar();
 
-            // Journey map: position avatar marker and progress line
+            // Journey map: position avatar marker on current level
             const journeyContainer = document.getElementById('journeyMapContainer');
             const journeyNodes = journeyContainer ? journeyContainer.querySelectorAll('.journey-stage-node') : [];
             const avatarMarker = document.getElementById('journeyAvatarMarker');
-            const lineProgress = document.getElementById('journeyLineProgress');
 
-            if (journeyContainer && journeyNodes.length >= 2) {
+            if (journeyContainer && journeyNodes.length >= 1 && avatarMarker) {
                 let currentNode = journeyNodes[0];
                 let maxProgress = -1;
 
@@ -1832,28 +1846,15 @@
                 const lastNode = journeyNodes[journeyNodes.length - 1];
                 const containerRect = journeyContainer.getBoundingClientRect();
                 const firstRect = firstNode.getBoundingClientRect();
-                const lastRect = lastNode.getBoundingClientRect();
                 const currentRect = currentNode.getBoundingClientRect();
 
-                const firstCenter = firstRect.left + firstRect.width / 2 - containerRect.left;
-                const lastCenter = lastRect.left + lastRect.width / 2 - containerRect.left;
-                const currentCenter = currentRect.left + currentRect.width / 2 - containerRect.left;
+                const currentCenterX = currentRect.left + currentRect.width / 2 - containerRect.left;
+                const currentTop = currentRect.top - containerRect.top;
 
-                const totalDistance = Math.max(lastCenter - firstCenter, 1);
-                const currentDistance = Math.max(currentCenter - firstCenter, 0);
-                const ratio = Math.min(Math.max(currentDistance / totalDistance, 0), 1);
-
-                if (lineProgress) {
-                    const bgLeftPercent = 10; // matches CSS left: 10%
-                    const bgRightPercent = 10; // matches CSS right: 10%
-                    const usablePercent = 100 - bgLeftPercent - bgRightPercent;
-                    lineProgress.style.width = (bgLeftPercent + usablePercent * ratio) + '%';
-                }
-
-                if (avatarMarker) {
-                    avatarMarker.classList.remove('hidden');
-                    avatarMarker.style.left = currentCenter + 'px';
-                }
+                avatarMarker.classList.remove('hidden');
+                avatarMarker.style.left = currentCenterX + 'px';
+                // Position slightly above the node
+                avatarMarker.style.top = (currentTop - 40) + 'px';
             }
         });
         
