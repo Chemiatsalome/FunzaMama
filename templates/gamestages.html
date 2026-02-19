@@ -225,6 +225,74 @@
                 transform: translateY(-100px) scale(0.5);
             }
         }
+        
+        /* Journey Map */
+        .journey-map {
+            position: relative;
+        }
+        .journey-line-bg {
+            position: absolute;
+            top: 32px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: linear-gradient(to right, #e5e7eb, #d1d5db);
+            border-radius: 9999px;
+            opacity: 0.7;
+        }
+        .journey-line-progress {
+            position: absolute;
+            top: 32px;
+            left: 10%;
+            height: 4px;
+            background: linear-gradient(to right, #ec4899, #8b5cf6);
+            border-radius: 9999px;
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.6);
+            transition: width 0.8s ease-out;
+        }
+        .journey-stage-node {
+            position: relative;
+            z-index: 2;
+        }
+        .journey-node-circle {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .journey-node-circle:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 30px rgba(0, 0, 0, 0.15);
+        }
+        .journey-node-completed {
+            background: linear-gradient(135deg, #facc15, #f97316);
+            color: white;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.8);
+        }
+        .journey-node-inprogress {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+        }
+        .journey-node-locked {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+        .journey-node-label {
+            font-size: 0.8rem;
+        }
+        .journey-node-subtext {
+            font-size: 0.75rem;
+        }
+        .journey-avatar-marker {
+            transition: left 0.8s ease-out, transform 0.3s ease;
+        }
+        .journey-avatar-marker:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
 </style>
     
     <!-- Global JavaScript variables will be set in body -->
@@ -756,6 +824,115 @@
                 </p>
             </div>
 
+            {# Journey Map (Candy Crush / Duolingo style) #}
+            {% set preconception_progress = badge_data['preconception'].progress if 'preconception' in badge_data else 0 %}
+            {% set preconception_progress = preconception_progress if preconception_progress <= 100 else 100 %}
+            {% set antenatal_progress = badge_data['prenatal'].progress if 'prenatal' in badge_data else 0 %}
+            {% set antenatal_progress = antenatal_progress if antenatal_progress <= 100 else 100 %}
+            {% set birth_stage = badge_data.get('birth_and_delivery', None) %}
+            {% set birth_progress = birth_stage.progress if birth_stage else 0 %}
+            {% set birth_progress = birth_progress if birth_progress <= 100 else 100 %}
+            {% set postnatal_progress = badge_data['postnatal'].progress if 'postnatal' in badge_data else 0 %}
+            {% set postnatal_progress = postnatal_progress if postnatal_progress <= 100 else 100 %}
+
+            <div id="journeyMapContainer" class="journey-map mb-12">
+                <div class="journey-line-bg"></div>
+                <div id="journeyLineProgress" class="journey-line-progress" style="width: 0;"></div>
+
+                {% if user_logged_in %}
+                <div id="journeyAvatarMarker" class="journey-avatar-marker hidden md:block absolute -top-12 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-deep-rose">
+                    {% if user and user.avatar %}
+                        <img src="/static/{{ user.avatar }}" alt="Your avatar" class="w-10 h-10 rounded-full object-cover">
+                    {% else %}
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-300 to-rose-400 flex items-center justify-center">
+                            <i class="fas fa-user text-white text-lg"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="relative flex items-center justify-between max-w-3xl mx-auto">
+                    {# Preconception node #}
+                    {% set preconception_completed = preconception_progress >= 100 or ('preconception' in earned_stages if earned_stages is defined else False) %}
+                    {% set preconception_status = 'completed' if preconception_completed else ('inprogress' if preconception_progress > 0 else 'inprogress') %}
+                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="preconception" data-progress="{{ preconception_progress }}">
+                        <div class="journey-node-circle {% if preconception_status == 'completed' %}journey-node-completed{% elif preconception_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                            {% if preconception_status == 'completed' %}
+                                <i class="fas fa-check text-xl"></i>
+                            {% elif preconception_status == 'inprogress' %}
+                                <span class="font-bold">1</span>
+                            {% else %}
+                                <i class="fas fa-lock text-lg"></i>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Preconception</div>
+                        <div class="journey-node-subtext text-warm-brown">
+                            {{ preconception_progress | round(0) }}%
+                        </div>
+                    </div>
+
+                    {# Antenatal node #}
+                    {% set antenatal_completed = antenatal_progress >= 100 or ('prenatal' in earned_stages if earned_stages is defined else False) %}
+                    {% set antenatal_locked = preconception_progress < 60 %}
+                    {% set antenatal_status = 'locked' if antenatal_locked else ('completed' if antenatal_completed else ('inprogress' if antenatal_progress > 0 else 'inprogress')) %}
+                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="prenatal" data-progress="{{ antenatal_progress }}">
+                        <div class="journey-node-circle {% if antenatal_status == 'completed' %}journey-node-completed{% elif antenatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                            {% if antenatal_status == 'completed' %}
+                                <i class="fas fa-check text-xl"></i>
+                            {% elif antenatal_status == 'inprogress' %}
+                                <span class="font-bold">2</span>
+                            {% else %}
+                                <i class="fas fa-lock text-lg"></i>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Antenatal</div>
+                        <div class="journey-node-subtext text-warm-brown">
+                            {{ antenatal_progress | round(0) }}%
+                        </div>
+                    </div>
+
+                    {# Birth & Delivery node #}
+                    {% set birth_completed = birth_progress >= 100 or ('birth_and_delivery' in earned_stages if earned_stages is defined else False) %}
+                    {% set birth_locked = antenatal_progress < 60 %}
+                    {% set birth_status = 'locked' if birth_locked else ('completed' if birth_completed else ('inprogress' if birth_progress > 0 else 'inprogress')) %}
+                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="birth_and_delivery" data-progress="{{ birth_progress }}">
+                        <div class="journey-node-circle {% if birth_status == 'completed' %}journey-node-completed{% elif birth_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                            {% if birth_status == 'completed' %}
+                                <i class="fas fa-check text-xl"></i>
+                            {% elif birth_status == 'inprogress' %}
+                                <span class="font-bold">3</span>
+                            {% else %}
+                                <i class="fas fa-lock text-lg"></i>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Birth &amp; Delivery</div>
+                        <div class="journey-node-subtext text-warm-brown">
+                            {{ birth_progress | round(0) }}%
+                        </div>
+                    </div>
+
+                    {# Postnatal node #}
+                    {% set postnatal_completed = postnatal_progress >= 100 or ('postnatal' in earned_stages if earned_stages is defined else False) %}
+                    {% set postnatal_locked = birth_progress < 60 %}
+                    {% set postnatal_status = 'locked' if postnatal_locked else ('completed' if postnatal_completed else ('inprogress' if postnatal_progress > 0 else 'inprogress')) %}
+                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="postnatal" data-progress="{{ postnatal_progress }}">
+                        <div class="journey-node-circle {% if postnatal_status == 'completed' %}journey-node-completed{% elif postnatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                            {% if postnatal_status == 'completed' %}
+                                <i class="fas fa-check text-xl"></i>
+                            {% elif postnatal_status == 'inprogress' %}
+                                <span class="font-bold">4</span>
+                            {% else %}
+                                <i class="fas fa-lock text-lg"></i>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Postnatal</div>
+                        <div class="journey-node-subtext text-warm-brown">
+                            {{ postnatal_progress | round(0) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
            <!-- Preconception Stage -->
                 <div class="stage-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group">
@@ -763,6 +940,9 @@
                         <div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-heart text-white text-2xl"></i>
                         </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold mb-2">
+                            Level 1
+                        </span>
                         <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Preconception Care</h3>
                         <p class="text-warm-brown mb-6 text-sm leading-relaxed">
                             Plan for a healthy pregnancy with proper nutrition, lifestyle changes, and early symptom awareness.
@@ -770,8 +950,6 @@
                         
                         <!-- Progress Section -->
                         <div class="mb-6">
-                        {% set preconception_progress = badge_data['preconception'].progress if 'preconception' in badge_data else 0 %}
-                        {% set preconception_progress = preconception_progress if preconception_progress <= 100 else 100 %}
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-warm-brown">Progress</span>
                                 <span class="text-sm font-bold text-deep-plum">{{ preconception_progress | round(0) }}%</span>
@@ -793,7 +971,13 @@
                         <a href="{{ url_for('preconception.preconception') }}" 
                            class="inline-flex items-center justify-center w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-pink-600 hover:to-pink-700 transition-all duration-300 group-hover:scale-105">
                             <i class="fas fa-play mr-2"></i>
-                            Start Learning
+                            {% if preconception_progress == 0 %}
+                                Start Level
+                            {% elif preconception_progress < 100 %}
+                                Continue Level
+                            {% else %}
+                                Review Level
+                            {% endif %}
                         </a>
             </div>
         </div>
@@ -804,6 +988,9 @@
                         <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-baby text-white text-2xl"></i>
                         </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold mb-2">
+                            Level 2
+                        </span>
                         <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Antenatal Care</h3>
                         <p class="text-warm-brown mb-6 text-sm leading-relaxed">
                             Track your baby's growth with regular checkups, fetal monitoring, and birth preparation.
@@ -811,8 +998,6 @@
                         
                         <!-- Progress Section -->
                         <div class="mb-6">
-                    {% set antenatal_progress = badge_data['prenatal'].progress if 'prenatal' in badge_data else 0 %}
-                    {% set antenatal_progress = antenatal_progress if antenatal_progress <= 100 else 100 %}
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-warm-brown">Progress</span>
                                 <span class="text-sm font-bold text-deep-plum">{{ antenatal_progress | round(0) }}%</span>
@@ -832,9 +1017,16 @@
             </div>
 
                         <a href="{{ url_for('prenatal.prenatal') }}" 
-                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 group-hover:scale-105">
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 group-hover:scale-105 {% if antenatal_locked %}opacity-60 cursor-not-allowed pointer-events-none{% endif %}"
+                           {% if antenatal_locked %}onclick="event.preventDefault(); showBadgeMessage('Unlock this stage by reaching 60% in Preconception Care.');"{% endif %}>
                             <i class="fas fa-play mr-2"></i>
-                            Start Learning
+                            {% if antenatal_progress == 0 %}
+                                Start Level
+                            {% elif antenatal_progress < 100 %}
+                                Continue Level
+                            {% else %}
+                                Review Level
+                            {% endif %}
                         </a>
         </div>
     </div>
@@ -845,6 +1037,9 @@
                         <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-hospital text-white text-2xl"></i>
                         </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold mb-2">
+                            Level 3
+                        </span>
                         <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Birth & Delivery</h3>
                         <p class="text-warm-brown mb-6 text-sm leading-relaxed">
                             Understanding labor signs, delivery options, and pain management.
@@ -852,9 +1047,6 @@
                         
                         <!-- Progress Section -->
                         <div class="mb-6">
-                    {% set birth_stage = badge_data.get('birth_and_delivery', None) %}
-                    {% set birth_progress = birth_stage.progress if birth_stage else 0 %}
-                    {% set birth_progress = birth_progress if birth_progress <= 100 else 100 %}
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-warm-brown">Progress</span>
                                 <span class="text-sm font-bold text-deep-plum">{{ birth_progress | round(0) }}%</span>
@@ -874,9 +1066,16 @@
             </div>
 
                         <a href="{{ url_for('birth.birth') }}" 
-                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 group-hover:scale-105">
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 group-hover:scale-105 {% if birth_locked %}opacity-60 cursor-not-allowed pointer-events-none{% endif %}"
+                           {% if birth_locked %}onclick="event.preventDefault(); showBadgeMessage('Unlock this stage by reaching 60% in Antenatal Care.');"{% endif %}>
                             <i class="fas fa-play mr-2"></i>
-                            Start Learning
+                            {% if birth_progress == 0 %}
+                                Start Level
+                            {% elif birth_progress < 100 %}
+                                Continue Level
+                            {% else %}
+                                Review Level
+                            {% endif %}
                         </a>
         </div>
     </div>
@@ -887,6 +1086,9 @@
                         <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-child text-white text-2xl"></i>
                         </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold mb-2">
+                            Level 4
+                        </span>
                         <h3 class="text-xl font-bold text-deep-plum mb-4 font-poppins">Postnatal Care</h3>
                         <p class="text-warm-brown mb-6 text-sm leading-relaxed">
                             Support recovery with newborn care, breastfeeding guidance, and maternal well-being.
@@ -894,8 +1096,6 @@
                         
                         <!-- Progress Section -->
                         <div class="mb-6">
-                            {% set postnatal_progress = badge_data['postnatal'].progress if 'postnatal' in badge_data else 0 %}
-                            {% set postnatal_progress = postnatal_progress if postnatal_progress <= 100 else 100 %}
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-warm-brown">Progress</span>
                                 <span class="text-sm font-bold text-deep-plum">{{ postnatal_progress | round(0) }}%</span>
@@ -915,9 +1115,16 @@
                     </div>
 
                         <a href="{{ url_for('postnatal.postnatal') }}" 
-                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 group-hover:scale-105">
+                           class="inline-flex items-center justify-center w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 group-hover:scale-105 {% if postnatal_locked %}opacity-60 cursor-not-allowed pointer-events-none{% endif %}"
+                           {% if postnatal_locked %}onclick="event.preventDefault(); showBadgeMessage('Unlock this stage by reaching 60% in Birth & Delivery.');"{% endif %}>
                             <i class="fas fa-play mr-2"></i>
-                            Start Learning
+                            {% if postnatal_progress == 0 %}
+                                Start Level
+                            {% elif postnatal_progress < 100 %}
+                                Continue Level
+                            {% else %}
+                                Review Level
+                            {% endif %}
                         </a>
                 </div>
             </div>
@@ -1606,6 +1813,52 @@
             
             // Render current avatar if user is logged in
             renderCurrentAvatar();
+
+            // Journey map: position avatar marker and progress line
+            const journeyContainer = document.getElementById('journeyMapContainer');
+            const journeyNodes = journeyContainer ? journeyContainer.querySelectorAll('.journey-stage-node') : [];
+            const avatarMarker = document.getElementById('journeyAvatarMarker');
+            const lineProgress = document.getElementById('journeyLineProgress');
+
+            if (journeyContainer && journeyNodes.length >= 2) {
+                let currentNode = journeyNodes[0];
+                let maxProgress = -1;
+
+                journeyNodes.forEach(node => {
+                    const progress = parseFloat(node.getAttribute('data-progress')) || 0;
+                    if (progress > 0 && progress >= maxProgress) {
+                        maxProgress = progress;
+                        currentNode = node;
+                    }
+                });
+
+                const firstNode = journeyNodes[0];
+                const lastNode = journeyNodes[journeyNodes.length - 1];
+                const containerRect = journeyContainer.getBoundingClientRect();
+                const firstRect = firstNode.getBoundingClientRect();
+                const lastRect = lastNode.getBoundingClientRect();
+                const currentRect = currentNode.getBoundingClientRect();
+
+                const firstCenter = firstRect.left + firstRect.width / 2 - containerRect.left;
+                const lastCenter = lastRect.left + lastRect.width / 2 - containerRect.left;
+                const currentCenter = currentRect.left + currentRect.width / 2 - containerRect.left;
+
+                const totalDistance = Math.max(lastCenter - firstCenter, 1);
+                const currentDistance = Math.max(currentCenter - firstCenter, 0);
+                const ratio = Math.min(Math.max(currentDistance / totalDistance, 0), 1);
+
+                if (lineProgress) {
+                    const bgLeftPercent = 10; // matches CSS left: 10%
+                    const bgRightPercent = 10; // matches CSS right: 10%
+                    const usablePercent = 100 - bgLeftPercent - bgRightPercent;
+                    lineProgress.style.width = (bgLeftPercent + usablePercent * ratio) + '%';
+                }
+
+                if (avatarMarker) {
+                    avatarMarker.classList.remove('hidden');
+                    avatarMarker.style.left = currentCenter + 'px';
+                }
+            }
         });
         
         // Function to render avatar based on avatar path (for navigation - smaller size)
