@@ -835,99 +835,95 @@
             {% set postnatal_progress = badge_data['postnatal'].progress if 'postnatal' in badge_data else 0 %}
             {% set postnatal_progress = postnatal_progress if postnatal_progress <= 100 else 100 %}
 
-            <div id="journeyMapContainer" class="journey-map mb-12">
-                <div class="journey-line-bg"></div>
-                <div id="journeyLineProgress" class="journey-line-progress" style="width: 0;"></div>
+            <div id="journeyMapContainer" class="relative max-w-3xl mx-auto mb-12">
+                <!-- Vertical path line -->
+                <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200 opacity-60"></div>
 
-                {% if user_logged_in %}
-                <div id="journeyAvatarMarker" class="journey-avatar-marker hidden md:block absolute -top-12 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-deep-rose">
-                    {% if user and user.avatar %}
-                        <img src="/static/{{ user.avatar }}" alt="Your avatar" class="w-10 h-10 rounded-full object-cover">
-                    {% else %}
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-300 to-rose-400 flex items-center justify-center">
-                            <i class="fas fa-user text-white text-lg"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <div class="relative flex items-center justify-between max-w-3xl mx-auto">
-                    {# Preconception node #}
+                <div class="relative flex flex-col gap-10 md:gap-16 pt-4 pb-4">
+                    {# Preconception node - top center #}
                     {% set preconception_completed = preconception_progress >= 100 or ('preconception' in earned_stages if earned_stages is defined else False) %}
                     {% set preconception_status = 'completed' if preconception_completed else ('inprogress' if preconception_progress > 0 else 'inprogress') %}
-                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="preconception" data-progress="{{ preconception_progress }}">
-                        <div class="journey-node-circle {% if preconception_status == 'completed' %}journey-node-completed{% elif preconception_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
-                            {% if preconception_status == 'completed' %}
-                                <i class="fas fa-check text-xl"></i>
-                            {% elif preconception_status == 'inprogress' %}
-                                <span class="font-bold">1</span>
-                            {% else %}
-                                <i class="fas fa-lock text-lg"></i>
-                            {% endif %}
-                        </div>
-                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Preconception</div>
-                        <div class="journey-node-subtext text-warm-brown">
-                            {{ preconception_progress | round(0) }}%
+                    <div class="flex justify-center">
+                        <div class="journey-stage-node flex flex-col items-center" data-stage-key="preconception" data-progress="{{ preconception_progress }}">
+                            <div class="journey-node-circle {% if preconception_status == 'completed' %}journey-node-completed{% elif preconception_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                                {% if preconception_status == 'completed' %}
+                                    <i class="fas fa-check text-xl"></i>
+                                {% elif preconception_status == 'inprogress' %}
+                                    <span class="font-bold">1</span>
+                                {% else %}
+                                    <i class="fas fa-lock text-lg"></i>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2 journey-node-label font-semibold text-deep-plum">Preconception</div>
+                            <div class="journey-node-subtext text-warm-brown">
+                                {{ preconception_progress | round(0) }}%
+                            </div>
                         </div>
                     </div>
 
-                    {# Antenatal node #}
+                    {# Antenatal node - left #}
                     {% set antenatal_completed = antenatal_progress >= 100 or ('prenatal' in earned_stages if earned_stages is defined else False) %}
                     {% set antenatal_locked = preconception_progress < 60 %}
                     {% set antenatal_status = 'locked' if antenatal_locked else ('completed' if antenatal_completed else ('inprogress' if antenatal_progress > 0 else 'inprogress')) %}
-                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="prenatal" data-progress="{{ antenatal_progress }}">
-                        <div class="journey-node-circle {% if antenatal_status == 'completed' %}journey-node-completed{% elif antenatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
-                            {% if antenatal_status == 'completed' %}
-                                <i class="fas fa-check text-xl"></i>
-                            {% elif antenatal_status == 'inprogress' %}
-                                <span class="font-bold">2</span>
-                            {% else %}
-                                <i class="fas fa-lock text-lg"></i>
-                            {% endif %}
-                        </div>
-                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Antenatal</div>
-                        <div class="journey-node-subtext text-warm-brown">
-                            {{ antenatal_progress | round(0) }}%
+                    <div class="flex justify-start">
+                        <div class="journey-stage-node flex flex-col items-center md:items-start" data-stage-key="prenatal" data-progress="{{ antenatal_progress }}">
+                            <div class="journey-node-circle {% if antenatal_status == 'completed' %}journey-node-completed{% elif antenatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                                {% if antenatal_status == 'completed' %}
+                                    <i class="fas fa-check text-xl"></i>
+                                {% elif antenatal_status == 'inprogress' %}
+                                    <span class="font-bold">2</span>
+                                {% else %}
+                                    <i class="fas fa-lock text-lg"></i>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2 journey-node-label font-semibold text-deep-plum">Antenatal</div>
+                            <div class="journey-node-subtext text-warm-brown">
+                                {{ antenatal_progress | round(0) }}%
+                            </div>
                         </div>
                     </div>
 
-                    {# Birth & Delivery node #}
+                    {# Birth & Delivery node - right #}
                     {% set birth_completed = birth_progress >= 100 or ('birth_and_delivery' in earned_stages if earned_stages is defined else False) %}
                     {% set birth_locked = antenatal_progress < 60 %}
                     {% set birth_status = 'locked' if birth_locked else ('completed' if birth_completed else ('inprogress' if birth_progress > 0 else 'inprogress')) %}
-                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="birth_and_delivery" data-progress="{{ birth_progress }}">
-                        <div class="journey-node-circle {% if birth_status == 'completed' %}journey-node-completed{% elif birth_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
-                            {% if birth_status == 'completed' %}
-                                <i class="fas fa-check text-xl"></i>
-                            {% elif birth_status == 'inprogress' %}
-                                <span class="font-bold">3</span>
-                            {% else %}
-                                <i class="fas fa-lock text-lg"></i>
-                            {% endif %}
-                        </div>
-                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Birth &amp; Delivery</div>
-                        <div class="journey-node-subtext text-warm-brown">
-                            {{ birth_progress | round(0) }}%
+                    <div class="flex justify-end">
+                        <div class="journey-stage-node flex flex-col items-center md:items-end" data-stage-key="birth_and_delivery" data-progress="{{ birth_progress }}">
+                            <div class="journey-node-circle {% if birth_status == 'completed' %}journey-node-completed{% elif birth_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                                {% if birth_status == 'completed' %}
+                                    <i class="fas fa-check text-xl"></i>
+                                {% elif birth_status == 'inprogress' %}
+                                    <span class="font-bold">3</span>
+                                {% else %}
+                                    <i class="fas fa-lock text-lg"></i>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2 journey-node-label font-semibold text-deep-plum">Birth &amp; Delivery</div>
+                            <div class="journey-node-subtext text-warm-brown">
+                                {{ birth_progress | round(0) }}%
+                            </div>
                         </div>
                     </div>
 
-                    {# Postnatal node #}
+                    {# Postnatal node - bottom center #}
                     {% set postnatal_completed = postnatal_progress >= 100 or ('postnatal' in earned_stages if earned_stages is defined else False) %}
                     {% set postnatal_locked = birth_progress < 60 %}
                     {% set postnatal_status = 'locked' if postnatal_locked else ('completed' if postnatal_completed else ('inprogress' if postnatal_progress > 0 else 'inprogress')) %}
-                    <div class="journey-stage-node flex flex-col items-center" data-stage-key="postnatal" data-progress="{{ postnatal_progress }}">
-                        <div class="journey-node-circle {% if postnatal_status == 'completed' %}journey-node-completed{% elif postnatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
-                            {% if postnatal_status == 'completed' %}
-                                <i class="fas fa-check text-xl"></i>
-                            {% elif postnatal_status == 'inprogress' %}
-                                <span class="font-bold">4</span>
-                            {% else %}
-                                <i class="fas fa-lock text-lg"></i>
-                            {% endif %}
-                        </div>
-                        <div class="mt-2 journey-node-label font-semibold text-deep-plum">Postnatal</div>
-                        <div class="journey-node-subtext text-warm-brown">
-                            {{ postnatal_progress | round(0) }}%
+                    <div class="flex justify-center">
+                        <div class="journey-stage-node flex flex-col items-center" data-stage-key="postnatal" data-progress="{{ postnatal_progress }}">
+                            <div class="journey-node-circle {% if postnatal_status == 'completed' %}journey-node-completed{% elif postnatal_status == 'inprogress' %}journey-node-inprogress{% else %}journey-node-locked{% endif %}">
+                                {% if postnatal_status == 'completed' %}
+                                    <i class="fas fa-check text-xl"></i>
+                                {% elif postnatal_status == 'inprogress' %}
+                                    <span class="font-bold">4</span>
+                                {% else %}
+                                    <i class="fas fa-lock text-lg"></i>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2 journey-node-label font-semibold text-deep-plum">Postnatal</div>
+                            <div class="journey-node-subtext text-warm-brown">
+                                {{ postnatal_progress | round(0) }}%
+                            </div>
                         </div>
                     </div>
                 </div>
