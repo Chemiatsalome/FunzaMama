@@ -275,21 +275,25 @@ def get_teaching_facts_by_stage(stage_name):
         # Define prompts per stage
         prompts = {
     "prenatal": (
-        "You're an expert in maternal health. Provide exactly 3 numbered teaching concepts "
-        "about the importance of prenatal care. Make them short, clear, and suitable for a quiz-based educational game. "
+        "You're an expert in maternal health in Kenya. Provide exactly 3 numbered teaching concepts "
+        "about the importance of prenatal care in the Kenyan context (antenatal clinics, county hospitals, community health workers). "
+        "Use metric units (kg, cm, °C) and keep the language clear and simple for Kenyan mothers playing a quiz-based game. "
         "Respond only with the list."
     ),
     "preconception": (
-        "You're a maternal health educator. Provide exactly 3 numbered teaching concepts "
-        "on preconception care. Focus on the importance of planning for pregnancy. Respond only with the list."
+        "You're a maternal health educator in Kenya. Provide exactly 3 numbered teaching concepts "
+        "on preconception care (planning pregnancy, folic acid supplements, lifestyle changes). "
+        "Use metric units (kg, cm, °C) and examples that make sense for Kenyan women. Respond only with the list."
     ),
     "birth": (
-        "You're a maternal health expert. Provide exactly 3 numbered teaching points about labor and delivery. "
-        "Make them simple and clear for game-based education. Respond only with the list."
+        "You're a maternal health expert in Kenya. Provide exactly 3 numbered teaching points about labour and delivery "
+        "in Kenyan settings (recognising labour signs, when to go to a facility, pain relief options). "
+        "Use metric units where relevant and keep the points simple and practical. Respond only with the list."
     ),
     "postnatal": (
-        "You're a maternal health advisor. Provide exactly 3 numbered learning suggestions for the postnatal stage. "
-        "Focus on maternal recovery, breastfeeding, and newborn care. Respond only with the list."
+        "You're a maternal health advisor in Kenya. Provide exactly 3 numbered learning suggestions for the postnatal stage. "
+        "Focus on maternal recovery, breastfeeding, newborn care, immunisation visits, and danger signs. "
+        "Use metric units (kg, cm, °C) and examples Kenyan families can relate to. Respond only with the list."
     )
 }
 
